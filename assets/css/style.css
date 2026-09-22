@@ -143,7 +143,8 @@ body[data-theme="dark"] .c-dot{background:var(--brand-light)}
 @media (hover:none),(pointer:coarse){.cursor{display:none}}
 
 /* ═══ HEADER ═══ */
-.site-header{position:fixed;top:0;left:0;right:0;z-index:50;transition:background .45s var(--ease),border-color .45s,backdrop-filter .45s;border-bottom:1px solid transparent;color:#fff}
+.site-header{position:fixed;top:0;left:0;right:0;z-index:50;transition:background .45s var(--ease),border-color .45s,backdrop-filter .45s,box-shadow .45s;border-bottom:1px solid transparent;color:#fff}
+.site-header.scrolled{background:color-mix(in srgb,#070a12 76%,transparent);backdrop-filter:blur(18px) saturate(1.55);-webkit-backdrop-filter:blur(18px) saturate(1.55);border-bottom-color:rgba(255,255,255,.08);box-shadow:0 12px 40px rgba(3,6,14,.32)}
 .header-in{width:min(var(--container),100%);margin-inline:auto;padding:0 var(--gutter);height:var(--header-h);display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:20px}
 .header-nav{display:flex;gap:26px}
 .nav-link{position:relative;font-size:13.5px;font-weight:600;opacity:.82;transition:opacity .3s,color .3s;padding-block:6px}
@@ -251,9 +252,9 @@ body[data-theme="light"].site-header, body[data-theme="light"] .site-header{back
 body[data-theme="dark"] .qs:hover .go{color:#04101f}
 
 /* ═══ EXPLORER ═══ */
-.tabs-wrap{overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;margin-bottom:30px}
+.tabs-wrap{overflow-x:auto;min-width:0;scrollbar-width:none;-ms-overflow-style:none;margin-bottom:30px;-webkit-overflow-scrolling:touch}
 .tabs-wrap::-webkit-scrollbar{display:none}
-.tabs{display:flex;gap:8px;width:max-content;margin-inline:auto;padding:6px;background:var(--surface);border:1px solid var(--line);border-radius:999px}
+.tabs{display:flex;gap:8px;width:max-content;margin-inline:auto;padding:6px;background:var(--surface);border:1px solid var(--line);border-radius:999px;max-width:none}
 .tab{font-size:13.5px;font-weight:700;color:var(--muted);padding:11px 22px;border-radius:999px;transition:color .3s,background .35s var(--ease)}
 .tab:hover{color:var(--ink)}
 .tab[aria-selected="true"]{background:var(--brand);color:#fff;box-shadow:0 10px 24px -10px rgba(21,87,214,.5)}
@@ -261,8 +262,9 @@ body[data-theme="dark"] .tab[aria-selected="true"]{background:var(--brand-light)
 /* پنل‌ها روی هم قرار می‌گیرند (شبکه تک‌خانه‌ای) تا پنل فعال دقیقاً داخل ارتفاع
    کانتینر باشد؛ بدون display:grid پنل‌ها پشت‌سرِهم چیده می‌شدند و پنل‌های غیر اول
    زیر سکشن بعدی مدفون می‌شدند → کلیک روی کارت‌ها کار نمی‌کرد. */
-.panels{position:relative;display:grid;align-items:start;transition:height .5s var(--ease)}
-.panel{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;opacity:0;visibility:hidden;transform:translateX(-34px);transition:opacity .55s var(--ease),transform .55s var(--ease),visibility .55s;grid-area:1/1}
+.panels{position:relative;display:grid;align-items:start;transition:height .5s var(--ease);min-width:0}
+.panel{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;opacity:0;visibility:hidden;transform:translateX(-34px);transition:opacity .55s var(--ease),transform .55s var(--ease),visibility .55s;grid-area:1/1;min-width:0}
+.panel .card{min-width:0}
 body[dir="rtl"] .panel{transform:translateX(-34px)}
 .panel.active{opacity:1;visibility:visible;transform:none}
 .panel.exit-l{opacity:0;transform:translateX(34px);visibility:hidden}
@@ -613,8 +615,16 @@ html.js [data-reveal].in{opacity:1;transform:none}
 }
 @media (max-width:640px){
   body{font-size:15px}
+  html{overflow-x:clip}
   .header-actions .btn-sm,#loginBtn{display:none}
+  .m-account{display:inline-flex}
   .burger{display:inline-flex}
+  .tabs-wrap{margin-inline:calc(-1*var(--gutter));padding-inline:var(--gutter)}
+  .tabs{margin-inline:0}
+  .panel{grid-template-columns:1fr;gap:12px}
+  .pp-grid{grid-template-columns:1fr;gap:12px}
+  .gift{flex-basis:min(74%,270px)}
+  .icon-btn{width:44px;height:44px}
   .quick-grid,.ai-grid,.pay-grid,.exam-grid,.hw-grid,.why-grid,.mag-grid{grid-template-columns:1fr}
   .ai-card.big{grid-column:span 1}
   .process{grid-template-columns:1fr}
@@ -656,6 +666,7 @@ html.js [data-reveal].in{opacity:1;transform:none}
 body[data-theme="dark"] .icon-btn{border-color:rgba(255,255,255,.24)}
 #loginBtn.is-logged{border-color:var(--accent);color:var(--accent)}
 #loginBtn.is-logged .ic{color:var(--accent)}
+.m-account.is-logged{border-color:var(--accent);color:var(--accent)}
 
 /* ─── hero brand strip ─── */
 .hero-strip{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-top:44px}
@@ -805,6 +816,7 @@ body[data-theme="dark"] .art-item{background:rgba(255,255,255,.04)}
 .lang-menu button[data-lang="fa"],.lang-menu button[data-lang="ar"]{direction:rtl}
 
 /* ─── responsive v2 ─── */
+.m-account{display:none}
 @media (max-width:640px){
   .icon-btn{width:40px;height:40px}
   .cart-drawer{border-radius:20px}

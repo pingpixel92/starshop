@@ -346,6 +346,16 @@ const initProgress = () => {
   upd();
 };
 
+/* ── header scrolled state (پس‌زمینه بلور پس از اسکرول) ── */
+const initHeaderState = () => {
+  const h = $('#siteHeader'); if (!h) return;
+  let raf = null;
+  const upd = () => { raf = null; h.classList.toggle('scrolled', (window.scrollY || document.documentElement.scrollTop) > 24); };
+  addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(upd); }, { passive: true });
+  addEventListener('resize', upd, { passive: true });
+  upd();
+};
+
 /* ── custom cursor ── */
 const initCursor = () => {
   const cur = $('#cursor');
@@ -860,7 +870,7 @@ const initDelegation = () => {
 const boot = async () => {
   renderAll();
   splitWords();
-  initScroll(); initAnchors(); initTheme(); initProgress();
+  initScroll(); initAnchors(); initTheme(); initProgress(); initHeaderState();
   initCursor(); initMagnetic(); initTilt();
   initMenu(); initSearch(); initContactForm(); initCalcForm();
   initProcess(); initHow(); initStats(); initDelegation();

@@ -1,0 +1,20 @@
+{
+  "name": "استار شاپ | خدمات پرداخت بین‌المللی",
+  "short_name": "استار شاپ",
+  "description": "پرداخت‌های بین‌المللی، گیفت کارت، حساب‌های پریمیوم و خدمات دیجیتال — سریع و مطمئن",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "dir": "rtl",
+  "lang": "fa",
+  "background_color": "#05070b",
+  "theme_color": "#05070b",
+  "categories": ["shopping", "finance", "productivity"],
+  "icons": [
+    { "src": "/assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/assets/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

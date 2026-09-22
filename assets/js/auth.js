@@ -292,13 +292,16 @@ const syncHeader = () => {
   if (!btn) return;
   const s = session();
   const label = btn.querySelector('[data-i18n="login"]');
+  const mAcc = $('#accountBtnM');
   if (s) {
     const p = profile();
     btn.classList.add('is-logged');
+    if (mAcc) mAcc.classList.add('is-logged');
     if (label) label.textContent = p.name || s.phone || t('auth.account');
     btn.setAttribute('aria-label', t('auth.account'));
   } else {
     btn.classList.remove('is-logged');
+    if (mAcc) mAcc.classList.remove('is-logged');
     if (label) label.textContent = t('login');
   }
 };
@@ -432,7 +435,11 @@ const bind = () => {
 };
 
 /* ── init ── */
-const init = () => { bind(); syncHeader(); };
+const init = () => { bind(); syncHeader();
+  /* دکمه حساب موبایل: همان جریان ورود/حساب */
+  const mAcc = $('#accountBtnM'), lb = $('#loginBtn');
+  if (mAcc && lb) mAcc.addEventListener('click', e => { e.preventDefault(); lb.click(); });
+};
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
 else init();
 
