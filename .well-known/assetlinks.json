@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "fr.kdns.starshop",
+    "sha256_cert_fingerprints": ["B0:68:36:E8:DC:E8:DE:6A:C6:2D:DD:EA:A1:CD:CD:CC:8A:38:3F:FF:F3:65:F5:EC:09:10:80:1F:59:73:1A:92"]
+  }
+}]
