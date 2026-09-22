@@ -1,6 +1,7 @@
-/* ═══════════════════════════════════════════
+/* ═══════════════════════════════════════════════════
    STARSHOP — main.js  (no frameworks)
-   ═══════════════════════════════════════════ */
+   همه رندرها data-driven هستند تا سه‌زبانه کامل باشد
+   ═══════════════════════════════════════════════════ */
 (() => {
 'use strict';
 
@@ -10,99 +11,80 @@ const $$ = (s, c) => Array.from((c || document).querySelectorAll(s));
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const touch   = matchMedia('(hover: none), (pointer: coarse)').matches;
 const clamp   = (v, a, b) => Math.min(b, Math.max(a, v));
-const faDig   = n => Number(n).toLocaleString('fa-IR', { useGrouping: false });
+
+const escapeHtml = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const localDig = n => {
+  const lang = window.SS_LANG || 'fa';
+  if (lang === 'fa') return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+  if (lang === 'ar') return String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+  return String(n);
+};
 const normTxt = s => String(s || '')
   .replace(/[\u064A]/g, '\u06CC').replace(/[\u0643]/g, '\u06A9')
   .replace(/[\u064B-\u065F\u0670\u0640]/g, '')
   .replace(/[\u06F0-\u06F9]/g, d => String(d.charCodeAt(0) - 0x06F0))
   .replace(/[\u0660-\u0669]/g, d => String(d.charCodeAt(0) - 0x0660))
   .replace(/\u200c/g, ' ').toLowerCase().trim();
+const faToEn = s => String(s || '').replace(/[\u06F0-\u06F9]/g, d => String(d.charCodeAt(0) - 0x06F0)).replace(/[\u0660-\u0669]/g, d => String(d.charCodeAt(0) - 0x0660)).replace(/\u200c/g, '');
 
+/* ── i18n bridge ── */
+const D = () => window.SS_DATA[window.SS_LANG || 'fa'] || window.SS_DATA.fa;
+const t = k => {
+  const lang = window.SS_LANG || 'fa';
+  const dd = window.SS_DATA[lang] || window.SS_DATA.fa;
+  const fdd = window.SS_DATA.fa;
+  let v = dd.ui[k]; if (v != null) return v;
+  if (dd.order) { v = dd.order[k.replace(/^order\./, '')]; if (v != null) return v; }
+  v = fdd.ui[k]; if (v != null) return v;
+  if (fdd.order) { v = fdd.order[k]; if (v != null) return v; }
+  return k;
+};
+const fmt = (s, o) => String(s).replace(/\{(\w+)\}/g, (_, k) => o && o[k] != null ? o[k] : '');
+const catLabel = id => { const c = D().cats.find(c => c.id === id); return c ? c.label : ''; };
+const getService = id => D().services.find(s => s.id === id);
+
+/* ── toast ── */
 let toastTimer;
 const toast = msg => {
-  const t = $('#toast'); if (!t) return;
-  t.textContent = msg; t.hidden = false;
-  requestAnimationFrame(() => t.classList.add('show'));
+  const el = $('#toast'); if (!el) return;
+  el.textContent = msg; el.hidden = false;
+  requestAnimationFrame(() => el.classList.add('show'));
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.hidden = true, 450); }, 2800);
+  toastTimer = setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.hidden = true, 450); }, 3000);
 };
 
-/* ── service catalog (single source of truth) ── */
-const CATS = [
-  { id: 'payments',  label: 'پرداخت‌ها' },
-  { id: 'accounts',  label: 'حساب‌ها' },
-  { id: 'cards',     label: 'کارت‌ها' },
-  { id: 'ai',        label: 'اکانت‌ها' },
-  { id: 'giftcards', label: 'گیفت کارت' },
-  { id: 'shopping',  label: 'خرید خارجی' },
-  { id: 'income',    label: 'درآمد ارزی' },
-  { id: 'exams',     label: 'آزمون‌ها' },
-  { id: 'crypto',    label: 'رمزارز' },
-  { id: 'business',  label: 'کسب‌وکارها' }
-];
-const catLabel = id => (CATS.find(c => c.id === id) || {}).label || '';
+/* ═════════ DYNAMIC RENDERS (from SS_DATA) ═════════ */
 
-const SERVICES = [
-  { id:'pay-web', cat:'payments', icon:'globe', title:'پرداخت سایت‌های خارجی', desc:'خرید و پرداخت از هر سایت بین‌المللی؛ لینک یا فاکتور را ثبت کنید، هزینه ریالی پرداخت می‌شود و پرداخت جهانی انجام می‌گیرد.', who:'کاربرانی که از سایت‌های خارجی خرید می‌کنند و ابزار پرداخت ارزی ندارند؛ خریداران نرم‌افزار، قالب، دوره و هر محصول دیجیتال یا فیزیکی.', steps:['لینک سایت یا فاکتور و مبلغ دقیق را ثبت می‌کنید','هزینه و شرایط پس از بررسی اعلام و تأیید می‌شود','هزینه را به ریال پرداخت می‌کنید','پرداخت ارزی انجام و رسید ارائه می‌شود'], req:['آدرس سایت یا فاکتور','مبلغ دقیق به ارز مقصد','راه ارتباطی برای پیگیری'] },
-  { id:'pay-sub', cat:'payments', icon:'spark', title:'پرداخت اشتراک‌های خارجی', desc:'خرید و تمدید اشتراک سرویس‌های خارجی، ماهانه یا سالانه؛ از پنل کاربری خود لینک تمدید را ارسال کنید.', who:'کاربران سرویس‌های اشتراکی خارجی که نیاز به تمدید منظم دارند.', steps:['لینک یا تصویر فاکتور اشتراک را ثبت می‌کنید','هزینه پس از بررسی اعلام می‌شود','پرداخت ریالی انجام می‌دهید','اشتراک تمدید و تأیید می‌شود'], req:['لینک تمدید یا فاکتور','نوع پلن و مدت اشتراک'] },
-  { id:'pay-uni', cat:'payments', icon:'cap', title:'پرداخت هزینه‌های دانشگاهی', desc:'پرداخت شهریه، هزینه پذیرش، خوابگاه و سایر هزینه‌های تحصیلی دانشگاه‌های خارجی.', who:'دانشجویان و پذیرفته‌شدگان دانشگاه‌های خارج از کشور.', steps:['فاکتور یا نامه پرداخت دانشگاه را ثبت می‌کنید','اطلاعات دانشجویی بررسی می‌شود','هزینه ریالی پرداخت می‌شود','پرداخت انجام و رسید ارائه می‌شود'], req:['نامه پذیرش یا فاکتور دانشگاه','شناسه دانشجویی و نام دانشگاه','مبلغ دقیق'] },
-  { id:'pay-exam', cat:'payments', icon:'doc', title:'پرداخت آزمون‌های بین‌المللی', desc:'ثبت‌نام و پرداخت هزینه آزمون‌های بین‌المللی شامل IELTS، TOEFL، Duolingo، PTE، PMP، AWS و سایر آزمون‌ها.', who:'متقاضیان مهاجرت، تحصیل یا اشتغال بین‌المللی که به کارنامه آزمون جهانی نیاز دارند.', steps:['نوع آزمون، کشور و مرکز را ثبت می‌کنید','اطلاعات پاسخ‌دهی بررسی و تأیید می‌شود','هزینه ریالی پرداخت می‌شود','ثبت‌نام انجام و تأییدیه ارائه می‌شود'], req:['نوع آزمون و تاریخ موردنظر','کشور و مرکز آزمون','اطلاعات پاسخ‌دهی طبق مدرک هویتی'] },
-  { id:'pay-embassy', cat:'payments', icon:'plane', title:'پرداخت ویزا و سفارت', desc:'پرداخت هزینه ویزا، وقت مصاحبه و خدمات کنسولی سفارت‌های مختلف.', who:'متقاضیان ویزای تحصیلی، کاری، گردشگری و اقامت.', steps:['نوع ویزا و کشور را ثبت می‌کنید','مبلغ و نحوه پرداخت اعلام می‌شود','هزینه ریالی پرداخت می‌شود','پرداخت انجام و رسید ارائه می‌شود'], req:['نوع ویزا و کشور مقصد','کد پیگیری پرونده (در صورت وجود)','اطلاعات درخواست‌دهنده'] },
-  { id:'pay-saas', cat:'payments', icon:'cpu', title:'پرداخت سرویس‌های SaaS و تخصصی', desc:'پرداخت هاست، دامنه، ابزارهای توسعه و هر سرویس آنلاین تخصصی دیگر.', who:'توسعه‌دهندگان، استارتاپ‌ها و تیم‌هایی که از ابزارهای خارجی استفاده می‌کنند.', steps:['آدرس سرویس و فاکتور را ثبت می‌کنید','هزینه پس از بررسی اعلام می‌شود','پرداخت ریالی انجام می‌دهید','سرویس فعال و تأیید می‌شود'], req:['آدرس سرویس یا فاکتور','نوع پلن و مدت','اطلاعات حساب کاربری (در صورت نیاز)'] },
-  { id:'pp-person', cat:'accounts', icon:'wallet', title:'افتتاح حساب PayPal Personal', desc:'همراهی گام‌به‌گام در فرآیند افتتاح و تنظیم حساب PayPal شخصی برای پرداخت‌های جهانی.', who:'کاربرانی که برای خرید شخصی از سایت‌های خارجی به PayPal نیاز دارند.', steps:['درخواست شما ثبت و بررسی می‌شود','مراحل افتتاح و تنظیم حساب راهنمایی می‌شوید','اتصال و تأیید حساب انجام می‌شود','حساب آماده استفاده است'], req:['مدارک هویتی معتبر','ایمیل فعال','شماره تماس'] },
-  { id:'pp-business', cat:'accounts', icon:'wallet', title:'افتتاح حساب PayPal Business', desc:'راه‌اندازی حساب PayPal Business برای فروشندگان و کسب‌وکارهایی که دریافت و پرداخت وجه دارند.', who:'فروشندگان آنلاین و کسب‌وکارهایی که با مشتریان خارجی کار می‌کنند.', steps:['شرایط کسب‌وکار شما بررسی می‌شود','فرآیند افتتاح حساب Business همراهی می‌شوید','تنظیمات دریافت و پرداخت انجام می‌شود','حساب آماده بهره‌برداری است'], req:['اطلاعات کسب‌وکار','ایمیل سازمانی','مدارک هویتی'] },
-  { id:'pp-balance', cat:'accounts', icon:'coins', title:'خرید و فروش موجودی PayPal', desc:'تبدیل و تسویه موجودی PayPal، منوط به بررسی و تأیید شرایط هر سفارش.', who:'کاربرانی که موجودی PayPal دارند یا به آن نیاز دارند.', steps:['مبلغ و نوع درخواست را ثبت می‌کنید','شرایط سفارش بررسی و نرخ اعلام می‌شود','پس از تأیید، تسویه انجام می‌شود','رسید ارائه می‌شود'], req:['مبلغ موجودی یا نیاز','تصویر پنل حساب (در صورت نیاز)','راه ارتباطی'] },
-  { id:'pp-intl', cat:'accounts', icon:'globe', title:'حساب‌های بین‌المللی', desc:'مشاوره و راهنمایی برای انتخاب و راه‌اندازی حساب‌های بین‌المللی مناسب نیاز شما.', who:'کاربرانی که گزینه‌های مالی بین‌المللی متنوع می‌خواهند.', steps:['نیاز و شرایط شما بررسی می‌شود','گزینه‌های مناسب معرفی می‌شود','فرآیند راه‌اندازی همراهی می‌شوید','حساب آماده استفاده است'], req:['توضیح نیاز و کاربرد','اطلاعات تماس'] },
-  { id:'card-visa', cat:'cards', icon:'card', title:'کارت مجازی Visa', desc:'صدور کارت مجازی Visa برای پرداخت‌های آنلاین؛ اطلاعات کارت به‌صورت دیجیتال تحویل داده می‌شود.', who:'خریداران از سایت‌های خارجی که کارت آنلاین امن می‌خواهند.', steps:['نوع کارت و موجودی را انتخاب می‌کنید','شرایط پس از بررسی اعلام می‌شود','هزینه ریالی پرداخت می‌شود','اطلاعات کارت تحویل داده می‌شود'], req:['موجودی موردنیاز','ایمیل برای تحویل','راه ارتباطی'] },
-  { id:'card-mc', cat:'cards', icon:'card', title:'کارت مجازی MasterCard', desc:'صدور کارت مجازی MasterCard برای خرید از فروشگاه‌ها و سرویس‌های جهانی.', who:'کاربرانی که MasterCard برای خرید آنلاین نیاز دارند.', steps:['نوع کارت و موجودی را انتخاب می‌کنید','شرایط پس از بررسی اعلام می‌شود','هزینه ریالی پرداخت می‌شود','اطلاعات کارت تحویل داده می‌شود'], req:['موجودی موردنیاز','ایمیل برای تحویل','راه ارتباطی'] },
-  { id:'card-phys', cat:'cards', icon:'card', title:'کارت فیزیکی بین‌المللی', desc:'کارت فیزیکی بین‌المللی برای استفاده حضوری، عابربانک‌های خارجی و خرید آنلاین.', who:'مسافران و کاربرانی که کارت فیزیکی لازم دارند.', steps:['نوع کارت را انتخاب می‌کنید','شرایط و زمان صدور اعلام می‌شود','هزینه ریالی پرداخت می‌شود','کارت طبق روش اعلام‌شده تحویل می‌شود'], req:['آدرس یا روش تحویل','مدارک موردنیاز طبق اعلام','هزینه صدور'] },
-  { id:'card-travel', cat:'cards', icon:'plane', title:'کارت مناسب سفر', desc:'انتخاب و تهیه کارتی که برای خرید آنلاین و استفاده در سفر مناسب است.', who:'مسافران کشورهای خارجی.', steps:['مقصد سفر و نیاز شما بررسی می‌شود','گزینه مناسب پیشنهاد می‌شود','هزینه ریالی پرداخت می‌شود','کارت تحویل داده می‌شود'], req:['کشور مقصد','مدت سفر','موجودی موردنیاز'] },
-  { id:'ai-chatgpt', cat:'ai', icon:'cpu', title:'اشتراک ChatGPT Plus', desc:'خرید و تمدید اشتراک ChatGPT Plus برای دسترسی به قابلیت‌های پیشرفته‌تر.', who:'تولیدکننده محتوا، برنامه‌نویسان، پژوهشگران و همه علاقه‌مندان به ابزارهای AI.', steps:['نوع پلن و مدت را انتخاب می‌کنید','هزینه پس از بررسی اعلام می‌شود','پرداخت ریالی انجام می‌دهید','اشتراک فعال و تحویل می‌شود'], req:['ایمیل حساب (طبق اعلام)','مدت اشتراک','راه ارتباطی'] },
-  { id:'ai-gemini', cat:'ai', icon:'spark', title:'اشتراک Gemini', desc:'خرید و تمدید اشتراک Gemini برای استفاده از مدل‌های پیشرفته گوگل.', who:'کاربرانی که از ابزارهای هوش مصنوعی گوگل استفاده می‌کنند.', steps:['نوع پلن و مدت را انتخاب می‌کنید','هزینه پس از بررسی اعلام می‌شود','پرداخت ریالی انجام می‌دهید','اشتراک فعال و تحویل می‌شود'], req:['حساب گوگل (طبق اعلام)','مدت اشتراک','راه ارتباطی'] },
-  { id:'ai-cursor', cat:'ai', icon:'cpu', title:'اشتراک Cursor', desc:'خرید و تمدید اشتراک Cursor؛ ویرایشگر کد مبتنی بر هوش مصنوعی برای توسعه‌دهندگان.', who:'توسعه‌دهندگان و تیم‌های برنامه‌نویسی.', steps:['نوع پلن و مدت را انتخاب می‌کنید','هزینه پس از بررسی اعلام می‌شود','پرداخت ریالی انجام می‌دهید','اشتراک فعال و تحویل می‌شود'], req:['ایمیل حساب (طبق اعلام)','مدت اشتراک','راه ارتباطی'] },
-  { id:'ai-midjourney', cat:'ai', icon:'spark', title:'اشتراک Midjourney', desc:'خرید و تمدید اشتراک Midjourney برای ساخت تصویر با هوش مصنوعی.', who:'طراحان، گرافیست‌ها و تولیدکنندگان محتوای بصری.', steps:['نوع پلن و مدت را انتخاب می‌کنید','هزینه پس از بررسی اعلام می‌شود','پرداخت ریالی انجام می‌دهید','اشتراک فعال و تحویل می‌شود'], req:['حساب کاربری (طبق اعلام)','مدت اشتراک','راه ارتباطی'] },
-  { id:'ai-premium', cat:'ai', icon:'star', title:'سایر اکانت‌های Premium', desc:'Netflix، Spotify، Telegram Premium، TradingView، Freepik و سرویس‌های Premium دیگر؛ خرید و تمدید.', who:'کاربرانی که به سرویس‌های Premium جهانی نیاز دارند.', steps:['سرویس و پلن را اعلام می‌کنید','هزینه پس از بررسی اعلام می‌شود','پرداخت ریالی انجام می‌دهید','اکانت طبق روش اعلام‌شده تحویل می‌شود'], req:['نام سرویس و نوع پلن','مدت اشتراک','راه ارتباطی'] },
-  { id:'gift-cards', cat:'giftcards', icon:'gift', title:'خرید گیفت کارت', desc:'گیفت کارت Apple، Steam، PlayStation، Xbox، Amazon، PUBG، Free Fire، Netflix، Google Play و برندهای دیگر.', who:'گیمرها، کاربران اپلیکیشن‌ها و همه کسانی که اعتبار سرویس‌های جهانی می‌خواهند.', steps:['برند و مبلغ گیفت کارت را انتخاب می‌کنید','موجودی و قیمت پس از بررسی اعلام می‌شود','هزینه ریالی پرداخت می‌شود','کد گیفت کارت تحویل داده می‌شود'], req:['نام برند و مبلغ','ایمیل یا راه تحویل','راه ارتباطی'] },
-  { id:'shop-link', cat:'shopping', icon:'cart', title:'خرید با ارسال لینک محصول', desc:'از هر سایت یا مارکت‌پلیس بین‌المللی؛ لینک محصول را بفرستید تا بررسی و خرید انجام شود.', who:'خریداران محصول از سایت‌های خارجی که روش پرداخت ندارند.', steps:['لینک محصول را ثبت می‌کنید','هزینه تقریبی پس از بررسی اعلام می‌شود','هزینه ریالی پرداخت می‌کنید','سفارش خریداری و طبق توافق تحویل می‌شود'], req:['لینک دقیق محصول','مشخصات (سایز، رنگ، تعداد)','راه ارتباطی'] },
-  { id:'shop-store', cat:'shopping', icon:'box', title:'خرید از فروشگاه‌های UK / UAE / ترکیه / آمریکا', desc:'خرید از فروشگاه‌های کشورهای مختلف و مارکت‌پلیس‌های جهانی با بررسی کامل قبل از پرداخت.', who:'خریداران از برندها و فروشگاه‌های مشخص خارجی.', steps:['فروشگاه و محصولات را اعلام می‌کنید','لیست و هزینه پس از بررسی اعلام می‌شود','پرداخت ریالی انجام می‌دهید','سفارش‌ها خریداری و ارسال می‌شوند'], req:['نام فروشگاه یا کشور','لیست محصولات','راه ارتباطی'] },
-  { id:'income-freelance', cat:'income', icon:'coins', title:'نقد کردن درآمد فریلنسری', desc:'دریافت درآمد از پلتفرم‌های خارجی (Upwork، Fiverr و...) و تسویه ریالی پس از بررسی.', who:'فریلنسرها، تولیدکنندگان محتوا و متخصصانی که از پلتفرم‌های خارجی درآمد دارند.', steps:['جزئیات درآمد و پلتفرم را ثبت می‌کنید','شرایط بررسی و نرخ اعلام می‌شود','پس از تأیید، فرآیند تسویه انجام می‌شود','مبلغ ریالی به حساب شما واریز می‌شود'], req:['نام پلتفرم مبدا','مبلغ و نوع درآمد','اطلاعات حساب بانکی'] },
-  { id:'income-biz', cat:'income', icon:'chart', title:'تسویه درآمد کسب‌وکارهای آنلاین', desc:'تسویه منظم درآمد فروشگاه‌ها، سرویس‌های اینترنتی و کسب‌وکارهای آنلاین از پلتفرم‌های خارجی.', who:'صاحبان کسب‌وکارهای آنلاین با درآمد ارزی مستمر.', steps:['شرایط کسب‌وکار بررسی می‌شود','فرآیند و نرخ اعلام می‌شود','تسویه‌ها طبق توافق انجام می‌شود','گزارش هر تسویه ارائه می‌شود'], req:['معرفی کسب‌وکار','حجم و دوره تسویه','اطلاعات حساب بانکی'] },
-  { id:'exam-reg', cat:'exams', icon:'doc', title:'ثبت‌نام آزمون‌های بین‌المللی', desc:'ثبت‌نام و پرداخت هزینه آزمون‌های IELTS، TOEFL، Duolingo، PTE، PMP، AWS و سایر آزمون‌های جهانی.', who:'متقاضیان مهاجرت، تحصیل و اشتغال بین‌المللی.', steps:['نوع آزمون و مرکز را ثبت می‌کنید','اطلاعات بررسی و تأیید می‌شود','هزینه ریالی پرداخت می‌شود','ثبت‌نام انجام و تأییدیه ارائه می‌شود'], req:['نوع آزمون','کشور و مرکز آزمون','اطلاعات پاسخ‌دهی'] },
-  { id:'hw-wallet', cat:'crypto', icon:'box', title:'کیف پول سخت‌افزاری', desc:'معرفی و تأمین کیف پول‌های سخت‌افزاری متناسب با نیاز شما، همراه با راهنمای راه‌اندازی اولیه.', who:'دارندگان دارایی دیجیتال که امنیت نگهداری برایشان اولویت است.', steps:['نیاز و بودجه شما بررسی می‌شود','مدل‌های مناسب معرفی می‌شود','موجودی و قیمت اعلام می‌شود','دستگاه طبق توافق تحویل می‌شود'], req:['حجم تقریبی دارایی','نوع کاربردها','راه ارتباطی'] },
-  { id:'hw-edu', cat:'crypto', icon:'shield', title:'آموزش نگهداری امن دارایی', desc:'آموزش اصول نگهداری امن دارایی دیجیتال و کیف پول سخت‌افزاری؛ بدون هیچ توصیه سرمایه‌گذاری.', who:'کاربران جدید حوزه رمزارز و دارندگان کیف پول.', steps:['سطح و نیاز آموزشی شما بررسی می‌شود','محتوای آموزشی مناسب ارائه می‌شود','سؤالات شما پاسخ داده می‌شود','چک‌لیست امنیتی تحویل می‌شود'], req:['موضوع موردنظر','سطح آشنایی','راه ارتباطی'] },
-  { id:'biz-corp', cat:'business', icon:'briefcase', title:'خدمات پرداخت شرکت‌ها', desc:'پرداخت هزینه‌های عملیاتی شرکت‌ها شامل SaaS، توزیع‌کنندگان و خدمات بین‌المللی.', who:'شرکت‌ها و تیم‌هایی که پرداخت‌های ارزی منظم دارند.', steps:['نیازهای شرکت بررسی می‌شود','فرآیند و شرایط اعلام می‌شود','قرارداد و توافق انجام می‌شود','پرداخت‌ها طبق برنامه انجام می‌شود'], req:['معرفی شرکت','نوع و حجم پرداخت‌ها','راه ارتباطی'] },
-  { id:'biz-student', cat:'business', icon:'cap', title:'پکیج خدمات دانشجویان و مهاجرت', desc:'مجموعه پرداخت‌های تحصیلی، آزمون و ویزا در یک مسیر یکپارچه برای متقاضیان مهاجرت.', who:'دانشجویان و متقاضیان مهاجرت با نیازهای پرداخت متعدد.', steps:['نیازهای شما به‌صورت لیست ثبت می‌شود','برنامه پرداخت پیشنهاد می‌شود','هر مورد طبق فرآیند انجام می‌شود','گزارش پیشرفت ارائه می‌شود'], req:['لیست نیازها','زمان‌بندی موردنظر','راه ارتباطی'] }
-];
-const getService = id => SERVICES.find(s => s.id === id);
-const FEATURED = ['pay-web','pp-person','gift-cards','card-visa','ai-chatgpt','shop-link','income-freelance','exam-reg'];
+const renderHeroCard = () => {
+  const ul = $('#heroCardList'); if (!ul) return;
+  ul.innerHTML = D().heroList.map(x => `<li><button data-service="${x.svc}"><svg class="ic" viewBox="0 0 24 24"><use href="#i-${x.icon}"/></svg>${escapeHtml(x.t)}<svg class="ic go" viewBox="0 0 24 24"><use href="#i-arrow"/></svg></button></li>`).join('');
+};
 
-/* ── render: quick services ── */
 const renderQuick = () => {
   const grid = $('#quickGrid'); if (!grid) return;
-  grid.innerHTML = FEATURED.map(id => {
+  grid.innerHTML = ['pay-web','pp-person','gift-cards','card-visa','ai-chatgpt','shop-link','income-freelance','exam-reg'].map(id => {
     const s = getService(id); if (!s) return '';
-    return `<button class="qs" role="listitem" data-service="${s.id}" aria-label="${s.title}">
+    return `<button class="qs" role="listitem" data-service="${s.id}" aria-label="${escapeHtml(s.title)}">
       <span class="card-ic"><svg class="ic" viewBox="0 0 24 24"><use href="#i-${s.icon}"/></svg></span>
-      <h3>${s.title}</h3><p>${s.desc.split('؛')[0].split('.')[0]}.</p>
+      <h3>${escapeHtml(s.title)}</h3><p>${escapeHtml(s.desc.split('؛')[0].split('.')[0])}.</p>
       <span class="go"><svg class="ic" viewBox="0 0 24 24"><use href="#i-arrow"/></svg></span>
     </button>`;
   }).join('');
 };
 
-/* ── render: explorer tabs + panels ── */
-let activeCat = CATS[0].id;
+let activeCat = 'payments';
 const renderExplorer = () => {
   const tabs = $('#explorerTabs'), panels = $('#explorerPanels');
   if (!tabs || !panels) return;
-  tabs.innerHTML = CATS.map((c, i) =>
-    `<button class="tab" role="tab" id="tab-${c.id}" aria-selected="${i === 0}" aria-controls="panel-${c.id}" data-cat="${c.id}">${c.label}</button>`
+  tabs.innerHTML = D().cats.map(c =>
+    `<button class="tab" role="tab" id="tab-${c.id}" aria-selected="${c.id === activeCat}" aria-controls="panel-${c.id}" data-cat="${c.id}">${escapeHtml(c.label)}</button>`
   ).join('');
-  panels.innerHTML = CATS.map(c => {
-    const items = SERVICES.filter(s => s.cat === c.id);
+  panels.innerHTML = D().cats.map(c => {
+    const items = D().services.filter(s => s.cat === c.id);
     return `<div class="panel${c.id === activeCat ? ' active' : ''}" role="tabpanel" id="panel-${c.id}" aria-labelledby="tab-${c.id}" data-cat="${c.id}">
-      ${items.map(s => `<article class="card" data-service="${s.id}" role="button" tabindex="0" aria-label="${s.title}">
+      ${items.map(s => `<article class="card" data-service="${s.id}" role="button" tabindex="0" aria-label="${escapeHtml(s.title)}">
         <span class="card-ic"><svg class="ic" viewBox="0 0 24 24"><use href="#i-${s.icon}"/></svg></span>
-        <h3>${s.title}</h3><p>${s.desc}</p><span class="chip">جزئیات خدمت</span>
+        <h3>${escapeHtml(s.title)}</h3><p>${escapeHtml(s.desc)}</p><span class="chip">${t('chip.detail')}</span>
         <span class="card-go"><svg class="ic" viewBox="0 0 24 24"><use href="#i-arrow"/></svg></span>
       </article>`).join('')}
     </div>`;
@@ -113,7 +95,7 @@ const renderExplorer = () => {
   tabs.addEventListener('keydown', e => {
     if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
     const list = $$('.tab', tabs);
-    const i = list.findIndex(t => t.getAttribute('aria-selected') === 'true');
+    const i = list.findIndex(x => x.getAttribute('aria-selected') === 'true');
     const nx = e.key === 'ArrowLeft' ? (i + 1) % list.length : (i - 1 + list.length) % list.length;
     list[nx].focus(); switchCat(list[nx].dataset.cat);
   });
@@ -126,25 +108,143 @@ const setPanelHeight = () => {
 const switchCat = id => {
   const panels = $('#explorerPanels'); if (!panels || id === activeCat) return;
   const tabs = $('#explorerTabs');
-  const oldIdx = CATS.findIndex(c => c.id === activeCat);
-  const newIdx = CATS.findIndex(c => c.id === id);
+  const oldIdx = D().cats.findIndex(c => c.id === activeCat);
+  const newIdx = D().cats.findIndex(c => c.id === id);
   panels.classList.toggle('rev', newIdx < oldIdx);
   const oldP = $('.panel.active', panels);
   const newP = $(`.panel[data-cat="${id}"]`, panels);
   if (oldP) oldP.classList.remove('active');
   if (newP) newP.classList.add('active');
-  $$('.tab', tabs).forEach(t => t.setAttribute('aria-selected', String(t.dataset.cat === id)));
+  $$('.tab', tabs).forEach(x => x.setAttribute('aria-selected', String(x.dataset.cat === id)));
   activeCat = id;
   setPanelHeight();
 };
 
-/* ── render: contact select ── */
 const renderSelect = () => {
   const sel = $('#contactForm select[name="service"]'); if (!sel) return;
-  sel.innerHTML = '<option value="" selected disabled>انتخاب کنید…</option>' +
-    CATS.map(c => `<optgroup label="${c.label}">` +
-      SERVICES.filter(s => s.cat === c.id).map(s => `<option value="${s.id}">${s.title}</option>`).join('') +
+  const cur = sel.value;
+  sel.innerHTML = `<option value="" selected disabled>${t('cm.select')}</option>` +
+    D().cats.map(c => `<optgroup label="${escapeHtml(c.label)}">` +
+      D().services.filter(s => s.cat === c.id).map(s => `<option value="${s.id}">${escapeHtml(s.title)}</option>`).join('') +
     '</optgroup>').join('');
+  if (cur) sel.value = cur;
+};
+
+const renderPay = () => {
+  const g = $('#payGrid'); if (!g) return;
+  g.innerHTML = D().payCards.map(c => `<a class="card pay-card" href="#services" data-service="${c.svc}"><span class="card-ic"><svg class="ic" viewBox="0 0 24 24"><use href="#i-${c.icon}"/></svg></span><h3>${escapeHtml(c.t)}</h3><p>${escapeHtml(c.d)}</p><span class="card-go"><svg class="ic" viewBox="0 0 24 24"><use href="#i-arrow"/></svg></span></a>`).join('');
+};
+
+const renderAI = () => {
+  const g = $('#aiGrid'); if (!g) return;
+  g.innerHTML = D().aiCards.map((c, i) => {
+    const mark = c.logo === 'star-w'
+      ? `<svg class="ic" style="width:26px;height:26px" viewBox="0 0 24 24"><use href="#i-star"/></svg>`
+      : `<img src="assets/logos/${c.logo}.svg" alt="" width="30" height="30">`;
+    return `<article class="card ai-card${c.big ? ' big' : ''}" data-reveal data-reveal-delay="${i * 80}" data-service="${c.svc}" role="button" tabindex="0">
+      <div class="ai-mark" aria-hidden="true">${mark}</div>
+      <div class="ai-body"><h3>${escapeHtml(c.t)}</h3><p>${escapeHtml(c.d)}</p><span class="chip">${t('chip.buy')}</span></div>
+    </article>`;
+  }).join('');
+};
+
+const renderGifts = () => {
+  const g = $('#giftTrack'); if (!g) return;
+  g.innerHTML = D().gifts.map((x, i) => {
+    const cls = ({'Apple':'gc-apple','Steam':'gc-steam','PlayStation':'gc-ps','Xbox':'gc-xbox','Amazon':'gc-amazon','PUBG':'gc-pubg','Free Fire':'gc-ff','Netflix':'gc-netflix','Google Play':'gc-gplay'}[x.t]) || 'gc-steam';
+    return `<li class="gift ${cls}" data-gift="gift-${x.t.toLowerCase().replace(/\s+/g,'-')}" data-gift-label="${escapeHtml(x.t)}" role="button" tabindex="0" aria-label="${t('gift.add')} — ${escapeHtml(x.t)}" style="animation-delay:${i * 40}ms">
+      <span class="gift-logo" aria-hidden="true"><img src="assets/logos/${x.logo}.svg" alt="" width="52" height="52" loading="lazy"></span>
+      <h3>${escapeHtml(x.t)}</h3><p>${escapeHtml(x.d)}</p>
+      <span class="chip chip-dark gift-add"><svg class="ic" viewBox="0 0 24 24"><use href="#i-plus"/></svg>${t('gift.add')}</span>
+    </li>`;
+  }).join('');
+};
+
+const renderBanks = () => {
+  const g = $('#bankGrid'); if (!g) return;
+  g.innerHTML = D().bankCards.map((b, i) => `<div class="tilt-wrap" data-reveal data-reveal-delay="${i * 90}"><div class="bank tilt gc-${i === 0 ? 'visa' : i === 1 ? 'mc' : i === 2 ? 'phys' : 'travel'}" data-tilt><div class="bank-top"><span class="bank-chip" aria-hidden="true"></span><img class="bank-logo" src="assets/logos/${b.net}-w.svg" alt="${b.net === 'visa' ? 'Visa' : 'Mastercard'}"></div><div class="bank-num" dir="ltr">•••• •••• •••• ••••</div><div class="bank-foot"><span>STAR SHOP</span><span class="bank-wave" aria-hidden="true">)))</span></div><p class="bank-cap">${escapeHtml(b.cap)}</p></div></div>`).join('');
+  initTilt();
+};
+
+const renderPP = () => {
+  const g = $('#ppGrid'), pr = $('#ppProcess');
+  if (g) g.innerHTML = D().ppCards.map((c, i) => `<article class="card pp-card" data-reveal data-reveal-delay="${i * 90}" data-service="${c.svc}" role="button" tabindex="0"><span class="pp-logo"><img src="assets/logos/paypal-brand.svg" alt="PayPal" width="72" height="72" loading="lazy"></span><h3>${escapeHtml(c.t)}</h3><p>${escapeHtml(c.d)}</p><span class="chip">${t('chip.detail')}</span></article>`).join('');
+  if (pr) pr.innerHTML = D().process.map((p, i) => `<li><span class="p-num">${localDig(i + 1)}</span><h4>${escapeHtml(p.t)}</h4><p>${escapeHtml(p.d)}</p></li>`).join('');
+};
+
+const renderShop = () => {
+  const dr = $('#destRow'), ss = $('#shopSteps');
+  if (dr) dr.innerHTML = D().dests.map(d => `<span class="dest"><b>${d.c}</b> ${escapeHtml(d.t)}</span>`).join('');
+  if (ss) ss.innerHTML = D().shopSteps.map((p, i) => `<li><span class="p-num">${localDig(i + 1)}</span><h4>${escapeHtml(p.t)}</h4><p>${escapeHtml(p.d)}</p></li>`).join('');
+};
+
+const renderIncome = () => {
+  const f = $('#incFlow'), side = $('#incSide');
+  if (f) f.innerHTML = D().incomeFlow.map((n, i) => `${i > 0 ? '<span class="flow-link" aria-hidden="true"><i></i></span>' : ''}<div class="flow-node${n.done ? ' done' : ''}"><svg class="ic" viewBox="0 0 24 24"><use href="#i-${n.icon}"/></svg><div><b>${escapeHtml(n.t)}</b><span>${escapeHtml(n.d)}</span></div></div>`).join('');
+  if (side) side.innerHTML = D().incomeCards.map((c, i) => `<article class="card" data-reveal data-reveal-delay="${i * 90}" data-service="${c.svc}" role="button" tabindex="0"><h3>${escapeHtml(c.t)}</h3><p>${escapeHtml(c.d)}</p><span class="chip">${t('chip.detail')}</span></article>`).join('');
+};
+
+const renderExams = () => {
+  const g = $('#examGrid'); if (!g) return;
+  g.innerHTML = D().exams.map((x, i) => `<article class="card exam" data-reveal data-reveal-delay="${i * 70}" data-service="${x.svc}" role="button" tabindex="0"><b class="exam-abbr">${x.a}</b><p>${escapeHtml(x.p)}</p><span class="chip">${t('exam.chip')}</span></article>`).join('');
+};
+
+const renderHW = () => {
+  const g = $('#hwGrid'), ul = $('#hwEduList');
+  if (g) g.innerHTML = D().hwCards.map((c, i) => `<article class="card hw" data-reveal data-reveal-delay="${i * 90}"><span class="card-ic"><svg class="ic" viewBox="0 0 24 24"><use href="#i-${c.icon}"/></svg></span><h3>${escapeHtml(c.t)}</h3><p>${escapeHtml(c.d)}</p></article>`).join('');
+  if (ul) ul.innerHTML = D().hwEdu.map(x => `<li><svg class="ic" viewBox="0 0 24 24"><use href="#i-check"/></svg> ${escapeHtml(x)}</li>`).join('');
+};
+
+const renderHow = () => {
+  const g = $('#howSteps'); if (!g) return;
+  g.innerHTML = D().howSteps.map((s, i) => `<div class="how-step${i === 0 ? ' is-active' : ''}"><b>${localDig(i + 1).padStart(2, '0')}</b><h3>${escapeHtml(s.t)}</h3><p>${escapeHtml(s.d)}</p></div>`).join('');
+};
+
+const renderWhy = () => {
+  const g = $('#whyGrid'); if (!g) return;
+  g.innerHTML = D().whyCards.map((c, i) => `<article class="card why" data-reveal data-reveal-delay="${i * 70}"><span class="card-ic"><svg class="ic" viewBox="0 0 24 24"><use href="#i-${c.icon}"/></svg></span><h3>${escapeHtml(c.t)}</h3><p>${escapeHtml(c.d)}</p></article>`).join('');
+};
+
+const renderStats = () => {
+  const g = $('#statsGrid'); if (!g) return;
+  g.innerHTML = D().stats.map((s, i) => `<div class="stat" data-reveal data-reveal-delay="${i * 80}"><b class="stat-num" data-count="${s.n}" data-suffix="${s.suf}">${localDig(0)}</b><span>${t(s.t.replace('__', ''))}</span></div>`).join('');
+  initStats();
+};
+
+const renderTestimonials = () => {
+  const tr = $('#testTrack'); if (!tr) return;
+  tr.innerHTML = D().testimonials.map(x => `<li class="tst"><span class="chip chip-edit">${t('test.editable')}</span><h3>${escapeHtml(x.t)}</h3><blockquote>${escapeHtml(x.q)}</blockquote></li>`).join('');
+};
+
+const magCls = { a1:'mc-1', a2:'mc-2', a3:'mc-3', a4:'mc-4', a5:'mc-5', a6:'mc-6' };
+const renderMag = () => {
+  const g = $('#magGrid'); if (!g) return;
+  g.innerHTML = D().articles.map((a, i) => `<article class="mag" data-reveal data-reveal-delay="${i * 70}" data-article="${a.id}" role="button" tabindex="0" aria-label="${escapeHtml(a.title)}">
+    <div class="mag-cover ${magCls[a.id] || 'mc-1'}" aria-hidden="true"><span>${escapeHtml(a.tag)}</span></div>
+    <div class="mag-body"><div class="mag-meta"><span class="chip">${escapeHtml(a.tag)}</span><span class="mag-read">${localDig(a.read)} ${t('mag.read')}</span></div><h3>${escapeHtml(a.title)}</h3><p>${escapeHtml(a.excerpt)}</p></div>
+  </article>`).join('');
+};
+
+const renderFAQ = () => {
+  const g = $('#faqList'); if (!g) return;
+  g.innerHTML = D().faq.map((f, i) => `<div class="faq-item"><h3><button class="faq-q" aria-expanded="false" aria-controls="fa${i}">${escapeHtml(f.q)}<svg class="ic" viewBox="0 0 24 24"><use href="#i-chev"/></svg></button></h3><div class="faq-a" id="fa${i}" role="region"><div><p>${escapeHtml(f.a)}</p></div></div></div>`).join('');
+  const items = $$('.faq-item', g);
+  items.forEach(item => {
+    const q = $('.faq-q', item);
+    q.addEventListener('click', () => {
+      const open = item.classList.contains('open');
+      items.forEach(x => { x.classList.remove('open'); $('.faq-q', x).setAttribute('aria-expanded', 'false'); });
+      if (!open) { item.classList.add('open'); q.setAttribute('aria-expanded', 'true'); }
+    });
+  });
+};
+
+const renderAll = () => {
+  renderHeroCard(); renderQuick(); renderExplorer(); renderSelect();
+  renderPay(); renderAI(); renderGifts(); renderBanks(); renderPP();
+  renderShop(); renderIncome(); renderExams(); renderHW(); renderHow();
+  renderWhy(); renderStats(); renderTestimonials(); renderMag(); renderFAQ();
+  setPanelHeight();
 };
 
 /* ── loader ── */
@@ -155,7 +255,7 @@ const runLoader = () => new Promise(res => {
   const fill = $('#loadFill'), num = $('#loadNum');
   const DUR = sessionStorage.getItem('ss-loaded') ? 450 : 1400;
   const t0 = performance.now();
-  const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  const ease = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
   const tick = now => {
     const p = clamp((now - t0) / DUR, 0, 1);
     const v = ease(p);
@@ -172,21 +272,22 @@ const runLoader = () => new Promise(res => {
   requestAnimationFrame(tick);
 });
 
-/* ── hero words ── */
+/* ── hero words (rebuild from i18n key) ── */
 const splitWords = () => {
   const h = $('#heroTitle'); if (!h) return;
-  const nodes = Array.from(h.childNodes); h.innerHTML = '';
+  const raw = (window.SSI18N ? window.SSI18N.t('hero.title') : t('hero.title'));
+  const parts = String(raw).split('|');
+  h.innerHTML = '';
   let i = 0;
-  nodes.forEach(n => {
-    if (n.nodeType === 3) {
-      n.textContent.split(/\s+/).filter(Boolean).forEach(w => {
-        const w1 = document.createElement('span'); w1.className = 'h-word';
-        const w2 = document.createElement('span');
-        w2.textContent = w;
-        w2.style.transitionDelay = (i++ * 90) + 'ms';
-        w1.appendChild(w2); h.appendChild(w1); h.appendChild(document.createTextNode(' '));
-      });
-    } else if (n.nodeName === 'BR') h.appendChild(n);
+  parts.forEach((part, pi) => {
+    if (pi > 0) h.appendChild(document.createElement('br'));
+    part.split(/\s+/).filter(Boolean).forEach(w => {
+      const w1 = document.createElement('span'); w1.className = 'h-word';
+      const w2 = document.createElement('span');
+      w2.textContent = w;
+      w2.style.transitionDelay = (i++ * 90) + 'ms';
+      w1.appendChild(w2); h.appendChild(w1); h.appendChild(document.createTextNode(' '));
+    });
   });
 };
 
@@ -196,7 +297,7 @@ const initScroll = () => {
   if (!reduced && typeof Lenis !== 'undefined') {
     try { lenis = new Lenis({ duration: 1.15, smoothWheel: true }); } catch (e) { lenis = null; }
   }
-  const raf = t => { if (lenis) lenis.raf(t); requestAnimationFrame(raf); };
+  const raf = x => { if (lenis) lenis.raf(x); requestAnimationFrame(raf); };
   if (lenis) requestAnimationFrame(raf);
 };
 const scrollToEl = el => {
@@ -231,7 +332,7 @@ const initTheme = () => {
 
 /* ── progress ── */
 const initProgress = () => {
-  const rail = $('#progressBar'), top = $('#progressTop');
+  const rail = $('#progressBar'), top = $('#progressBarTop');
   let raf = null;
   const upd = () => {
     raf = null;
@@ -259,7 +360,7 @@ const initCursor = () => {
     requestAnimationFrame(loop);
   };
   requestAnimationFrame(loop);
-  const HOV = 'a,button,input,textarea,select,[role="button"],[data-service],.faq-q,.tab';
+  const HOV = 'a,button,input,textarea,select,[role="button"],[data-service],.faq-q,.tab,.gift';
   document.addEventListener('pointerover', e => { if (e.target.closest(HOV)) cur.classList.add('hover'); });
   document.addEventListener('pointerout',  e => { if (e.target.closest(HOV)) cur.classList.remove('hover'); });
   document.documentElement.addEventListener('mouseleave', () => cur.classList.remove('on'));
@@ -281,25 +382,29 @@ const initMagnetic = () => {
 };
 
 /* ── reveals ── */
+let revealIO = null;
 const initReveals = () => {
-  const els = $$('[data-reveal]');
+  const els = $$('[data-reveal]').filter(el => !el.classList.contains('in'));
   if (reduced) { els.forEach(el => el.classList.add('in')); return; }
-  const io = new IntersectionObserver(ents => {
+  if (revealIO) revealIO.disconnect();
+  revealIO = new IntersectionObserver(ents => {
     ents.forEach(en => {
       if (!en.isIntersecting) return;
       const d = en.target.dataset.revealDelay;
       if (d) en.target.style.setProperty('--rd', d + 'ms');
       en.target.classList.add('in');
-      io.unobserve(en.target);
+      revealIO.unobserve(en.target);
     });
-  }, { threshold: .16, rootMargin: '0px 0px -6% 0px' });
-  els.forEach(el => io.observe(el));
+  }, { threshold: .12, rootMargin: '0px 0px -6% 0px' });
+  els.forEach(el => revealIO.observe(el));
 };
 
 /* ── tilt cards ── */
 const initTilt = () => {
   if (touch || reduced) return;
   $$('[data-tilt]').forEach(el => {
+    if (el.dataset.tiltBound) return;
+    el.dataset.tiltBound = '1';
     el.addEventListener('pointermove', e => {
       const r = el.getBoundingClientRect();
       const px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
@@ -333,7 +438,6 @@ const initCarousel = (track, prevBtn, nextBtn, autoMs) => {
   };
   if (nextBtn) nextBtn.addEventListener('click', () => go(1));
   if (prevBtn) prevBtn.addEventListener('click', () => go(-1));
-  /* drag */
   let down = false, sx = 0, ss = 0, moved = 0;
   track.addEventListener('pointerdown', e => {
     if (e.pointerType === 'mouse') { down = true; sx = e.clientX; ss = track.scrollLeft; moved = 0; track.classList.add('dragging'); track.setPointerCapture(e.pointerId); }
@@ -347,12 +451,13 @@ const initCarousel = (track, prevBtn, nextBtn, autoMs) => {
   track.addEventListener('pointerup', up);
   track.addEventListener('pointercancel', up);
   track.addEventListener('click', e => { if (moved > 8) { e.preventDefault(); e.stopPropagation(); } }, true);
-  /* keyboard */
   track.addEventListener('keydown', e => {
     if (e.key === 'ArrowLeft') { e.preventDefault(); go(1); }
     if (e.key === 'ArrowRight') { e.preventDefault(); go(-1); }
   });
-  /* auto */
+  track.addEventListener('keydown', e => {
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('.gift')) { e.preventDefault(); e.target.click(); }
+  });
   if (autoMs && !reduced) {
     let timer = null, hover = false, visible = true;
     const start = () => { if (!timer && !hover && visible && !document.hidden) timer = setInterval(() => {
@@ -462,26 +567,53 @@ const openService = id => {
   const s = getService(id), box = $('#serviceModalBody');
   if (!s || !box) return;
   box.innerHTML = `
-    <button class="modal-close" data-close-modal aria-label="بستن"><svg class="ic" viewBox="0 0 24 24"><use href="#i-close"/></svg></button>
+    <button class="modal-close" data-close-modal aria-label="${t('cart.close')}"><svg class="ic" viewBox="0 0 24 24"><use href="#i-close"/></svg></button>
     <div class="sm-head">
       <span class="card-ic"><svg class="ic" viewBox="0 0 24 24"><use href="#i-${s.icon}"/></svg></span>
-      <div><span class="sm-cat">${catLabel(s.cat)}</span><h3 id="smTitle" style="margin:2px 0 0">${s.title}</h3></div>
+      <div><span class="sm-cat">${escapeHtml(catLabel(s.cat))}</span><h3 id="smTitle" style="margin:2px 0 0">${escapeHtml(s.title)}</h3></div>
     </div>
-    <p class="sm-desc">${s.desc}</p>
+    <p class="sm-desc">${escapeHtml(s.desc)}</p>
     <div class="sm-meta">
-      <span class="chip"><svg class="ic" style="width:13px;height:13px" viewBox="0 0 24 24"><use href="#i-clock"/></svg> زمان: پس از بررسی سفارش</span>
-      <span class="chip"><svg class="ic" style="width:13px;height:13px" viewBox="0 0 24 24"><use href="#i-coins"/></svg> هزینه: استعلام قیمت</span>
+      <span class="chip"><svg class="ic" style="width:13px;height:13px" viewBox="0 0 24 24"><use href="#i-clock"/></svg> ${t('sm.time')}</span>
+      <span class="chip"><svg class="ic" style="width:13px;height:13px" viewBox="0 0 24 24"><use href="#i-coins"/></svg> ${t('sm.cost')}</span>
     </div>
-    <div class="sm-block"><h4>چه کسانی به این خدمت نیاز دارند؟</h4><p class="sm-desc" style="margin:0">${s.who}</p></div>
-    <div class="sm-block"><h4>مراحل انجام</h4><ol>${s.steps.map(x => `<li>${x}</li>`).join('')}</ol></div>
-    <div class="sm-block"><h4>مدارک / اطلاعات موردنیاز</h4><ul>${s.req.map(x => `<li>${x}</li>`).join('')}</ul></div>
+    <div class="sm-block"><h4>${t('sm.who')}</h4><p class="sm-desc" style="margin:0">${escapeHtml(s.who)}</p></div>
+    <div class="sm-block"><h4>${t('sm.steps')}</h4><ol>${s.steps.map(x => `<li>${escapeHtml(x)}</li>`).join('')}</ol></div>
+    <div class="sm-block"><h4>${t('sm.req')}</h4><ul>${s.req.map(x => `<li>${escapeHtml(x)}</li>`).join('')}</ul></div>
     <div class="sm-cta">
-      <button class="btn btn-primary btn-lg" data-open-contact data-prefill="${s.id}">ثبت سفارش این خدمت<svg class="ic arr" viewBox="0 0 24 24"><use href="#i-arrow"/></svg></button>
+      <button class="btn btn-ghost btn-lg" data-add-cart data-id="${s.id}" data-title="${escapeHtml(s.title)}"><svg class="ic" viewBox="0 0 24 24"><use href="#i-cart"/></svg>${t('sm.addcart')}</button>
+      <button class="btn btn-primary btn-lg" data-open-contact data-prefill="${s.id}">${t('sm.order')}<svg class="ic arr" viewBox="0 0 24 24"><use href="#i-arrow"/></svg></button>
     </div>`;
   openModal($('#serviceModal'));
 };
 
+/* ── article modal ── */
+const openArticle = id => {
+  const a = D().articles.find(x => x.id === id); if (!a) return;
+  $('#artTag').textContent = a.tag;
+  $('#artTitle').textContent = a.title;
+  $('#artRead').textContent = `${localDig(a.read)} ${t('mag.read')}`;
+  $('#artBody').innerHTML = a.body.map(p => `<p>${escapeHtml(p)}</p>`).join('');
+  openModal($('#articleModal'));
+};
+const openMagAll = () => {
+  $('#artTag').textContent = t('mag.eyebrow');
+  $('#artTitle').textContent = t('mag.title1') + ' ' + t('mag.title2');
+  $('#artRead').textContent = '';
+  $('#artBody').innerHTML = D().articles.map(a => `<button class="art-item" data-article="${a.id}"><span class="chip">${escapeHtml(a.tag)}</span><b>${escapeHtml(a.title)}</b><small>${escapeHtml(a.excerpt)}</small></button>`).join('');
+  openModal($('#articleModal'));
+};
+
+/* ── legal modal ── */
+const openLegal = which => {
+  const L = D().legal[which]; if (!L) return;
+  $('#legalTitle').textContent = L.title;
+  $('#legalBody').innerHTML = L.body.map(p => `<p>${escapeHtml(p)}</p>`).join('');
+  openModal($('#legalModal'));
+};
+
 /* ── contact modal ── */
+let lastOrderText = '';
 const openContact = prefillId => {
   const m = $('#contactModal'); if (!m) return;
   const open = anyOpenModal(); if (open) closeModal(open);
@@ -492,7 +624,7 @@ const openContact = prefillId => {
     if (sel) sel.value = prefillId;
     const msg = $('#contactForm textarea[name="message"]');
     const s = getService(prefillId);
-    if (msg && s && !msg.value) msg.value = `درخواست خدمت: ${s.title}`;
+    if (msg && s && !msg.value) msg.value = `${t('sm.order')}: ${s.title}`;
   }
   setTimeout(() => openModal(m), open ? 200 : 0);
 };
@@ -501,6 +633,7 @@ const openContact = prefillId => {
 const openSearch = () => {
   const m = $('#searchOverlay'), inp = $('#searchInput');
   if (!m) return;
+  const open = anyOpenModal(); if (open) closeModal(open);
   m.hidden = false;
   requestAnimationFrame(() => requestAnimationFrame(() => m.classList.add('show')));
   document.body.style.overflow = 'hidden';
@@ -518,31 +651,23 @@ const closeSearch = () => {
 const renderResults = q => {
   const box = $('#searchResults'); if (!box) return;
   const nq = normTxt(q);
-  const arts = [
-    { t: 'راهنمای افتتاح حساب PayPal', c: 'PayPal' },
-    { t: 'کارت مجازی یا فیزیکی؟', c: 'کارت‌ها' },
-    { t: 'پرداخت هزینه IELTS', c: 'آزمون‌ها' },
-    { t: 'کیف پول سخت‌افزاری چیست؟', c: 'رمزارز' },
-    { t: 'نقد کردن درآمد فریلنسری', c: 'درآمد ارزی' },
-    { t: 'خرید از آمازون از ایران', c: 'خرید خارجی' }
-  ];
-  let svc = SERVICES, list = arts;
+  let svc = D().services, arts = D().articles;
   if (nq) {
-    svc = SERVICES.filter(s => normTxt(s.title + ' ' + s.desc + ' ' + catLabel(s.cat)).includes(nq));
-    list = arts.filter(a => normTxt(a.t + ' ' + a.c).includes(nq));
+    svc = D().services.filter(s => normTxt(s.title + ' ' + s.desc + ' ' + catLabel(s.cat)).includes(nq));
+    arts = D().articles.filter(a => normTxt(a.title + ' ' + a.excerpt + ' ' + a.tag).includes(nq));
   }
-  if (!svc.length && !list.length) {
-    box.innerHTML = '<div class="no-res">نتیجه‌ای یافت نشد؛ عبارت دیگری را امتحان کنید.</div>';
+  if (!svc.length && !arts.length) {
+    box.innerHTML = `<div class="no-res">${t('search.empty')}</div>`;
     return;
   }
   box.innerHTML =
     svc.slice(0, 14).map((s, i) => `<button class="sr-item" role="option" data-service="${s.id}" style="animation-delay:${i * 30}ms">
       <span class="card-ic"><svg class="ic" viewBox="0 0 24 24"><use href="#i-${s.icon}"/></svg></span>
-      <span><b>${s.title}</b><small>${catLabel(s.cat)}</small></span>
+      <span><b>${escapeHtml(s.title)}</b><small>${escapeHtml(catLabel(s.cat))}</small></span>
       <svg class="ic" viewBox="0 0 24 24"><use href="#i-arrow"/></svg></button>`).join('') +
-    list.map(a => `<button class="sr-item" role="option" data-soon="این مقاله به‌زودی منتشر می‌شود">
+    arts.map(a => `<button class="sr-item" role="option" data-article="${a.id}">
       <span class="card-ic"><svg class="ic" viewBox="0 0 24 24"><use href="#i-doc"/></svg></span>
-      <span><b>${a.t}</b><small>مجله — ${a.c}</small></span>
+      <span><b>${escapeHtml(a.title)}</b><small>${t('search.mag')} — ${escapeHtml(a.tag)}</small></span>
       <svg class="ic" viewBox="0 0 24 24"><use href="#i-arrow"/></svg></button>`).join('');
 };
 const initSearch = () => {
@@ -556,8 +681,7 @@ const initSearch = () => {
   });
 };
 
-/* ── contact form ── */
-const faToEn = s => String(s || '').replace(/[\u06F0-\u06F9]/g, d => String(d.charCodeAt(0) - 0x06F0)).replace(/[\u0660-\u0669]/g, d => String(d.charCodeAt(0) - 0x0660)).replace(/\u200c/g, '');
+/* ── contact form → سفارش آماده ارسال ── */
 const initContactForm = () => {
   const form = $('#contactForm'); if (!form) return;
   const mark = (el, bad) => { const f = el.closest('.field'); if (f) f.classList.toggle('invalid', bad); return !bad; };
@@ -571,22 +695,50 @@ const initContactForm = () => {
     ok = mark(phone, !/^(\+98|0098|98|0)?9\d{9}$/.test(ph)) && ok;
     ok = mark(email, !!email.value && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.value.trim())) && ok;
     ok = mark(service, !service.value) && ok;
-    if (!ok) { toast('لطفاً موارد مشخص‌شده را اصلاح کنید.'); return; }
+    if (!ok) { toast(t('cm.err.fix')); return; }
     const sName = getService(service.value) ? getService(service.value).title : service.value;
-    const summary = `سفارش جدید — استار شاپ\nنام: ${name.value.trim()}\nتلفن: ${ph}\nایمیل: ${email.value.trim() || '—'}\nخدمت: ${sName}\nتوضیحات: ${msg.value.trim() || '—'}`;
+    const C = window.SS_CONFIG || {};
+    const locale = D().meta.numLocale;
+    lastOrderText = [
+      t('order.header'),
+      '— — — — —',
+      `${t('cm.name')}: ${name.value.trim()}`,
+      `${t('cm.phone')}: ${ph}`,
+      email.value.trim() ? `${t('cm.email')}: ${email.value.trim()}` : null,
+      `${t('cm.service')}: ${sName}`,
+      msg.value.trim() ? `${t('cm.msg')}: ${msg.value.trim()}` : null,
+      '— — — — —',
+      `${t('order.date')}: ${new Date().toLocaleString(locale)}`,
+      `${t('order.site')}: ${location.origin + location.pathname}`
+    ].filter(Boolean).join('\n');
+    try {
+      const orders = JSON.parse(localStorage.getItem('ss_orders') || '[]');
+      orders.push({ code: 'SS-FORM', channel: 'form', ts: Date.now(), items: [{ id: service.value, title: sName, qty: 1 }] });
+      localStorage.setItem('ss_orders', JSON.stringify(orders.slice(-30)));
+    } catch (err) {}
     const mail = $('#doneMail');
-    if (mail) mail.href = 'mailto:support@starshop.example?subject=' + encodeURIComponent('سفارش جدید — ' + sName) + '&body=' + encodeURIComponent(summary);
-    const copy = $('#doneCopy');
-    if (copy) copy.onclick = async () => {
-      try { await navigator.clipboard.writeText(summary); toast('اطلاعات سفارش کپی شد.'); }
-      catch (err) { toast('کپی خودکار ممکن نشد؛ متن را دستی کپی کنید.'); }
-    };
+    if (mail) mail.href = `mailto:${C.email || 'pingpixel92@gmail.com'}?subject=${encodeURIComponent(t('order.header') + ' — ' + sName)}&body=${encodeURIComponent(lastOrderText)}`;
     form.hidden = true;
     $('#formDone').hidden = false;
   });
   ['input', 'change'].forEach(ev => form.addEventListener(ev, e => {
     const f = e.target.closest('.field'); if (f) f.classList.remove('invalid');
   }));
+  const tg = $('#doneTg'), bl = $('#doneBale'), cp = $('#doneCopy');
+  if (tg) tg.addEventListener('click', () => {
+    const url = `${(window.SS_CONFIG || {}).telegram.url}?text=${encodeURIComponent(lastOrderText)}`;
+    window.open(url, '_blank', 'noopener,noreferrer') || (location.href = url);
+  });
+  if (bl) bl.addEventListener('click', async () => {
+    let copied = false;
+    try { await navigator.clipboard.writeText(lastOrderText); copied = true; } catch (e) {}
+    toast(copied ? t('cart.sent.bale') : t('toast.copyfail'));
+    window.open((window.SS_CONFIG || {}).bale.url, '_blank', 'noopener,noreferrer') || (location.href = (window.SS_CONFIG || {}).bale.url);
+  });
+  if (cp) cp.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(lastOrderText); toast(t('toast.copied')); }
+    catch (e) { toast(t('toast.copyfail')); }
+  });
 };
 
 /* ── calc form ── */
@@ -598,28 +750,31 @@ const initCalcForm = () => {
     let u = url.value.trim();
     let valid = false;
     try { const U = new URL(u); valid = U.protocol === 'http:' || U.protocol === 'https:'; } catch (err) { valid = false; }
-    if (!valid) { url.closest('.field').classList.add('invalid'); toast('لینک محصول معتبر وارد کنید (با https://).'); return; }
+    if (!valid) { url.closest('.field').classList.add('invalid'); toast(t('shop.calc.err')); return; }
     openContact('shop-link');
     const msg = $('#contactForm textarea[name="message"]');
-    if (msg) msg.value = 'لینک محصول: ' + u + (note.value.trim() ? '\nتوضیحات: ' + note.value.trim() : '');
+    if (msg) msg.value = `${t('shop.calc.url')}: ${u}` + (note.value.trim() ? `\n${t('cm.msg')}: ${note.value.trim()}` : '');
     form.reset();
   });
 };
 
 /* ── count-up stats ── */
 const initStats = () => {
-  const els = $$('.stat-num'); if (!els.length) return;
+  const els = $$('.stat-num').filter(el => !el.dataset.counted);
+  if (!els.length) return;
   const io = new IntersectionObserver(ents => {
     ents.forEach(en => {
       if (!en.isIntersecting) return;
       io.unobserve(en.target);
-      const el = en.target, target = +el.dataset.count, suf = el.dataset.suffix || '';
-      if (reduced) { el.textContent = faDig(target) + suf; return; }
+      const el = en.target;
+      el.dataset.counted = '1';
+      const target = +el.dataset.count, suf = el.dataset.suffix || '';
+      if (reduced) { el.textContent = localDig(target) + suf; return; }
       const t0 = performance.now(), DUR = 1500;
       const tick = now => {
         const p = clamp((now - t0) / DUR, 0, 1);
         const v = Math.round(target * (1 - Math.pow(1 - p, 3)));
-        el.textContent = faDig(v) + suf;
+        el.textContent = localDig(v) + suf;
         if (p < 1) requestAnimationFrame(tick);
       };
       requestAnimationFrame(tick);
@@ -628,86 +783,79 @@ const initStats = () => {
   els.forEach(el => io.observe(el));
 };
 
-/* ── i18n (structural) ── */
-const I18N = {
-  fa: { lang: 'فارسی', login: 'ورود / ثبت‌نام', cta: 'شروع سفارش', 'view-services': 'مشاهده خدمات' },
-  en: { lang: 'English', login: 'Login / Sign up', cta: 'Start an order', 'view-services': 'Explore services' },
-  ar: { lang: 'العربية', login: 'تسجيل الدخول', cta: 'ابدأ الطلب', 'view-services': 'استكشف الخدمات' }
-};
-const initLang = () => {
-  const btn = $('#langBtn'), menu = $('#langMenu');
-  if (!btn || !menu) return;
-  btn.addEventListener('click', e => {
-    e.stopPropagation();
-    const open = menu.hidden;
-    menu.hidden = !open;
-    btn.setAttribute('aria-expanded', String(open));
-  });
-  document.addEventListener('click', e => { if (!menu.hidden && !e.target.closest('#langWrap')) { menu.hidden = true; btn.setAttribute('aria-expanded', 'false'); } });
-  $$('button[data-lang]', menu).forEach(b => b.addEventListener('click', () => {
-    const lang = b.dataset.lang;
-    if (lang !== 'fa') { toast('نسخه ' + b.textContent.trim().replace('به‌زودی', '') + ' به‌زودی افزوده می‌شود.'); menu.hidden = true; return; }
-    const dict = I18N.fa;
-    $$('[data-i18n]').forEach(el => { const k = el.dataset.i18n; if (dict[k]) el.textContent = dict[k]; });
-    $$('#langMenu button').forEach(x => x.classList.toggle('active', x.dataset.lang === 'fa'));
-    menu.hidden = true;
-  }));
-};
-
 /* ── global delegation ── */
 const initDelegation = () => {
   document.addEventListener('click', e => {
-    const soon = e.target.closest('[data-soon]');
-    if (soon) { const t = $('#soonText'); if (t) t.textContent = soon.dataset.soon || 'به‌زودی'; openModal($('#soonModal')); return; }
+    const art = e.target.closest('[data-article]');
+    if (art) { openArticle(art.dataset.article); return; }
+    if (e.target.closest('[data-open-legal]')) { openLegal(e.target.closest('[data-open-legal]').dataset.openLegal); return; }
+    if (e.target.closest('[data-open-mag-all]')) { openMagAll(); return; }
     const svc = e.target.closest('[data-service]');
-    if (svc) { openService(svc.dataset.service); return; }
+    if (svc && !svc.closest('#payGrid')) { openService(svc.dataset.service); return; }
+    if (svc && svc.closest('#payGrid') && svc.classList.contains('card')) { openService(svc.dataset.service); return; }
     if (e.target.closest('[data-open-contact]')) {
       const pre = e.target.closest('[data-prefill]');
       openContact(pre ? pre.dataset.prefill : null);
       return;
     }
+    if (e.target.closest('[data-open-auth]')) {
+      const m = anyOpenModal(); if (m) closeModal(m);
+      if (window.SSAuth) window.SSAuth.open();
+      return;
+    }
+    if (e.target.closest('[data-open-cart]') || e.target.closest('#cartBtn')) {
+      const m = anyOpenModal(); if (m && m.id !== 'cartModal') closeModal(m);
+      openModal($('#cartModal'));
+      return;
+    }
     if (e.target.closest('[data-open-search]')) { openSearch(); return; }
+    if (e.target.closest('#loginBtn')) {
+      if (window.SSAuth) window.SSAuth.open();
+      return;
+    }
     const cm = e.target.closest('[data-close-modal]');
     if (cm) { closeModal(cm.closest('.modal')); return; }
-    if (e.target.closest('#loginBtn')) {
-      const t = $('#soonText');
-      if (t) t.textContent = 'پنل کاربری به‌زودی راه‌اندازی می‌شود؛ در حال حاضر سفارش‌ها از طریق «شروع سفارش» ثبت می‌شوند.';
-      openModal($('#soonModal'));
-    }
   });
   document.addEventListener('keydown', e => {
     if (e.key !== 'Enter' && e.key !== ' ') return;
     const el = document.activeElement;
-    if (el && el.matches('[data-service][role="button"]')) { e.preventDefault(); openService(el.dataset.service); }
+    if (!el) return;
+    if (el.matches('[data-service][role="button"]')) { e.preventDefault(); openService(el.dataset.service); }
+    if (el.matches('.gift[role="button"]')) { e.preventDefault(); el.click(); }
+    if (el.matches('[data-article][role="button"]')) { e.preventDefault(); openArticle(el.dataset.article); }
   });
 };
 
 /* ── boot ── */
 const boot = async () => {
-  renderQuick(); renderExplorer(); renderSelect();
+  renderAll();
   splitWords();
   initScroll(); initAnchors(); initTheme(); initProgress();
   initCursor(); initMagnetic(); initTilt();
   initMenu(); initSearch(); initContactForm(); initCalcForm();
-  initStats(); initLang(); initDelegation(); initProcess(); initHow();
+  initProcess(); initHow(); initStats(); initDelegation();
   initCarousel($('#giftTrack'), $('#giftPrev'), $('#giftNext'), 4200);
   initCarousel($('#testTrack'), $('#testPrev'), $('#testNext'), 5200);
-  const y = $('#year'); if (y) y.textContent = new Date().getFullYear().toLocaleString('fa-IR', { useGrouping: false });
+  /* expose UI bridge برای ماژول‌های دیگر */
+  window.SSUI = { openModal, closeModal, splitWords, setPanelHeight, toast, openService, openCart: () => openModal($('#cartModal')) };
+  if (window.SSAuth) window.SSAuth.setToast(toast);
+  if (window.SSCart) window.SSCart.setToast(toast);
+  if (window.SSCart) window.SSCart.renderBadge();
+  document.addEventListener('ss:lang', () => {
+    activeCat = activeCat || 'payments';
+    renderAll();
+    splitWords();
+    initProcess(); initHow(); initStats();
+    initReveals();
+    setPanelHeight();
+    if (window.SSCart) { window.SSCart.renderBadge(); window.SSCart.renderDrawer(); }
+  });
   await runLoader();
-  $('.hero').classList.add('play');
+  const hero = $('.hero'); if (hero) hero.classList.add('play');
   initReveals();
   setPanelHeight();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(setPanelHeight);
   addEventListener('resize', () => { setPanelHeight(); });
-  const faq = $$('.faq-item');
-  faq.forEach(item => {
-    const q = $('.faq-q', item);
-    q.addEventListener('click', () => {
-      const open = item.classList.contains('open');
-      faq.forEach(i => { i.classList.remove('open'); $('.faq-q', i).setAttribute('aria-expanded', 'false'); });
-      if (!open) { item.classList.add('open'); q.setAttribute('aria-expanded', 'true'); }
-    });
-  });
 };
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
 else boot();
