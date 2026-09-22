@@ -258,7 +258,10 @@ body[data-theme="dark"] .qs:hover .go{color:#04101f}
 .tab:hover{color:var(--ink)}
 .tab[aria-selected="true"]{background:var(--brand);color:#fff;box-shadow:0 10px 24px -10px rgba(21,87,214,.5)}
 body[data-theme="dark"] .tab[aria-selected="true"]{background:var(--brand-light);color:#04101f}
-.panels{position:relative;transition:height .5s var(--ease)}
+/* پنل‌ها روی هم قرار می‌گیرند (شبکه تک‌خانه‌ای) تا پنل فعال دقیقاً داخل ارتفاع
+   کانتینر باشد؛ بدون display:grid پنل‌ها پشت‌سرِهم چیده می‌شدند و پنل‌های غیر اول
+   زیر سکشن بعدی مدفون می‌شدند → کلیک روی کارت‌ها کار نمی‌کرد. */
+.panels{position:relative;display:grid;align-items:start;transition:height .5s var(--ease)}
 .panel{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;opacity:0;visibility:hidden;transform:translateX(-34px);transition:opacity .55s var(--ease),transform .55s var(--ease),visibility .55s;grid-area:1/1}
 body[dir="rtl"] .panel{transform:translateX(-34px)}
 .panel.active{opacity:1;visibility:visible;transform:none}

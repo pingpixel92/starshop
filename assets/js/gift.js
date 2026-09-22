@@ -227,7 +227,11 @@ const syncAmountUI = v => {
 };
 
 /* ── open ── */
+let lastOpen = { id: null, t: 0 };
 const open = giftId => {
+  const now = Date.now();
+  if (lastOpen.id === giftId && now - lastOpen.t < 250) return; /* ضد دوباره‌زنی (اتصال مستقیم + delegation) */
+  lastOpen.id = giftId; lastOpen.t = now;
   const g = findGift(giftId);
   if (!g) return;
   panel = $('#giftPanel');

@@ -21,7 +21,7 @@ window.SS_CONFIG = {
 
   /* ── ورود با گوگل ──
      برای فعال‌سازی واقعی: در Google Cloud Console یک OAuth Client ID بسازید
-     (Origins: https://pingpixel92.github.io) و اینجا قرار دهید. */
+     (Origins: https://starshop.kdns.fr و https://pingpixel92.github.io) و اینجا قرار دهید. */
   googleClientId: '',
 
   /* ── نرخ لحظه‌ای و کارمزد ──

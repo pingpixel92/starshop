@@ -244,6 +244,7 @@ const renderAll = () => {
   renderPay(); renderAI(); renderGifts(); renderBanks(); renderPP();
   renderShop(); renderIncome(); renderExams(); renderHW(); renderHow();
   renderWhy(); renderStats(); renderTestimonials(); renderMag(); renderFAQ();
+  wireDirect();
   setPanelHeight();
 };
 
@@ -438,16 +439,20 @@ const initCarousel = (track, prevBtn, nextBtn, autoMs) => {
   };
   if (nextBtn) nextBtn.addEventListener('click', () => go(1));
   if (prevBtn) prevBtn.addEventListener('click', () => go(-1));
-  let down = false, sx = 0, ss = 0, moved = 0;
+  /* ⚠️ setPointerCapture فقط بعد از عبور آستانه درگ (۸px) فعال می‌شود؛
+     در غیر این‌صورت مرورگر رویداد click را به خودِ track بازنشانه می‌کند و
+     کلیک ساده روی کارت‌های داخل اسلایدر (مثل گیفت کارت‌ها) گم می‌شود. */
+  let down = false, sx = 0, ss = 0, moved = 0, captured = false, pid = null;
   track.addEventListener('pointerdown', e => {
-    if (e.pointerType === 'mouse') { down = true; sx = e.clientX; ss = track.scrollLeft; moved = 0; track.classList.add('dragging'); track.setPointerCapture(e.pointerId); }
+    if (e.pointerType === 'mouse') { down = true; captured = false; pid = e.pointerId; sx = e.clientX; ss = track.scrollLeft; moved = 0; }
   });
   track.addEventListener('pointermove', e => {
     if (!down) return;
     const dx = e.clientX - sx; moved = Math.max(moved, Math.abs(dx));
-    track.scrollLeft = ss - dx;
+    if (!captured && moved > 8) { captured = true; track.classList.add('dragging'); try { track.setPointerCapture(pid); } catch (err) {} }
+    if (captured) track.scrollLeft = ss - dx;
   });
-  const up = () => { down = false; track.classList.remove('dragging'); };
+  const up = () => { down = false; captured = false; track.classList.remove('dragging'); };
   track.addEventListener('pointerup', up);
   track.addEventListener('pointercancel', up);
   track.addEventListener('click', e => { if (moved > 8) { e.preventDefault(); e.stopPropagation(); } }, true);
@@ -458,7 +463,9 @@ const initCarousel = (track, prevBtn, nextBtn, autoMs) => {
   track.addEventListener('keydown', e => {
     if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('.gift')) { e.preventDefault(); e.target.click(); }
   });
-  if (autoMs && !reduced) {
+  /* چرخش خودکار فقط دسکتاپ؛ روی لمسی خاموش است چون کارت هنگام انگشت کاربر
+     حرکت می‌کند و تپ‌ها گم می‌شوند (هوور هم برای توقف، روی لمسی وجود ندارد) */
+  if (autoMs && !reduced && !touch) {
     let timer = null, hover = false, visible = true;
     const start = () => { if (!timer && !hover && visible && !document.hidden) timer = setInterval(() => {
       if (Math.abs(track.scrollLeft) >= maxScroll() - 8) track.scrollTo({ left: 0, behavior: 'smooth' });
@@ -585,6 +592,29 @@ const openService = id => {
       <button class="btn btn-primary btn-lg" data-open-contact data-prefill="${s.id}">${t('sm.order')}<svg class="ic arr" viewBox="0 0 24 24"><use href="#i-arrow"/></svg></button>
     </div>`;
   openModal($('#serviceModal'));
+};
+
+/* اتصال مستقیم و ضد دوباره‌زنی — حتی اگر رویداد به delegation نرسد کار می‌کند */
+const lastOpenSvc = { id: null, t: 0 };
+const openServiceG = id => {
+  const now = Date.now();
+  if (lastOpenSvc.id === id && now - lastOpenSvc.t < 250) return;
+  lastOpenSvc.id = id; lastOpenSvc.t = now;
+  openService(id);
+};
+const wireDirect = () => {
+  $$('[data-service]').forEach(el => {
+    if (el.__ssWired) return; el.__ssWired = true;
+    el.addEventListener('click', e => { e.stopPropagation(); openServiceG(el.dataset.service); });
+  });
+  $$('.gift[data-gift-open]').forEach(el => {
+    if (el.__ssWired) return; el.__ssWired = true;
+    el.addEventListener('click', e => {
+      e.stopPropagation();
+      if (window.SSGift && window.SSGift.open) window.SSGift.open(el.dataset.giftOpen);
+      else openServiceG(el.dataset.giftOpen);
+    });
+  });
 };
 
 /* ── article modal ── */

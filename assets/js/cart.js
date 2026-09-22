@@ -33,11 +33,47 @@ const localDig = n => {
 let toastFn = m => console.log('[toast]', m);
 const setToast = fn => { toastFn = fn; };
 
-/* ── state ── */
+/* ── state: سبد مخصوص هر کاربر ──
+   مهمان:  ss_cart
+   کاربر:  ss_cart:u:<uid>   (هر حساب کاربری سبد جدای خودش را دارد)
+   هنگام ورود، سبد مهمان با سبد کاربر ادغام و سبد مهمان خالی می‌شود. */
 const K_CART = 'ss_cart';
-const readCart = () => { try { const v = JSON.parse(localStorage.getItem(K_CART)); return Array.isArray(v) ? v.filter(x => x && x.id && x.title) : []; } catch (e) { return []; } };
-const writeCart = items => { try { localStorage.setItem(K_CART, JSON.stringify(items.slice(0, 30))); } catch (e) {} };
-let items = readCart();
+const userKey = uid => 'ss_cart:u:' + String(uid).replace(/[^a-z0-9_@.\-]/gi, '_');
+const readBucket = key => { try { const v = JSON.parse(localStorage.getItem(key)); return Array.isArray(v) ? v.filter(x => x && x.id && x.title) : []; } catch (e) { return []; } };
+const writeBucket = (key, arr) => { try { localStorage.setItem(key, JSON.stringify(arr.slice(0, 30))); } catch (e) {} };
+const mergeBuckets = (base, extra) => {
+  const out = base.map(x => Object.assign({}, x));
+  (extra || []).forEach(it => {
+    const ex = out.find(x => x.id === it.id);
+    if (ex) ex.qty = Math.min(20, ex.qty + it.qty);
+    else out.push(Object.assign({}, it));
+  });
+  return out.slice(0, 30);
+};
+
+let activeUid = null;   /* null = مهمان */
+let items = [];
+const curUid = () => {
+  const s = window.SSAuth ? window.SSAuth.session() : null;
+  return s ? String(s.phone || '').toLowerCase() : null;
+};
+const bucketKey = () => activeUid ? userKey(activeUid) : K_CART;
+/* بارگذاری سبدِ زمینه فعال + ادغام سبد مهمان هنگام ورود */
+const reloadForUser = () => {
+  const uid = curUid();
+  if (uid === activeUid) return;
+  if (uid) {
+    const own = readBucket(userKey(uid));
+    const guest = readBucket(K_CART);
+    items = mergeBuckets(own, guest);
+    writeBucket(userKey(uid), items);
+    writeBucket(K_CART, []); /* مهمان بعدی سبد خالی شروع می‌کند */
+  } else {
+    items = readBucket(K_CART);
+  }
+  activeUid = uid;
+  document.dispatchEvent(new CustomEvent('ss:cart'));
+};
 
 /* ── order code ── */
 const orderCode = () => {
@@ -47,7 +83,7 @@ const orderCode = () => {
 };
 
 /* ── ops ── */
-const save = () => { writeCart(items); renderBadge(); renderDrawer(); document.dispatchEvent(new CustomEvent('ss:cart')); };
+const save = () => { writeBucket(bucketKey(), items); renderBadge(); renderDrawer(); document.dispatchEvent(new CustomEvent('ss:cart')); };
 const add = (id, title, qty = 1, meta = null) => {
   if (!id || !title) return;
   const ex = items.find(i => i.id === id);
@@ -133,10 +169,19 @@ const checkoutBale = async () => {
 
 const saveOrder = (channel, code) => {
   try {
-    const orders = JSON.parse(localStorage.getItem('ss_orders') || '[]');
+    const kOrders = activeUid ? 'ss_orders:u:' + String(activeUid).replace(/[^a-z0-9_@.\-]/gi, '_') : 'ss_orders';
+    const orders = JSON.parse(localStorage.getItem(kOrders) || '[]');
     orders.push({ code, channel, ts: Date.now(), items: items.map(i => ({ id: i.id, title: giftTitle(i), qty: i.qty, meta: i.meta || null })) });
-    localStorage.setItem('ss_orders', JSON.stringify(orders.slice(-30)));
+    localStorage.setItem(kOrders, JSON.stringify(orders.slice(-30)));
   } catch (e) {}
+};
+/* تاریخچه سفارش‌های کاربر فعال (برای پنل حساب) */
+const getOrders = () => {
+  try {
+    const kOrders = activeUid ? 'ss_orders:u:' + String(activeUid).replace(/[^a-z0-9_@.\-]/gi, '_') : 'ss_orders';
+    const v = JSON.parse(localStorage.getItem(kOrders));
+    return Array.isArray(v) ? v : [];
+  } catch (e) { return []; }
 };
 
 /* ── badge ── */
@@ -204,15 +249,16 @@ document.addEventListener('click', e => {
 
 /* ── init ── */
 const init = () => {
+  reloadForUser();
   const tg = $('[data-checkout-tg]'), bl = $('[data-checkout-bale]');
   renderBadge(); renderDrawer();
   document.addEventListener('ss:lang', () => { renderBadge(); renderDrawer(); });
-  document.addEventListener('ss:auth', renderDrawer);
+  document.addEventListener('ss:auth', () => { reloadForUser(); renderBadge(); renderDrawer(); });
 };
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
 else init();
 
 /* ── public API ── */
-window.SSCart = { add, remove, setQty, clear, count, items: () => items.slice(), renderBadge, renderDrawer, buildMessage, checkoutTelegram, checkoutBale, setToast };
+window.SSCart = { add, remove, setQty, clear, count, items: () => items.slice(), renderBadge, renderDrawer, buildMessage, checkoutTelegram, checkoutBale, setToast, getOrders, reloadForUser };
 })();

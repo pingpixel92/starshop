@@ -264,10 +264,10 @@ const renderAccount = () => {
   if (phoneEl) phoneEl.textContent = s.phone || '—';
   if (sinceEl) sinceEl.textContent = new Date(s.since || Date.now()).toLocaleDateString(locale);
   if (nameInput && p.name) nameInput.value = p.name;
-  /* orders */
+  /* orders (مخصوص همان کاربر) */
   const list = $('[data-acc-orders]', modal);
   if (list) {
-    const orders = read('ss_orders', []).slice().reverse();
+    const orders = (window.SSCart && window.SSCart.getOrders ? window.SSCart.getOrders() : read('ss_orders', [])).slice().reverse();
     if (!orders.length) {
       list.innerHTML = `<div class="acc-empty"><svg class="ic" viewBox="0 0 24 24"><use href="#i-box"/></svg><b>${t('auth.orders.empty')}</b><p>${t('auth.orders.empty.hint')}</p></div>`;
     } else {
