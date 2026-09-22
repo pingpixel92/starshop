@@ -815,3 +815,93 @@ body[data-theme="dark"] .art-item{background:rgba(255,255,255,.04)}
   #cartBtn{display:inline-flex}
 }
 
+
+/* ═════════ v3 — نرخ لحظه‌ای ═════════ */
+.rates-strip{margin-top:18px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:16px 20px;box-shadow:var(--shadow-sm)}
+.rates-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.rates-head b{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--ink)}
+.rates-head .ic{width:16px;height:16px;color:var(--accent)}
+.rates-refresh{font-size:12px}
+.rates-refresh.spin{opacity:.5;pointer-events:none}
+.rates-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.rate-chip{background:color-mix(in srgb,var(--brand) 4%,transparent);border:1px solid var(--line);border-radius:14px;padding:10px 14px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.rate-label{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rate-val{font-size:14px;font-weight:800;color:var(--ink);font-family:var(--font-num);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;direction:ltr;text-align:left}
+.rate-val i{font-style:normal;font-size:10.5px;font-weight:600;color:var(--muted)}
+.rate-val b{color:var(--ink)}
+.rate-dir{font-style:normal;font-size:10px;margin-inline-start:2px}
+.rate-chip.up .rate-dir{color:#0e9f6e}
+.rate-chip.down .rate-dir{color:#e02424}
+.rates-meta{margin-top:10px;font-size:11px;color:var(--muted)}
+.rates-meta.offline{color:#b45309}
+@media (max-width:820px){.rates-row{grid-template-columns:repeat(2,1fr)}}
+
+/* ═════════ v3 — مودال گیفت کارت ═════════ */
+.gift-panel{width:min(600px,100%)}
+.gm-head{display:flex;gap:16px;align-items:center;margin-bottom:18px;padding-inline-end:44px}
+.gm-logo{width:64px;height:64px;flex:none;border-radius:18px;display:grid;place-items:center;box-shadow:var(--shadow-sm)}
+.gm-logo img{width:40px;height:40px;object-fit:contain}
+.gm-head h3{margin:2px 0;font-size:20px}
+.gm-head p{font-size:12.5px;color:var(--muted);margin:0}
+.gm-sec{margin-bottom:16px}
+.gm-sec h4{font-size:13px;font-weight:800;margin-bottom:8px;color:var(--ink)}
+.gm-chips{display:flex;flex-wrap:wrap;gap:8px}
+.gm-chip{display:inline-flex;align-items:center;gap:7px;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:8px 13px;font-size:12.5px;font-weight:700;color:var(--ink);cursor:pointer;transition:transform .45s var(--spring),border-color .25s,background .25s;font-family:inherit}
+.gm-chip b{font-size:11.5px;color:var(--brand);direction:ltr}
+.gm-chip span{color:var(--muted);font-weight:600}
+.gm-flag{font-size:15px;line-height:1}
+.gm-chip:hover{border-color:var(--brand);transform:translateY(-2px)}
+.gm-chip.on{border-color:var(--brand);background:color-mix(in srgb,var(--brand) 8%,transparent)}
+.gm-chip.on b{color:var(--brand-deep)}
+.gm-note{font-size:11px;color:var(--muted);margin-top:7px}
+.gm-presets{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.gm-amount{font-family:var(--font-num);direction:ltr}
+.gm-slider-row{display:flex;align-items:center;gap:14px}
+.gm-range{flex:1;accent-color:var(--brand);height:6px;cursor:pointer}
+.gm-num{width:92px;border:1.5px solid var(--line);border-radius:12px;padding:9px 12px;font-size:15px;font-weight:800;font-family:var(--font-num);text-align:center;background:var(--surface);color:var(--ink)}
+.gm-num:focus{outline:none;border-color:var(--brand)}
+.gm-range-note{font-size:11px;color:var(--muted);margin-top:7px;font-family:var(--font-num)}
+.gm-stepper{display:inline-flex;align-items:center;gap:16px;background:color-mix(in srgb,var(--brand) 5%,transparent);border:1.5px solid var(--line);border-radius:16px;padding:10px 18px}
+.gm-step{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);font-size:18px;font-weight:800;color:var(--brand);cursor:pointer;transition:transform .4s var(--spring),border-color .2s}
+.gm-step:hover{border-color:var(--brand);transform:scale(1.08)}
+.gm-stepper b{font-size:20px;font-family:var(--font-num);min-width:64px;text-align:center;color:var(--ink)}
+.gm-stepper b small{font-size:11px;color:var(--muted);font-weight:600}
+.gm-total{background:linear-gradient(135deg,color-mix(in srgb,var(--brand) 10%,transparent),color-mix(in srgb,var(--accent) 8%,transparent));border:1.5px solid color-mix(in srgb,var(--brand) 30%,transparent);border-radius:18px;padding:16px 20px;margin:4px 0 16px;display:flex;flex-direction:column;gap:5px}
+.gm-total.loading{flex-direction:row;align-items:center;gap:10px;font-size:13px;color:var(--muted);border-style:dashed}
+.gm-total-label{font-size:12px;font-weight:700;color:var(--muted)}
+.gm-total-val{font-size:26px;font-weight:900;color:var(--brand-deep);font-family:var(--font-num);line-height:1.2}
+.gm-total-val i{font-style:normal;font-size:14px;font-weight:700;color:var(--muted)}
+.gm-total-sub{font-size:12.5px;color:var(--muted);font-weight:600;font-family:var(--font-num)}
+.gm-total-base{font-size:11px;color:var(--muted)}
+.gm-rate{font-size:11.5px;color:var(--muted);font-family:var(--font-num)}
+.gm-rate .badge{display:inline-block;font-style:normal;font-size:9.5px;font-weight:800;padding:2px 7px;border-radius:20px;background:color-mix(in srgb,#0e9f6e 14%,transparent);color:#0e9f6e;margin-inline-start:5px}
+.gm-rate .badge.off{background:color-mix(in srgb,#b45309 14%,transparent);color:#b45309}
+.ic.spin{animation:ss-spin 1.2s linear infinite}
+@keyframes ss-spin{to{transform:rotate(360deg)}}
+
+/* برندهای رنگی AI */
+.mk-chatgpt{background:color-mix(in srgb,#10A37F 12%,transparent)}
+.mk-chatgpt img{filter:none}
+.mk-gemini{background:color-mix(in srgb,#4285F4 12%,transparent)}
+.mk-cursor{background:color-mix(in srgb,#1E293B 10%,transparent)}
+.mk-mj{background:color-mix(in srgb,#111827 9%,transparent)}
+.mk-premium{background:color-mix(in srgb,#f59e0b 14%,transparent);color:#b45309}
+.ai-card.big .ai-mark.mk-chatgpt{background:rgba(16,163,127,.22)}
+
+/* متادیتای آیتم سبد */
+.ci-meta{display:flex;flex-direction:column;gap:2px;font-size:11px;color:var(--muted);margin-top:3px}
+.ci-meta span{font-family:var(--font-num)}
+
+/* گوگل محلی */
+.g-local-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.g-local-head .btn-logo{width:22px;height:22px}
+.g-local-head .chip{font-size:10.5px}
+
+@media (max-width:640px){
+  .gift-panel{padding:26px 18px}
+  .gm-head{gap:12px}
+  .gm-logo{width:54px;height:54px}
+  .gm-total-val{font-size:21px}
+  .gm-slider-row{flex-direction:column;align-items:stretch}
+  .gm-num{width:100%}
+}

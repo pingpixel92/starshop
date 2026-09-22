@@ -48,11 +48,11 @@ const orderCode = () => {
 
 /* ── ops ── */
 const save = () => { writeCart(items); renderBadge(); renderDrawer(); document.dispatchEvent(new CustomEvent('ss:cart')); };
-const add = (id, title, qty = 1) => {
+const add = (id, title, qty = 1, meta = null) => {
   if (!id || !title) return;
   const ex = items.find(i => i.id === id);
   if (ex) ex.qty = Math.min(20, ex.qty + qty);
-  else items.push({ id, title: String(title).slice(0, 80), qty: Math.min(20, Math.max(1, qty)) });
+  else items.push({ id, title: String(title).slice(0, 100), qty: Math.min(20, Math.max(1, qty)), meta: meta || null });
   save();
   toastFn(fmt(t('cart.added'), { item: title }));
 };
@@ -66,6 +66,14 @@ const clear = () => { items = []; save(); };
 const count = () => items.reduce((a, i) => a + i.qty, 0);
 
 /* ── order message builder ── */
+const giftTitle = it => {
+  try { if (it.meta && it.meta.kind === 'gift' && window.SSGift) return window.SSGift.titleFor(it.meta); } catch (e) {}
+  return it.title;
+};
+const giftLines = it => {
+  try { if (it.meta && it.meta.kind === 'gift' && window.SSGift) return window.SSGift.metaLines(it); } catch (e) {}
+  return [];
+};
 const buildMessage = () => {
   const C = CFG();
   const lang = window.SS_LANG || 'fa';
@@ -78,7 +86,10 @@ const buildMessage = () => {
   const L = [];
   L.push(t('order.header'));
   L.push('— — — — —');
-  items.forEach((i, idx) => L.push(`${localDig(idx + 1)}) ${i.title} ×${localDig(i.qty)}`));
+  items.forEach((i, idx) => {
+    L.push(`${localDig(idx + 1)}) ${giftTitle(i)} ×${localDig(i.qty)}`);
+    giftLines(i).forEach(ln => L.push('   ' + ln));
+  });
   L.push('— — — — —');
   L.push(`${t('cart.total')}: ${localDig(count())}`);
   L.push(t('cart.price.note'));
@@ -123,7 +134,7 @@ const checkoutBale = async () => {
 const saveOrder = (channel, code) => {
   try {
     const orders = JSON.parse(localStorage.getItem('ss_orders') || '[]');
-    orders.push({ code, channel, ts: Date.now(), items: items.map(i => ({ id: i.id, title: i.title, qty: i.qty })) });
+    orders.push({ code, channel, ts: Date.now(), items: items.map(i => ({ id: i.id, title: giftTitle(i), qty: i.qty, meta: i.meta || null })) });
     localStorage.setItem('ss_orders', JSON.stringify(orders.slice(-30)));
   } catch (e) {}
 };
@@ -148,10 +159,13 @@ const renderDrawer = () => {
     return;
   }
   list.hidden = false; if (empty) empty.hidden = true; if (foot) foot.hidden = false;
-  list.innerHTML = items.map(i => `
+  list.innerHTML = items.map(i => {
+    const gl = giftLines(i);
+    return `
     <li class="cart-item">
       <div class="ci-info">
-        <b>${escapeHtml(i.title)}</b>
+        <b>${escapeHtml(giftTitle(i))}</b>
+        ${gl.length ? `<span class="ci-meta">${gl.map(l => `<span>${escapeHtml(l)}</span>`).join('')}</span>` : ''}
         <span class="ci-qty">
           <button type="button" data-cart-dec="${escapeHtml(i.id)}" aria-label="${t('cart.dec')}">−</button>
           <b>${localDig(i.qty)}</b>
@@ -161,7 +175,8 @@ const renderDrawer = () => {
       <button type="button" class="ci-del" data-cart-del="${escapeHtml(i.id)}" aria-label="${t('cart.remove')}">
         <svg class="ic" viewBox="0 0 24 24"><use href="#i-close"/></svg>
       </button>
-    </li>`).join('');
+    </li>`;
+  }).join('');
   const hint = $('#cartLoginHint');
   if (hint) hint.hidden = !!window.SSAuth?.session();
 };
@@ -185,15 +200,7 @@ document.addEventListener('click', e => {
   if (e.target.closest('[data-checkout-bale]')) { e.preventDefault(); checkoutBale(); return; }
 });
 
-/* gift tiles: کلیک روی گیفت کارت = افزودن به سبد */
-document.addEventListener('click', e => {
-  const g = e.target.closest('[data-gift]');
-  if (!g) return;
-  const d = window.SS_LANG ? (window.SS_DATA[window.SS_LANG] || window.SS_DATA.fa) : window.SS_DATA.fa;
-  const item = (d.gifts || []).find(x => 'gift-' + x.t.toLowerCase().replace(/\s+/g, '-') === g.dataset.gift || x.t === g.dataset.giftLabel);
-  const label = g.dataset.giftLabel || g.dataset.gift;
-  add('gift:' + label, `${t('pay.gift')} — ${label}`);
-});
+/* gift tiles: کلیک روی گیفت کارت → مودال انتخاب ریجن/مبلغ/ارز (در gift.js) */
 
 /* ── init ── */
 const init = () => {

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://accounts.google.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data:; font-src https://cdn.jsdelivr.net data:; connect-src 'self' https://accounts.google.com; frame-src https://accounts.google.com; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://accounts.google.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data:; font-src https://cdn.jsdelivr.net data:; connect-src 'self' https://accounts.google.com https://open.er-api.com https://api.gold-api.com https://*.tgju.org; frame-src https://accounts.google.com; base-uri 'self'; form-action 'self'; object-src 'none'">
 <title>استار شاپ | خدمات پرداخت و سرویس‌های بین‌المللی</title>
 <meta name="description" content="پرداخت‌های بین‌المللی، کارت‌ها، اکانت‌های خارجی، گیفت کارت و خدمات دیجیتال جهانی.">
 <link rel="canonical" href="https://pingpixel92.github.io/starshop/">
@@ -298,7 +298,15 @@
         <button class="car-btn" id="giftPrev" data-i18n-aria="gift.prev" aria-label="کارت قبلی"><svg class="ic flip" viewBox="0 0 24 24"><use href="#i-arrow"/></svg></button>
       </div>
     </div>
-    <p class="gift-hint" data-reveal><svg class="ic" viewBox="0 0 24 24"><use href="#i-plus"/></svg> <span data-i18n="gift.hint">روی هر کارت بزنید تا به سبد خرید اضافه شود</span></p>
+    <p class="gift-hint" data-reveal><svg class="ic" viewBox="0 0 24 24"><use href="#i-plus"/></svg> <span data-i18n="gift.hint">روی هر کارت بزنید تا ریجن، مبلغ شارژ و ارز پرداخت را انتخاب کنید</span></p>
+    <div class="rates-strip" id="ratesStrip" data-reveal>
+      <div class="rates-head">
+        <b><svg class="ic" viewBox="0 0 24 24"><use href="#i-coins"/></svg> <span data-i18n="rates.title">نرخ لحظه‌ای بازار</span></b>
+        <button class="linklike rates-refresh" id="ratesRefresh" type="button" data-i18n="rates.refresh">به‌روزرسانی نرخ‌ها</button>
+      </div>
+      <div class="rates-row" id="ratesRow"></div>
+      <p class="rates-meta" id="ratesMeta"></p>
+    </div>
   </div>
   <div class="car-viewport" data-reveal>
     <ul class="car-track" id="giftTrack" tabindex="0" aria-roledescription="carousel" aria-label="گیفت کارت‌های موجود"></ul>
@@ -620,6 +628,12 @@
   </div>
 </div>
 
+<!-- ═══ GIFT PURCHASE MODAL ═══ -->
+<div class="modal" id="giftModal" role="dialog" aria-modal="true" aria-labelledby="gmTitle" hidden>
+  <div class="modal-backdrop" data-close-modal></div>
+  <div class="modal-panel gift-panel" id="giftPanel"></div>
+</div>
+
 <!-- ═══ SERVICE DETAIL MODAL ═══ -->
 <div class="modal" id="serviceModal" role="dialog" aria-modal="true" aria-labelledby="smTitle" hidden>
   <div class="modal-backdrop" data-close-modal></div>
@@ -654,6 +668,20 @@
       <p class="auth-secure"><svg class="ic" viewBox="0 0 24 24"><use href="#i-shield"/></svg><span data-i18n="legal.privacy.t">حریم خصوصی</span></p>
     </div>
 
+    <!-- مرحله گوگل محلی -->
+    <div class="auth-step" data-step="google" hidden>
+      <div class="g-local-head"><img class="btn-logo" src="assets/logos/google-multicolor.svg" alt="Google"><span class="chip" data-i18n="auth.google.ttl">حالت محلی — بدون سرور</span></div>
+      <p class="modal-sub" data-i18n="auth.google.local">ورود سریع با حساب گوگل (حالت محلی) — اطلاعات فقط روی دستگاه شما ذخیره می‌شود.</p>
+      <form data-auth-form-google novalidate>
+        <label class="field"><span data-i18n="auth.google.email">ایمیل حساب گوگل</span>
+          <input type="email" data-auth-gemail inputmode="email" autocomplete="email" dir="ltr" maxlength="90" placeholder="name@gmail.com">
+          <em class="err" data-autherr="gmail" hidden data-i18n="auth.err.email">ایمیل معتبر وارد کنید.</em>
+        </label>
+        <button class="btn btn-primary btn-lg w100" type="submit" data-i18n="auth.google.btn">ورود با این حساب</button>
+      </form>
+      <div class="otp-links"><button type="button" class="linklike" data-google-back data-i18n="auth.back">بازگشت</button></div>
+    </div>
+
     <!-- مرحله ۲: کد تأیید -->
     <div class="auth-step" data-step="otp" hidden>
       <p class="modal-sub"><span data-i18n="auth.otp.sub">کد ۴ رقمی ارسال‌شده به</span> <b dir="ltr" data-otp-phone></b></p>
@@ -664,8 +692,9 @@
         <input class="otp-input" type="text" maxlength="1" inputmode="numeric" aria-label="رقم چهارم">
       </div>
       <div class="otp-demo" data-otp-demo hidden>
-        <b><svg class="ic" viewBox="0 0 24 24"><use href="#i-spark"/></svg> <span data-i18n="auth.demo.title">حالت نمایشی — پیامک واقعی متصل نیست</span></b>
+        <b><svg class="ic" viewBox="0 0 24 24"><use href="#i-spark"/></svg> <span data-i18n="auth.demo.title">کد تأیید برای شما ساخته شد</span></b>
         <p><span data-demo-pre></span><b dir="ltr" data-otp-demo-code>----</b><span data-demo-post></span></p>
+        <button type="button" class="btn btn-ghost btn-sm" data-otp-autofill><svg class="ic" viewBox="0 0 24 24"><use href="#i-check"/></svg><span data-i18n="auth.demo.fill">درج خودکار کد</span></button>
       </div>
       <div class="otp-timer" data-otp-expire></div>
       <em class="err" data-autherr="code" hidden data-i18n="auth.err.code">کد واردشده صحیح نیست.</em>
@@ -777,8 +806,10 @@
 <script src="assets/js/data-en.js" defer></script>
 <script src="assets/js/data-ar.js" defer></script>
 <script src="assets/js/i18n.js" defer></script>
+<script src="assets/js/rates.js" defer></script>
 <script src="assets/js/auth.js" defer></script>
 <script src="assets/js/cart.js" defer></script>
+<script src="assets/js/gift.js" defer></script>
 <script src="assets/js/main.js" defer></script>
 <script type="module" src="assets/js/three-scene.js"></script>
 </body>

@@ -24,6 +24,16 @@ window.SS_CONFIG = {
      (Origins: https://pingpixel92.github.io) و اینجا قرار دهید. */
   googleClientId: '',
 
+  /* ── نرخ لحظه‌ای و کارمزد ──
+     markup: کارمزد خدمات (۲۰٪) روی نرخ لحظه‌ای
+     refreshMs: فاصله تازه‌سازی خودکار نرخ‌ها (۴ دقیقه)
+     fallback: نرخ تقریبی در صورت قطع بودن منابع زنده (ریال) */
+  rates: {
+    markup: 0.20,
+    refreshMs: 240000,
+    fallback: { usdIrr: 1100000, gold18: 3500000, coin: 90000000 }
+  },
+
   /* ── تنظیمات امنیتی ── */
   security: {
     otpTtl: 120,          // ثانیه اعتبار کد

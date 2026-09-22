@@ -95,6 +95,7 @@ const normPhone = v => String(v || '')
 /* ── OTP state ── */
 let currentPhone = '';
 let timerInt = null;
+let lastDemoCode = '';
 
 const getMeta = () => read(K_META, { sentAt: 0, lockUntil: 0, hourCount: 0, hourStart: 0 });
 const setMeta = m => write(K_META, m);
@@ -156,6 +157,7 @@ const sendCode = async phone => {
   const demo = $('[data-otp-demo]', modal);
   if (!sent) {
     demo.hidden = false;
+    lastDemoCode = code;
     const raw = t('auth.demo.body');
     const idx = raw.indexOf('{code}');
     const pre = $('[data-demo-pre]', modal), post = $('[data-demo-post]', modal);
@@ -164,6 +166,7 @@ const sendCode = async phone => {
     $('[data-otp-demo-code]', modal).textContent = localDig(code);
   } else {
     demo.hidden = true;
+    lastDemoCode = '';
   }
   clearErrs();
   showStep('otp');
@@ -231,7 +234,7 @@ const handleGoogle = async response => {
 };
 const googleLogin = () => {
   const cid = (CFG().googleClientId || '').trim();
-  if (!cid) { toastFn(t('auth.google.na')); return; }
+  if (!cid) { if (modal) showStep('google'); return; } /* حالت محلی: فرم گوگل داخلی */
   const init = () => {
     try {
       google.accounts.id.initialize({ client_id: cid, callback: handleGoogle, auto_select: false, use_fedcm_for_prompt: false });
@@ -300,6 +303,7 @@ const syncHeader = () => {
   }
 };
 document.addEventListener('ss:lang', syncHeader);
+document.addEventListener('ss:auth', syncHeader);
 document.addEventListener('ss:lang', () => {
   if (modal && !modal.hidden && session()) { renderAccount(); showStep('account'); }
 });
@@ -342,6 +346,15 @@ const bind = () => {
   const edit = $('[data-otp-edit]', modal);
   if (edit) edit.addEventListener('click', e => { e.preventDefault(); clearInterval(timerInt); del(K_OTP); showStep('phone'); });
 
+  /* درج خودکار کد (حالت نمایشی) */
+  const af = $('[data-otp-autofill]', modal);
+  if (af) af.addEventListener('click', e => {
+    e.preventDefault();
+    if (!lastDemoCode) return;
+    inputs.forEach((x, j) => x.value = lastDemoCode[j] || '');
+    verify(lastDemoCode).then(ok => { if (!ok) setTimeout(() => { inputs.forEach(x => x.value = ''); inputs[0].focus(); }, 350); });
+  });
+
   /* otp inputs */
   const inputs = $$('.otp-input', modal);
   inputs.forEach((inp, i) => {
@@ -369,6 +382,31 @@ const bind = () => {
   /* google */
   const g = $('[data-auth-google]', modal);
   if (g) g.addEventListener('click', e => { e.preventDefault(); googleLogin(); });
+
+  /* google local form */
+  const gf = $('[data-auth-form-google]', modal);
+  if (gf) gf.addEventListener('submit', async e => {
+    e.preventDefault();
+    const inp = $('[data-auth-gemail]', modal);
+    const email = String(inp && inp.value || '').trim().slice(0, 90);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { const er = $('[data-autherr="gmail"]', modal); if (er) er.hidden = false; return; }
+    const btn = gf.querySelector('button[type="submit"]');
+    if (btn) { btn.disabled = true; btn.classList.add('loading'); }
+    try {
+      const name = email.split('@')[0].slice(0, 40);
+      const tok = randToken();
+      const sig = await sha256('sssig:' + tok + ':' + email);
+      write(K_SESSION, { token: tok, sig, phone: email, name, google: true, since: Date.now(), exp: Date.now() + (SEC().sessionTtl || 1209600000) });
+      const p = profile(); if (!p.name) { p.name = name; write(K_PROFILE, p); }
+      clearErrs();
+      renderAccount();
+      showStep('account');
+      toastFn(t('auth.welcome'));
+      document.dispatchEvent(new CustomEvent('ss:auth'));
+    } finally { if (btn) { btn.disabled = false; btn.classList.remove('loading'); } }
+  });
+  const gback = $('[data-google-back]', modal);
+  if (gback) gback.addEventListener('click', e => { e.preventDefault(); showStep('phone'); });
 
   /* account actions */
   const lo = $('[data-acc-logout]', modal);

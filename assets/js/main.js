@@ -142,7 +142,7 @@ const renderAI = () => {
       ? `<svg class="ic" style="width:26px;height:26px" viewBox="0 0 24 24"><use href="#i-star"/></svg>`
       : `<img src="assets/logos/${c.logo}.svg" alt="" width="30" height="30">`;
     return `<article class="card ai-card${c.big ? ' big' : ''}" data-reveal data-reveal-delay="${i * 80}" data-service="${c.svc}" role="button" tabindex="0">
-      <div class="ai-mark" aria-hidden="true">${mark}</div>
+      <div class="ai-mark${c.mk ? ' ' + c.mk : ''}" aria-hidden="true">${mark}</div>
       <div class="ai-body"><h3>${escapeHtml(c.t)}</h3><p>${escapeHtml(c.d)}</p><span class="chip">${t('chip.buy')}</span></div>
     </article>`;
   }).join('');
@@ -152,7 +152,7 @@ const renderGifts = () => {
   const g = $('#giftTrack'); if (!g) return;
   g.innerHTML = D().gifts.map((x, i) => {
     const cls = ({'Apple':'gc-apple','Steam':'gc-steam','PlayStation':'gc-ps','Xbox':'gc-xbox','Amazon':'gc-amazon','PUBG':'gc-pubg','Free Fire':'gc-ff','Netflix':'gc-netflix','Google Play':'gc-gplay'}[x.t]) || 'gc-steam';
-    return `<li class="gift ${cls}" data-gift="gift-${x.t.toLowerCase().replace(/\s+/g,'-')}" data-gift-label="${escapeHtml(x.t)}" role="button" tabindex="0" aria-label="${t('gift.add')} — ${escapeHtml(x.t)}" style="animation-delay:${i * 40}ms">
+    return `<li class="gift ${cls}" data-gift-open="${x.id}" role="button" tabindex="0" aria-label="${t('gift.add')} — ${escapeHtml(x.t)}" style="animation-delay:${i * 40}ms">
       <span class="gift-logo" aria-hidden="true"><img src="assets/logos/${x.logo}.svg" alt="" width="52" height="52" loading="lazy"></span>
       <h3>${escapeHtml(x.t)}</h3><p>${escapeHtml(x.d)}</p>
       <span class="chip chip-dark gift-add"><svg class="ic" viewBox="0 0 24 24"><use href="#i-plus"/></svg>${t('gift.add')}</span>
