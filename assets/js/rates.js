@@ -142,7 +142,7 @@ const fetchGoldOz = async () => {
 };
 
 /* ── update ── */
-let busy = false, fails = 0;
+let busy = false, fails = 0, cooldownUntil = 0;
 const refresh = async (silent) => {
   if (busy) return state;
   busy = true;
@@ -164,6 +164,7 @@ const refresh = async (silent) => {
       state.offline = false;
       state.src = 'tgju · ' + got.via;
       fails = 0;
+      cooldownUntil = 0;
     } else {
       fails++;
       state.usdIrr = f.usdIrr || state.usdIrr || 0;
@@ -234,7 +235,13 @@ const convert = (usd, cur) => {
 const toman = rial => rial / 10;
 const get = () => state;
 
-/* ── init + polling (۱۲ ثانیه، فقط صفحه فعال، backoff در خطا) ── */
+/* ── init + polling (۱۲ ثانیه ± جیتر، فقط صفحه فعال، فیوز در خطای پیاپی) ──
+   مقاوم‌سازی ترافیک بالا:
+   • جیتر ±۲ ثانیه → موج هماهنگ ۱۰۰۰ کاربر به پراکسی‌ها نمی‌خورد
+   • فیوز (circuit breaker): ۶ خطای پیاپی → ۵ دقیقه استراحت (با آخرین نرخ سالم)
+   • کش تازه (<۹۰ث) → اولین fetch حذف = بازدیدکننده برگشتی هیچ درخواستی نمی‌زند
+   • saveData مرورگر → فاصله ۵ برابری
+   ─────────────────────────────────────────────── */
 const cached = readCache();
 if (cached && cached.usdIrr) {
   state.usdIrr = cached.usdIrr;
@@ -251,21 +258,26 @@ if (cached && cached.usdIrr) {
   state.offline = !!cached.offline;
   state.ready = true;
 }
-const BASE_MS = RC().refreshMs || 12000;
+const DATA_SAVER = !!(navigator.connection && navigator.connection.saveData);
+const BASE_MS = (RC().refreshMs || 12000) * (DATA_SAVER ? 5 : 1);
+const jitter = () => BASE_MS + Math.floor(Math.random() * 4000) - 2000;
 let timer = null;
 const schedule = ms => { clearTimeout(timer); timer = setTimeout(tick, ms); };
 const tick = async () => {
-  if (document.hidden) { schedule(BASE_MS); return; }
+  if (Date.now() < cooldownUntil) { schedule(60000); return; }
+  if (document.hidden) { schedule(jitter()); return; }
   await refresh(true);
-  schedule(state.offline ? Math.min(BASE_MS * (1 + fails), 96000) : BASE_MS);
+  if (fails >= 6) cooldownUntil = Date.now() + 300000; /* فیوز: ۵ دقیقه استراحت */
+  schedule(state.offline ? Math.min(BASE_MS * (1 + fails), 96000) + Math.floor(Math.random() * 8000) : jitter());
 };
 const init = () => {
-  refresh(true);
-  schedule(BASE_MS);
+  const freshCache = state.ts && (Date.now() - state.ts < 90000);
+  if (!freshCache) setTimeout(() => { refresh(true).catch(() => {}); }, Math.floor(Math.random() * 2500)); /* پخش بار ورود */
+  schedule(freshCache ? jitter() : jitter() + 2500);
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden && Date.now() - state.ts > BASE_MS) { clearTimeout(timer); tick(); }
   });
-  addEventListener('online', () => { clearTimeout(timer); refresh(true); schedule(BASE_MS); });
+  addEventListener('online', () => { clearTimeout(timer); cooldownUntil = 0; refresh(true).catch(() => {}); schedule(jitter()); });
 };
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

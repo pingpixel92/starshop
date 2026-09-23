@@ -5,6 +5,24 @@
 (() => {
 'use strict';
 
+/* ── تور ایمنی خطا: زیر ترافیک بالا یا قطعی شبکه صفحه هیچ‌وقت نمی‌شکند ── */
+let __errToasted = false;
+window.addEventListener('error', e => {
+  if (__errToasted) return;
+  __errToasted = true;
+  try { console.warn('[SS] caught:', e && e.message); } catch (x) {}
+  setTimeout(() => {
+    try {
+      const dd = (window.SS_DATA && (window.SS_DATA[window.SS_LANG] || window.SS_DATA.fa)) || {};
+      const msg = (dd.ui && dd.ui['ui.errNet']) || '⚠️ یک خطای غیرمنتظره رخ داد؛ اگر بخشی کار نکرد صفحه را دوباره باز کنید.';
+      if (window.SSUI && window.SSUI.toast) window.SSUI.toast(msg);
+    } catch (x) {}
+  }, 800);
+});
+window.addEventListener('unhandledrejection', e => {
+  try { console.warn('[SS] rejection:', e && e.reason); } catch (x) {}
+});
+
 /* ── utils ── */
 const $  = (s, c) => (c || document).querySelector(s);
 const $$ = (s, c) => Array.from((c || document).querySelectorAll(s));
@@ -958,6 +976,12 @@ const boot = async () => {
   setPanelHeight();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(setPanelHeight);
   addEventListener('resize', () => { setPanelHeight(); });
+  /* ── Service Worker: کش استاتیک + مقاومت در ترافیک بالا و آفلاین ── */
+  try {
+    if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+  } catch (e) {}
 };
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
 else boot();
