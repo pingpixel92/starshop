@@ -579,6 +579,27 @@ const initMenu = () => {
   const c = $('#menuClose'); if (c) c.addEventListener('click', closeMenu);
 };
 
+/* ── language menu toggle ──
+   ⚠️ ریشه باگ: دکمه #langBtn هیچ listener نداشت و #langMenu با hidden بسته
+   می‌ماند → کلیک روی «تغییر زبان» هیچ کاری نمی‌کرد. این‌جا فقط باز/بسته شدن
+   منو مدیریت می‌شود؛ انتخاب زبان خودش در i18n.js وصل است. */
+const initLangToggle = () => {
+  const btn = $('#langBtn'), menu = $('#langMenu'), wrap = $('#langWrap');
+  if (!btn || !menu || btn.__ssWired) return;
+  btn.__ssWired = true;
+  const close = () => { menu.hidden = true; btn.setAttribute('aria-expanded', 'false'); };
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    const willOpen = menu.hidden;
+    menu.hidden = !willOpen;
+    btn.setAttribute('aria-expanded', String(willOpen));
+  });
+  document.addEventListener('click', e => {
+    if (!menu.hidden && (!wrap || !wrap.contains(e.target))) close();
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !menu.hidden) close(); });
+};
+
 /* ── service detail modal ── */
 const openService = id => {
   const s = getService(id), box = $('#serviceModalBody');
@@ -872,7 +893,7 @@ const boot = async () => {
   splitWords();
   initScroll(); initAnchors(); initTheme(); initProgress(); initHeaderState();
   initCursor(); initMagnetic(); initTilt();
-  initMenu(); initSearch(); initContactForm(); initCalcForm();
+  initMenu(); initLangToggle(); initSearch(); initContactForm(); initCalcForm();
   initProcess(); initHow(); initStats(); initDelegation();
   initCarousel($('#giftTrack'), $('#giftPrev'), $('#giftNext'), 4200);
   initCarousel($('#testTrack'), $('#testPrev'), $('#testNext'), 5200);
