@@ -1,6 +1,7 @@
 /* ═══════════════════════════════════════════════════
-   STARSHOP — rates.js  v2
+   STARSHOP — rates.js  v3
    نرخ لحظه‌ای بازار ایران (tgju) + ۱۵ ارز + طلا/مثقال/سکه
+   + همه ارزهای کشورهای جهان (SS_WORLD — مودال «همه نرخ‌ها»)
    ⚠️ tgju مستقیم CORS ندارد → زنجیره پراکسی:
      r.jina.ai → api.codetabs.com → api.allorigins.win → مستقیم
    فالبک: open.er-api.com + api.gold-api.com → مقادیر config
@@ -25,13 +26,16 @@ const LETTERS = { eurIrr:'EUR', gbpIrr:'GBP', aedIrr:'AED', sarIrr:'SAR', qarIrr
 const DIR_KEYS = Object.keys(UNITS); /* برای ▲▼ روی همه نمادها */
 
 /* ── state ── */
-const K_CACHE = 'ss_rates_cache_v2';
+const K_CACHE = 'ss_rates_cache_v3';
 let state = {
   ready: false, offline: false, ts: 0, src: '',
   usdIrr: 0, gold18: 0, coin: 0, mesghal: 0,
   units: {},   // هر ارز به ریال (بازار آزاد ایران)
   fx: {},      // هر ارز به ازای ۱ دلار (برای قیمت‌گذاری محلی)
-  dir: {}
+  dir: {},
+  world: {},      // همه ارزها (کد → ریال) از SS_WORLD
+  worldGold: {},  // طلا/سکه (کلید → ریال؛ ons دلار)
+  dirW: {}        // جهت تغییر ▲▼ برای world+worldGold
 };
 const subs = [];
 const subscribe = fn => { subs.push(fn); try { fn(state); } catch (e) {} };
@@ -42,7 +46,8 @@ const readCache = () => { try { return JSON.parse(localStorage.getItem(K_CACHE))
 const writeCache = () => { try {
   localStorage.setItem(K_CACHE, JSON.stringify({
     ts: state.ts, usdIrr: state.usdIrr, gold18: state.gold18, coin: state.coin, mesghal: state.mesghal,
-    units: state.units, fx: state.fx, prev: state.dir, offline: state.offline
+    units: state.units, fx: state.fx, prev: state.dir, offline: state.offline,
+    world: state.world, worldGold: state.worldGold, prevW: state.dirW
   }));
 } catch (e) {} };
 
@@ -86,6 +91,19 @@ const parseTgju = j => {
   }
   /* اعتبارسنجی: دلار آزاد ایران باید حداقل این حد باشد (ریال) */
   if (!out.usdIrr || out.usdIrr < 200000) return null;
+  /* همه ارزهای جهان + طلا/سکه برای مودال «همه نرخ‌ها» */
+  out.world = {};
+  (window.SS_WORLD || []).forEach(w => {
+    const row = cur[w.k];
+    const v = row ? num(row.p) : 0;
+    if (v > 0) out.world[w.c] = v;
+  });
+  out.worldGold = {};
+  (window.SS_WORLD_GOLD || []).forEach(w => {
+    const row = cur[w.k];
+    const v = row ? num(row.p) : 0;
+    if (v > 0) out.worldGold[w.k] = v;
+  });
   return out;
 };
 const fetchTgju = async () => {
@@ -131,6 +149,7 @@ const refresh = async (silent) => {
   try {
     const prev = {};
     DIR_KEYS.forEach(k => { prev[k] = state.units[k] != null ? state.units[k] : (k === 'usdIrr' ? state.usdIrr : k === 'gold18' ? state.gold18 : k === 'coin' ? state.coin : 0); });
+    const prevW = Object.assign({}, state.world, state.worldGold);
 
     const got = await fetchTgju();
     const f = RC().fallback || {};
@@ -140,6 +159,8 @@ const refresh = async (silent) => {
       state.gold18 = got.map.gold18;
       state.mesghal = got.map.mesghal;
       state.coin = got.map.coin;
+      state.world = got.map.world || state.world;
+      state.worldGold = got.map.worldGold || state.worldGold;
       state.offline = false;
       state.src = 'tgju · ' + got.via;
       fails = 0;
@@ -178,6 +199,17 @@ const refresh = async (silent) => {
       dir[k] = (!now || !was) ? (state.dir[k] || 0) : now > was ? 1 : now < was ? -1 : 0;
     });
     state.dir = dir;
+    /* جهت ▲▼ برای ارزهای جهانی + طلا */
+    const dirW = {};
+    Object.keys(state.world).forEach(c => {
+      const now = state.world[c] || 0, was = prevW[c] || 0;
+      dirW[c] = (!now || !was) ? (state.dirW[c] || 0) : now > was ? 1 : now < was ? -1 : 0;
+    });
+    Object.keys(state.worldGold).forEach(k => {
+      const now = state.worldGold[k] || 0, was = prevW[k] || 0;
+      dirW[k] = (!now || !was) ? (state.dirW[k] || 0) : now > was ? 1 : now < was ? -1 : 0;
+    });
+    state.dirW = dirW;
     state.ready = true;
     state.ts = Date.now();
     writeCache();
@@ -212,6 +244,9 @@ if (cached && cached.usdIrr) {
   state.units = cached.units || {};
   state.fx = cached.fx || {};
   state.dir = cached.prev || {};
+  state.world = cached.world || {};
+  state.worldGold = cached.worldGold || {};
+  state.dirW = cached.prevW || {};
   state.ts = cached.ts || 0;
   state.offline = !!cached.offline;
   state.ready = true;
@@ -289,6 +324,102 @@ const refreshBtn = () => {
 };
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', refreshBtn);
 else refreshBtn();
+
+/* ═════════ مودال «همه نرخ‌ها» — ارز همه کشورهای جهان، زنده ═════════ */
+const langDD = () => (window.SS_DATA[window.SS_LANG || 'fa'] || window.SS_DATA.fa);
+const L = k => { const dd = langDD(); let v = dd.ui && dd.ui[k]; if (v != null) return v; v = window.SS_DATA.fa.ui[k]; return v != null ? v : k; };
+const localDigW = n => {
+  const lang = window.SS_LANG || 'fa';
+  if (lang === 'fa') return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+  if (lang === 'ar') return String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+  return String(n);
+};
+const normQ = s => String(s || '')
+  .replace(/[\u064A]/g, '\u06CC').replace(/[\u0643]/g, '\u06A9')
+  .replace(/[\u064B-\u065F\u0670\u0640]/g, '')
+  .replace(/[\u06F0-\u06F9]/g, d => String(d.charCodeAt(0) - 0x06F0))
+  .replace(/[\u0660-\u0669]/g, d => String(d.charCodeAt(0) - 0x0660))
+  .replace(/\u200c/g, ' ').toLowerCase().trim();
+
+const renderWorld = () => {
+  const goldBox = document.getElementById('rmGold');
+  const fxBox = document.getElementById('rmFx');
+  if (!goldBox || !fxBox) return;
+  const lang = window.SS_LANG || 'fa';
+  const dd = (window.SS_DATA[lang] || window.SS_DATA.fa);
+  const loc2 = dd.meta && dd.meta.numLocale ? dd.meta.numLocale : 'fa-IR';
+  const q = normQ(document.getElementById('rmSearch') ? document.getElementById('rmSearch').value : '');
+  const arrow = d => d === 1 ? '▲' : d === -1 ? '▼' : '';
+  const fmtT = rial => toman(rial).toLocaleString(loc2, { maximumFractionDigits: 0 });
+  const card = (f, name, code, valHtml, dir) => `
+    <div class="rm-card${dir ? ' ' + (dir > 0 ? 'up' : 'down') : ''}">
+      <span class="rm-flag" aria-hidden="true">${f}</span>
+      <span class="rm-name">${name}<b dir="ltr">${code}</b></span>
+      <span class="rm-val" dir="ltr">${valHtml}</span>
+    </div>`;
+
+  /* طلا و سکه */
+  const goldRows = (window.SS_WORLD_GOLD || []).filter(w => {
+    if (!q) return true;
+    return normQ(w.fa).includes(q) || normQ(w.en).includes(q) || normQ(w.c).includes(q) || normQ(lang === 'ar' ? w.ar : '').includes(q);
+  });
+  goldBox.innerHTML = goldRows.map(w => {
+    const v = state.worldGold[w.k] || 0;
+    if (!v) return '';
+    const d = state.dirW[w.k] || 0;
+    const val = w.usd
+      ? `<b>$${v.toLocaleString('en-US', { maximumFractionDigits: 0 })}</b>`
+      : `<b>${fmtT(v)}</b> <i>${L('rates.toman')}</i>`;
+    return card(w.f, lang === 'en' ? w.en : lang === 'ar' ? w.ar : w.fa, w.c, val + `<em class="rm-dir">${arrow(d)}</em>`, d);
+  }).join('') || `<p class="rm-empty">${L('rm.none')}</p>`;
+
+  /* ارز کشورها */
+  const fxRows = (window.SS_WORLD || []).filter(w => {
+    if (!q) return true;
+    return normQ(w.fa).includes(q) || normQ(w.en).includes(q) || normQ(w.ar).includes(q) || normQ(w.c).includes(q);
+  });
+  const total = (window.SS_WORLD || []).length;
+  fxBox.innerHTML = fxRows.map(w => {
+    const v = state.world[w.c] || 0;
+    if (!v) return '';
+    const d = state.dirW[w.c] || 0;
+    return card(w.f, lang === 'en' ? w.en : lang === 'ar' ? w.ar : w.fa, w.c,
+      `<b>${fmtT(v)}</b> <i>${L('rates.toman')}</i><em class="rm-dir">${arrow(d)}</em>`, d);
+  }).join('') || `<p class="rm-empty">${L('rm.none')}</p>`;
+
+  const cnt = document.getElementById('rmCount');
+  if (cnt) cnt.textContent = L('rm.count').replace('{n}', localDigW(fxRows.length)).replace('{all}', localDigW(total));
+  const meta2 = document.getElementById('rmMeta');
+  if (meta2) {
+    if (state.offline) meta2.textContent = L('rates.offline');
+    else {
+      const t2 = state.ts ? new Date(state.ts).toLocaleTimeString(loc2, { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '—';
+      meta2.innerHTML = L('rates.updated').replace('{t}', t2) + ' · ' + (state.src || '');
+    }
+    meta2.classList.toggle('offline', !!state.offline);
+  }
+};
+
+const wireWorld = () => {
+  const btn = document.getElementById('ratesAllBtn');
+  const modal = document.getElementById('ratesModal');
+  if (!btn || !modal || btn.dataset.bound) return;
+  btn.dataset.bound = '1';
+  btn.addEventListener('click', () => {
+    renderWorld();
+    if (window.SSUI && window.SSUI.openModal) window.SSUI.openModal(modal);
+    else modal.hidden = false;
+  });
+  const search = document.getElementById('rmSearch');
+  if (search) {
+    let tid = null;
+    search.addEventListener('input', () => { clearTimeout(tid); tid = setTimeout(renderWorld, 120); });
+  }
+  subscribe(renderWorld);
+  document.addEventListener('ss:lang', renderWorld);
+};
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wireWorld);
+else wireWorld();
 
 /* ── public API ── */
 window.SSRates = { get, rateOf, convert, toman, refresh, subscribe };

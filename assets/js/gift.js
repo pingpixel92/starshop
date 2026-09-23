@@ -30,14 +30,15 @@ let panel = null;
 /* ── lookups ── */
 const findGift = id => D().gifts.find(g => g.id === id) || window.SS_DATA.fa.gifts.find(g => g.id === id);
 /* ریجن‌های کارت + استخر کشورهای اضافی (بدون تکرار) — همه کشورها برای همه کارت‌ها */
-const regionsAll = g => g.regions.concat(((window.SS_DATA[window.SS_LANG || 'fa'] || window.SS_DATA.fa).regionsExtra || []).filter(r => !g.regions.some(x => x.id === r.id)));
+const regionsAll = g => g.noExtra ? g.regions : g.regions.concat(((window.SS_DATA[window.SS_LANG || 'fa'] || window.SS_DATA.fa).regionsExtra || []).filter(r => !g.regions.some(x => x.id === r.id)));
 const findRegion = (g, rid) => regionsAll(g).find(r => r.id === rid);
 
 /* ── pricing ── */
 const baseUsd = () => {
   if (!cur) return 0;
   const g = cur.gift;
-  return g.type === 'months' ? g.perMonth * cur.value : cur.value;
+  if (g.type === 'months') return g.tiers ? (g.tiers[cur.value] || 0) : g.perMonth * cur.value;
+  return cur.value;
 };
 const pricing = () => {
   const R = window.SSRates; const st = R ? R.get() : null;
@@ -105,13 +106,22 @@ const render = () => {
 
   let amountUI = '';
   if (isMonths) {
-    amountUI = `
+    if (g.monthOpts) {
+      /* انتخاب پله‌ای مدت اشتراک (مثلاً اسپاتیفای ۱/۲/۳ ماه، تلگرام پریمیوم ۱/۳/۶/۱۲) */
+      amountUI = `
+      <div class="gm-chips gm-months">${g.monthOpts.map(m => `
+        <button type="button" class="gm-chip${m === cur.value ? ' on' : ''}" data-gm-month="${m}"><b dir="ltr">${localDig(m)}</b><span>${t('cart.meta.month')}${m > 1 ? (window.SS_LANG === 'en' ? 's' : '') : ''}</span></button>`).join('')}
+      </div>
+      <div class="gm-range-note">${t('gift.cfg.pickMonths')}</div>`;
+    } else {
+      amountUI = `
       <div class="gm-stepper" dir="ltr">
         <button type="button" class="gm-step" data-gm-months="-1" aria-label="-">−</button>
         <b>${localDig(cur.value)} <small>${t('cart.meta.month')}</small></b>
         <button type="button" class="gm-step" data-gm-months="1" aria-label="+">+</button>
       </div>
       <div class="gm-range-note">${localDig(g.minM)} – ${localDig(g.maxM)} ${t('cart.meta.month')} · ${localDig(g.perMonth)}$ / ${t('cart.meta.month')}</div>`;
+    }
   } else {
     const presets = (g.presets || []).map(v => `<button type="button" class="gm-chip gm-amount${v === cur.value ? ' on' : ''}" data-gm-amount="${v}">${localDig(v)}$</button>`).join('');
     amountUI = `
@@ -162,7 +172,7 @@ const render = () => {
 };
 
 const brandClass = g => {
-  const map = { 'gift-apple':'apple', 'gift-steam':'steam', 'gift-ps':'ps', 'gift-xbox':'xbox', 'gift-amazon':'amazon', 'gift-pubg':'pubg', 'gift-ff':'ff', 'gift-netflix':'netflix', 'gift-gplay':'gplay' };
+  const map = { 'gift-apple':'apple', 'gift-steam':'steam', 'gift-ps':'ps', 'gift-xbox':'xbox', 'gift-amazon':'amazon', 'gift-pubg':'pubg', 'gift-ff':'ff', 'gift-netflix':'netflix', 'gift-gplay':'gplay', 'gift-spotify':'spotify', 'gift-telegram':'tg', 'gift-youtube':'yt', 'gift-discord':'discord', 'gift-chatgpt':'gpt', 'gift-canva':'canva', 'gift-razer':'razer', 'gift-roblox':'roblox', 'gift-nintendo':'nintendo', 'gift-epic':'epic', 'gift-visa':'visa', 'gift-master':'mc' };
   return map[g.id] || 'steam';
 };
 
@@ -192,6 +202,10 @@ const bindPanel = () => {
   if (numIn) numIn.addEventListener('change', () => { cur.value = clampTo(+numIn.value || cur.gift.min); render(); });
   $$('[data-gm-months]', panel).forEach(b => b.addEventListener('click', () => {
     cur.value = Math.min(cur.gift.maxM, Math.max(cur.gift.minM, cur.value + (+b.dataset.gmMonths)));
+    render();
+  }));
+  $$('[data-gm-month]', panel).forEach(b => b.addEventListener('click', () => {
+    cur.value = +b.dataset.gmMonth;
     render();
   }));
   $$('[data-gm-cur]', panel).forEach(b => b.addEventListener('click', () => { cur.payCur = b.dataset.gmCur; render(); }));
@@ -238,7 +252,7 @@ const open = giftId => {
   if (!g) return;
   panel = $('#giftPanel');
   if (!panel) return;
-  cur = { gift: g, regionId: g.regions[0].id, value: g.type === 'months' ? g.minM : (g.presets ? g.presets[0] : g.min), payCur: g.regions[0].cur };
+  cur = { gift: g, regionId: g.regions[0].id, value: g.type === 'months' ? (g.monthOpts ? g.monthOpts[0] : g.minM) : (g.presets ? g.presets[0] : g.min), payCur: g.regions[0].cur };
   render();
   const m = $('#giftModal');
   if (m && window.SSUI) window.SSUI.openModal(m);

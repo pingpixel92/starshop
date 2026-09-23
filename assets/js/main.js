@@ -151,7 +151,7 @@ const renderAI = () => {
 const renderGifts = () => {
   const g = $('#giftTrack'); if (!g) return;
   g.innerHTML = D().gifts.map((x, i) => {
-    const cls = ({'Apple':'gc-apple','Steam':'gc-steam','PlayStation':'gc-ps','Xbox':'gc-xbox','Amazon':'gc-amazon','PUBG':'gc-pubg','Free Fire':'gc-ff','Netflix':'gc-netflix','Google Play':'gc-gplay'}[x.t]) || 'gc-steam';
+    const cls = ({'Apple':'gc-apple','Steam':'gc-steam','PlayStation':'gc-ps','Xbox':'gc-xbox','Amazon':'gc-amazon','PUBG':'gc-pubg','Free Fire':'gc-ff','Netflix':'gc-netflix','Google Play':'gc-gplay','Spotify':'gc-spotify','Telegram Premium':'gc-tg','YouTube Premium':'gc-yt','Discord Nitro':'gc-discord','ChatGPT Plus':'gc-gpt','Canva Pro':'gc-canva','Razer Gold':'gc-razer','Roblox':'gc-roblox','Nintendo eShop':'gc-nintendo','Epic Games':'gc-epic','Visa Card':'gc-visa','MasterCard':'gc-mc'}[x.t]) || 'gc-steam';
     return `<li class="gift ${cls}" data-gift-open="${x.id}" role="button" tabindex="0" aria-label="${t('gift.add')} — ${escapeHtml(x.t)}" style="animation-delay:${i * 40}ms">
       <span class="gift-logo" aria-hidden="true"><img src="assets/logos/${x.logo}.svg" alt="" width="52" height="52" loading="lazy"></span>
       <h3>${escapeHtml(x.t)}</h3><p>${escapeHtml(x.d)}</p>

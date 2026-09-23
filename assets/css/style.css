@@ -926,3 +926,56 @@ body[data-theme="dark"] .art-item{background:rgba(255,255,255,.04)}
   .gm-slider-row{flex-direction:column;align-items:stretch}
   .gm-num{width:100%}
 }
+
+/* ═══ v8 — همه نرخ‌ها مودال + گیفت کارت‌های جدید ═══ */
+.rates-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:flex-end}
+.linklike.rates-all{color:var(--brand);font-weight:800}
+.linklike.rates-all:hover{color:var(--brand-deep)}
+.rm-panel{width:min(760px,100%)}
+.rm-panel h3{margin:10px 0 4px;font-size:22px}
+.rm-sub{font-size:12px;color:var(--muted);margin-bottom:12px}
+.rm-search{display:flex;align-items:center;gap:9px;border:1.5px solid var(--line);border-radius:14px;padding:11px 14px;background:color-mix(in srgb,var(--brand) 3%,transparent);margin-bottom:10px}
+.rm-search:focus-within{border-color:var(--brand)}
+.rm-search .ic{width:17px;height:17px;color:var(--muted);flex:0 0 auto}
+.rm-search input{flex:1;border:0;outline:0;background:transparent;font:inherit;font-size:13.5px;color:var(--ink);min-width:0}
+.rm-live{font-size:11px;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:7px}
+.rm-live.offline{color:#b45309}
+.rm-h4{font-size:13px;font-weight:800;margin:14px 0 9px;color:var(--ink)}
+.rm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:8px;max-height:340px;overflow-y:auto;overscroll-behavior:contain;padding:2px}
+.rm-grid-gold{max-height:none}
+.rm-card{display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:"flag name val" "flag val val";align-items:center;column-gap:9px;row-gap:2px;border:1px solid var(--line);border-radius:13px;padding:9px 11px;background:var(--surface);transition:border-color .25s,transform .45s var(--spring)}
+.rm-card:hover{border-color:var(--brand);transform:translateY(-2px)}
+.rm-card.up{border-inline-start:3px solid #0e9f6e}
+.rm-card.down{border-inline-start:3px solid #e02424}
+.rm-flag{grid-area:flag;font-size:19px;line-height:1}
+.rm-name{grid-area:name;font-size:11.5px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:6px;min-width:0}
+.rm-name b{font-size:9.5px;color:var(--brand);background:color-mix(in srgb,var(--brand) 8%,transparent);border-radius:6px;padding:1px 5px;flex:0 0 auto}
+.rm-val{grid-area:val;font-size:12.5px;font-weight:800;color:var(--ink);font-family:var(--font-num);direction:ltr;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:baseline;gap:3px}
+.rm-val i{font-style:normal;font-size:9.5px;font-weight:600;color:var(--muted)}
+.rm-val b{color:var(--ink)}
+.rm-dir{font-style:normal;font-size:9px}
+.rm-card.up .rm-dir{color:#0e9f6e}
+.rm-card.down .rm-dir{color:#e02424}
+.rm-empty{grid-column:1/-1;font-size:12px;color:var(--muted);text-align:center;padding:14px 0}
+.rm-count{font-size:11px;color:var(--muted);margin-top:12px;text-align:center;font-family:var(--font-num)}
+@media (max-width:640px){
+  .rm-grid{grid-template-columns:repeat(auto-fill,minmax(136px,1fr));max-height:44dvh}
+  .rm-panel h3{font-size:19px}
+  .rates-actions{gap:10px}
+}
+/* ماه‌های پله‌ای گیفت کارت */
+.gm-months{margin-bottom:10px}
+.gm-months .gm-chip b{font-size:13px}
+/* پس‌زمینه برند گیفت کارت‌های جدید */
+.gc-spotify{background:linear-gradient(160deg,#0d2818,#1db954)}
+.gc-tg{background:linear-gradient(160deg,#0b2b40,#2aa5e0)}
+.gc-yt{background:linear-gradient(160deg,#3d0808,#ff0000)}
+.gc-discord{background:linear-gradient(160deg,#1a1f52,#5865f2)}
+.gc-gpt{background:linear-gradient(160deg,#06251c,#10a37f)}
+.gc-canva{background:linear-gradient(160deg,#2c0f5e,#7d2ae8 55%,#00c4cc)}
+.gc-razer{background:linear-gradient(160deg,#0a0f07,#44d62c)}
+.gc-roblox{background:linear-gradient(160deg,#1c1c1c,#e2231a)}
+.gc-nintendo{background:linear-gradient(160deg,#3d0404,#e60012)}
+.gc-epic{background:linear-gradient(160deg,#0c0c0c,#313131)}
+.gc-visa{background:linear-gradient(160deg,#0e1440,#1a1f71)}
+.gc-mc{background:linear-gradient(160deg,#3a1010,#eb001b 55%,#f79e1b)}
