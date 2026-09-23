@@ -141,6 +141,8 @@ const checkoutTelegram = () => {
   if (!items.length) { toastFn(t('cart.empty')); return; }
   const { text, code } = buildMessage();
   saveOrder('tg', code);
+  /* اطلاع فوری سفارش به ربات مالک — حتی اگر کاربر پیام را نفرستد */
+  try { if (window.SSNotify) window.SSNotify.order(text, 'cart_tg'); } catch (e) {}
   const url = `${CFG().telegram.url}?text=${encodeURIComponent(text)}`;
   save();
   toastFn(t('cart.sent.tg'));
@@ -152,6 +154,8 @@ const checkoutBale = async () => {
   if (!items.length) { toastFn(t('cart.empty')); return; }
   const { text, code } = buildMessage();
   saveOrder('bale', code);
+  /* اطلاع فوری سفارش به ربات مالک — حتی اگر کاربر پیام را نفرستد */
+  try { if (window.SSNotify) window.SSNotify.order(text, 'cart_bale'); } catch (e) {}
   let copied = false;
   try { await navigator.clipboard.writeText(text); copied = true; } catch (e) {
     try {

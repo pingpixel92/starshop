@@ -822,10 +822,10 @@ const initContactForm = () => {
     lastOrderText = [
       t('order.header'),
       '— — — — —',
-      `${t('cm.name')}: ${name.value.trim()}`,
-      `${t('cm.phone')}: ${ph}`,
+      `${t('cm.name').replace(/\s*\*\s*$/, '')}: ${name.value.trim()}`,
+      `${t('cm.phone').replace(/\s*\*\s*$/, '')}: ${ph}`,
       email.value.trim() ? `${t('cm.email')}: ${email.value.trim()}` : null,
-      `${t('cm.service')}: ${sName}`,
+      `${t('cm.service').replace(/\s*\*\s*$/, '')}: ${sName}`,
       msg.value.trim() ? `${t('cm.msg')}: ${msg.value.trim()}` : null,
       '— — — — —',
       `${t('order.date')}: ${new Date().toLocaleString(locale)}`,
@@ -836,6 +836,8 @@ const initContactForm = () => {
       orders.push({ code: 'SS-FORM', channel: 'form', ts: Date.now(), items: [{ id: service.value, title: sName, qty: 1 }] });
       localStorage.setItem('ss_orders', JSON.stringify(orders.slice(-30)));
     } catch (err) {}
+    /* اطلاع فوری درخواست به ربات مالک — حتی اگر کاربر پیام را نفرستد */
+    try { if (window.SSNotify) window.SSNotify.order(lastOrderText, 'form'); } catch (e) {}
     const mail = $('#doneMail');
     if (mail) mail.href = `mailto:${C.email || 'pingpixel92@gmail.com'}?subject=${encodeURIComponent(t('order.header') + ' — ' + sName)}&body=${encodeURIComponent(lastOrderText)}`;
     form.hidden = true;
