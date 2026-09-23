@@ -31,7 +31,7 @@ let panel = null;
 const findGift = id => D().gifts.find(g => g.id === id) || window.SS_DATA.fa.gifts.find(g => g.id === id);
 /* آیتم‌های هوش مصنوعی (کاتالوگ ایرانیکارت) */
 const findAI = id => (window.SS_AI_TOOLS || []).find(a => a.id === id);
-const IC = () => window.SS_AI_IC || { unitRial: 2333000, refUsdRial: 2225050 };
+const IC = () => window.SS_AI_IC || { unitRial: 2334000, premiumToman: 500000 };
 /* ریجن‌های کارت + استخر کشورهای اضافی (بدون تکرار) — همه کشورها برای همه کارت‌ها */
 const regionsAll = g => g.noExtra ? g.regions : g.regions.concat(((window.SS_DATA[window.SS_LANG || 'fa'] || window.SS_DATA.fa).regionsExtra || []).filter(r => !g.regions.some(x => x.id === r.id)));
 const findRegion = (g, rid) => regionsAll(g).find(r => r.id === rid);
@@ -45,21 +45,18 @@ const baseUsd = () => {
   return cur.value;
 };
 const aiRial = () => {
-  /* فرمول ایرانیکارت: ریال = (دلار + ۱) × unitRial — با نرخ زنده مقیاس می‌شود */
-  const R = window.SSRates; const st = R ? R.get() : null;
-  const usdIrr = st && st.usdIrr ? st.usdIrr : 0;
+  /* قیمت ایرانیکارت: ریال = (دلار + ۱) × نرخ روز ایرانیکارت + ۵۰۰٬۰۰۰ تومان خدمات استارشاپ */
   const ic = IC();
-  const scale = usdIrr ? usdIrr / ic.refUsdRial : 1;
-  return { rial: (baseUsd() + 1) * ic.unitRial * scale, live: !!usdIrr };
+  return { rial: (baseUsd() + 1) * ic.unitRial + (ic.premiumToman || 500000) * 10, live: true };
 };
 const pricing = () => {
   const R = window.SSRates; const st = R ? R.get() : null;
   const usdIrr = st && st.usdIrr ? st.usdIrr : 0;
   const curCode = cur.payCur;
   if (cur.gift.cat) {
-    /* هوش مصنوعی: پرداخت صرفاً تومانی مطابق فرمول ایرانیکارت */
+    /* هوش مصنوعی: قیمت ایرانیکارت + ۵۰۰٬۰۰۰ تومان — پرداخت صرفاً تومانی */
     const a = aiRial();
-    return { rate: usdIrr || IC().refUsdRial, approx: !a.live, pay: a.rial, tomanRial: a.rial, usdIrr: usdIrr || IC().refUsdRial, markup: 0, ready: true, ic: true };
+    return { rate: IC().unitRial / 10, approx: false, pay: a.rial, tomanRial: a.rial, usdIrr: IC().unitRial, markup: 0, ready: true, ic: true };
   }
   let rate, approx = false;
   if (curCode === 'IRR') rate = usdIrr;
@@ -99,7 +96,7 @@ const metaLines = item => {
       return [
         m.type === 'plans' ? `${t('cart.meta.plan')}: ${m.planName || ''}` : `${t('cart.meta.amount')}: ${localDig(m.value)} USD`,
         `${t('cart.meta.pay')}: ~${fmtToman(m.tomanRial)} ${t('rates.toman')}`,
-        `${t('cart.meta.rate')}: 1$ = ${m.usdIrr ? fmtMoney(m.usdIrr, 0) : '—'} IRR`,
+        `${t('cart.meta.icRate')}: 1$ = ${m.usdIrr ? fmtMoney(m.usdIrr, 0) : '—'} IRR`,
         `${t('gift.cfg.icNote')}`
       ];
     }
@@ -209,12 +206,11 @@ const renderAI = () => {
   const p = pricing();
   const lang = window.SS_LANG || 'fa';
   const nm = g.n ? (g.n[lang] || g.t) : g.t;
-  const mono = (g.t || '?').replace(/[^A-Za-z0-9ا-ی]/g, '').charAt(0).toUpperCase() || '?';
 
   const head = `
     <button class="modal-close" data-close-modal aria-label="${escapeHtml(t('cart.close'))}"><svg class="ic" viewBox="0 0 24 24"><use href="#i-close"/></svg></button>
     <div class="gm-head">
-      <span class="gm-logo ai-mono cat-${g.cat}">${escapeHtml(mono)}</span>
+      <span class="gm-logo ai-logo"><img src="assets/logos/ai/${g.id}.webp" alt="" width="40" height="40"></span>
       <div><span class="chip">${t('pay.ai')}</span><h3 id="gmTitle">${escapeHtml(nm)}</h3><p dir="ltr">${escapeHtml(g.t)}</p></div>
     </div>`;
 
@@ -250,7 +246,7 @@ const renderAI = () => {
       <span class="gm-total-label">${t('gift.cfg.total')}</span>
       <b class="gm-total-val">${fmtToman(p.pay)} <i>${t('rates.toman')}</i></b>
       <span class="gm-total-base">${t('gift.cfg.icNote')}</span>
-      <span class="gm-rate" dir="ltr">${t('gift.cfg.rate').replace('{rate}', fmtMoney(p.rate, 0))} <em class="badge${p.approx ? ' off' : ''}">${p.approx ? t('gift.cfg.offline') : t('gift.cfg.live')}</em></span>
+      <span class="gm-rate" dir="ltr">${t('ai.icRate').replace('{rate}', fmtMoney(p.rate, 0))}</span>
     </div>`;
 
   panel.innerHTML = `${head}

@@ -150,13 +150,12 @@ const renderAI = () => {
 
 /* ── فروشگاه هوش مصنوعی (کاتالوگ کامل مطابق ایرانیکارت) ── */
 let aiCat = 'all', aiQ = '';
+/* قیمت = قیمت ایرانیکارت (دلار+۱ × نرخ روز ایرانیکارت) + ۵۰۰٬۰۰۰ تومان خدمات استارشاپ */
 const aiTomanOf = item => {
-  const ic = window.SS_AI_IC || { unitRial: 2333000, refUsdRial: 2225050 };
-  const st = window.SSRates ? window.SSRates.get() : null;
-  const scale = st && st.usdIrr ? st.usdIrr / ic.refUsdRial : 1;
+  const ic = window.SS_AI_IC || { unitRial: 2334000, premiumToman: 500000 };
   const usds = item.plans ? item.plans.map(p => p.usd) : null;
   if (!usds) return null;
-  return (Math.min(...usds) + 1) * ic.unitRial * scale / 10;
+  return (Math.min(...usds) + 1) * ic.unitRial / 10 + (ic.premiumToman || 500000);
 };
 const renderAIShop = () => {
   const grid = $('#aiToolsGrid'); if (!grid) return;
@@ -172,7 +171,6 @@ const renderAIShop = () => {
   const list = tools.filter(x => (aiCat === 'all' || x.cat === aiCat) && (!nq || (x.t + ' ' + (x.n.fa || '') + ' ' + (x.n.en || '')).toLowerCase().includes(nq)));
   grid.innerHTML = list.map((x, i) => {
     const nm = x.n[lang] || x.t;
-    const mono = (x.t || '?').replace(/[^A-Za-z0-9]/g, '').charAt(0).toUpperCase() || '?';
     const tm = aiTomanOf(x);
     const price = x.avail === false
       ? `<span class="ai-price off">${escapeHtml(t('ai.unavail'))}</span>`
@@ -180,7 +178,7 @@ const renderAIShop = () => {
         ? `<span class="ai-price">${(x.plans && x.plans.length > 1) ? escapeHtml(t('ai.from')) + ' ' : ''}<b>${tm.toLocaleString(D().meta.numLocale || 'fa-IR', { maximumFractionDigits: 0 })}</b> ${escapeHtml(t('rates.toman'))}</span>`
         : `<span class="ai-price custom">${escapeHtml(t('ai.customChip'))}</span>`;
     return `<button type="button" class="ai-tool${x.avail === false ? ' disabled' : ''}" data-gift-open="${x.id}" ${x.avail === false ? 'aria-disabled="true"' : ''} style="animation-delay:${Math.min(i, 14) * 25}ms">
-      <span class="ai-mono cat-${x.cat}" aria-hidden="true">${escapeHtml(mono)}</span>
+      <span class="ai-logo" aria-hidden="true"><img src="assets/logos/ai/${x.id}.webp" alt="" loading="lazy"></span>
       <span class="ai-tool-body"><b>${escapeHtml(nm)}</b><i dir="ltr">${escapeHtml(x.t)}</i>${price}</span>
       <svg class="ic go" viewBox="0 0 24 24"><use href="#i-arrow"/></svg>
     </button>`;
