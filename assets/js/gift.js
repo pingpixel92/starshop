@@ -29,6 +29,9 @@ let panel = null;
 
 /* ── lookups ── */
 const findGift = id => D().gifts.find(g => g.id === id) || window.SS_DATA.fa.gifts.find(g => g.id === id);
+/* آیتم‌های هوش مصنوعی (کاتالوگ ایرانیکارت) */
+const findAI = id => (window.SS_AI_TOOLS || []).find(a => a.id === id);
+const IC = () => window.SS_AI_IC || { unitRial: 2333000, refUsdRial: 2225050 };
 /* ریجن‌های کارت + استخر کشورهای اضافی (بدون تکرار) — همه کشورها برای همه کارت‌ها */
 const regionsAll = g => g.noExtra ? g.regions : g.regions.concat(((window.SS_DATA[window.SS_LANG || 'fa'] || window.SS_DATA.fa).regionsExtra || []).filter(r => !g.regions.some(x => x.id === r.id)));
 const findRegion = (g, rid) => regionsAll(g).find(r => r.id === rid);
@@ -38,12 +41,26 @@ const baseUsd = () => {
   if (!cur) return 0;
   const g = cur.gift;
   if (g.type === 'months') return g.tiers ? (g.tiers[cur.value] || 0) : g.perMonth * cur.value;
+  if (g.cat && g.plans) return (g.plans[cur.planIdx] || g.plans[0]).usd;
   return cur.value;
+};
+const aiRial = () => {
+  /* فرمول ایرانیکارت: ریال = (دلار + ۱) × unitRial — با نرخ زنده مقیاس می‌شود */
+  const R = window.SSRates; const st = R ? R.get() : null;
+  const usdIrr = st && st.usdIrr ? st.usdIrr : 0;
+  const ic = IC();
+  const scale = usdIrr ? usdIrr / ic.refUsdRial : 1;
+  return { rial: (baseUsd() + 1) * ic.unitRial * scale, live: !!usdIrr };
 };
 const pricing = () => {
   const R = window.SSRates; const st = R ? R.get() : null;
   const usdIrr = st && st.usdIrr ? st.usdIrr : 0;
   const curCode = cur.payCur;
+  if (cur.gift.cat) {
+    /* هوش مصنوعی: پرداخت صرفاً تومانی مطابق فرمول ایرانیکارت */
+    const a = aiRial();
+    return { rate: usdIrr || IC().refUsdRial, approx: !a.live, pay: a.rial, tomanRial: a.rial, usdIrr: usdIrr || IC().refUsdRial, markup: 0, ready: true, ic: true };
+  }
   let rate, approx = false;
   if (curCode === 'IRR') rate = usdIrr;
   else if (curCode === 'USD') rate = 1;
@@ -63,7 +80,10 @@ const pricing = () => {
 const fmtMoney = (n, frac) => n.toLocaleString(loc(), { maximumFractionDigits: frac == null ? 2 : frac });
 const fmtToman = rial => (rial / 10).toLocaleString(loc(), { maximumFractionDigits: 0 });
 const titleFor = (meta) => {
-  const g = findGift(meta.giftId) || { t: meta.brand };
+  const g = findGift(meta.giftId) || findAI(meta.giftId) || { t: meta.brand, n: { fa: meta.brand, en: meta.brand, ar: meta.brand } };
+  const nm = g.n ? (g.n[window.SS_LANG || 'fa'] || g.t) : g.t;
+  if (meta.type === 'plans') return `${t('pay.ai')} ${nm} — ${meta.planName || ''}`;
+  if (meta.type === 'aiusd') return `${t('pay.ai')} ${nm} — ${localDig(meta.value)}$`;
   return meta.type === 'months'
     ? `${t('pay.gift')} ${g.t} — ${localDig(meta.value)} ${t('cart.meta.month')}`
     : `${t('pay.gift')} ${g.t} — ${localDig(meta.value)}$`;
@@ -73,8 +93,19 @@ const titleFor = (meta) => {
 const metaLines = item => {
   const m = item.meta || {};
   if (m.kind !== 'gift') return [];
-  const g = findGift(m.giftId);
-  const r = g ? findRegion(g, m.regionId) : null;
+  const g = findGift(m.giftId) || findAI(m.giftId);
+  if (!g || g.cat) {
+    if (g && g.cat) {
+      return [
+        m.type === 'plans' ? `${t('cart.meta.plan')}: ${m.planName || ''}` : `${t('cart.meta.amount')}: ${localDig(m.value)} USD`,
+        `${t('cart.meta.pay')}: ~${fmtToman(m.tomanRial)} ${t('rates.toman')}`,
+        `${t('cart.meta.rate')}: 1$ = ${m.usdIrr ? fmtMoney(m.usdIrr, 0) : '—'} IRR`,
+        `${t('gift.cfg.icNote')}`
+      ];
+    }
+    return [];
+  }
+  const r = findRegion(g, m.regionId);
   const regionTxt = `${r ? r.flag + ' ' + r.label : m.regionId}`;
   const rateTxt = m.cur === 'IRR' ? (m.usdIrr ? fmtMoney(m.usdIrr, 0) : '—') : (m.rate ? fmtMoney(m.rate, 2) : '—');
   const rateCur = m.cur === 'IRR' ? 'IRR' : m.cur;
@@ -95,6 +126,7 @@ const metaLines = item => {
 const render = () => {
   if (!cur || !panel) return;
   const g = cur.gift;
+  if (g.cat) return renderAI();
   const region = findRegion(g, cur.regionId);
   const p = pricing();
   const isMonths = g.type === 'months';
@@ -171,6 +203,64 @@ const render = () => {
   bindPanel();
 };
 
+/* ── render مودال هوش مصنوعی (کاتالوگ ایرانیکارت) ── */
+const renderAI = () => {
+  const g = cur.gift;
+  const p = pricing();
+  const lang = window.SS_LANG || 'fa';
+  const nm = g.n ? (g.n[lang] || g.t) : g.t;
+  const mono = (g.t || '?').replace(/[^A-Za-z0-9ا-ی]/g, '').charAt(0).toUpperCase() || '?';
+
+  const head = `
+    <button class="modal-close" data-close-modal aria-label="${escapeHtml(t('cart.close'))}"><svg class="ic" viewBox="0 0 24 24"><use href="#i-close"/></svg></button>
+    <div class="gm-head">
+      <span class="gm-logo ai-mono cat-${g.cat}">${escapeHtml(mono)}</span>
+      <div><span class="chip">${t('pay.ai')}</span><h3 id="gmTitle">${escapeHtml(nm)}</h3><p dir="ltr">${escapeHtml(g.t)}</p></div>
+    </div>`;
+
+  if (g.avail === false) {
+    panel.innerHTML = `${head}
+      <p class="gm-note" style="margin-top:18px">${t('ai.unavail')}</p>`;
+    bindPanel();
+    return;
+  }
+
+  let chooseUI = '';
+  if (g.plans) {
+    chooseUI = `
+      <div class="gm-chips gm-months">${g.plans.map((pl, i) => `
+        <button type="button" class="gm-chip${i === cur.planIdx ? ' on' : ''}" data-gm-plan="${i}"><span>${escapeHtml(pl.nf && lang === 'fa' ? pl.nf : pl.n)}</span><b dir="ltr">${localDig(pl.usd)}$</b></button>`).join('')}
+      </div>
+      <div class="gm-range-note">${t('ai.pickPlan')}</div>`;
+  } else {
+    const presets = (g.presets || []).map(v => `<button type="button" class="gm-chip gm-amount${v === cur.value ? ' on' : ''}" data-gm-amount="${v}">${localDig(v)}$</button>`).join('');
+    chooseUI = `
+      <div class="gm-presets">${presets}
+        <button type="button" class="gm-chip gm-amount${!(g.presets || []).includes(cur.value) ? ' on' : ''}" data-gm-amount="custom">${t('gift.cfg.custom')}</button>
+      </div>
+      <div class="gm-slider-row">
+        <input type="range" class="gm-range" data-gm-range min="${g.min}" max="${g.max}" step="${g.step}" value="${cur.value}" dir="ltr" aria-label="${escapeHtml(t('gift.cfg.amount'))}">
+        <input type="number" class="gm-num" data-gm-num min="${g.min}" max="${g.max}" step="${g.step}" value="${cur.value}" dir="ltr" inputmode="numeric" aria-label="${escapeHtml(t('gift.cfg.amount'))}">
+      </div>
+      <div class="gm-range-note">${localDig(g.min)}$ – ${localDig(g.max)}$ · ${t('ai.customNote')}</div>`;
+  }
+
+  const totalBox = `
+    <div class="gm-total">
+      <span class="gm-total-label">${t('gift.cfg.total')}</span>
+      <b class="gm-total-val">${fmtToman(p.pay)} <i>${t('rates.toman')}</i></b>
+      <span class="gm-total-base">${t('gift.cfg.icNote')}</span>
+      <span class="gm-rate" dir="ltr">${t('gift.cfg.rate').replace('{rate}', fmtMoney(p.rate, 0))} <em class="badge${p.approx ? ' off' : ''}">${p.approx ? t('gift.cfg.offline') : t('gift.cfg.live')}</em></span>
+    </div>`;
+
+  panel.innerHTML = `${head}
+    <div class="gm-sec"><h4>${g.plans ? t('ai.plans') : t('gift.cfg.amount')}</h4>${chooseUI}</div>
+    ${totalBox}
+    <button class="btn btn-primary btn-lg w100" type="button" data-gm-add><svg class="ic" viewBox="0 0 24 24"><use href="#i-cart"/></svg>${t('gift.cfg.add')}</button>`;
+
+  bindPanel();
+};
+
 const brandClass = g => {
   const map = { 'gift-apple':'apple', 'gift-steam':'steam', 'gift-ps':'ps', 'gift-xbox':'xbox', 'gift-amazon':'amazon', 'gift-pubg':'pubg', 'gift-ff':'ff', 'gift-netflix':'netflix', 'gift-gplay':'gplay', 'gift-spotify':'spotify', 'gift-telegram':'tg', 'gift-youtube':'yt', 'gift-discord':'discord', 'gift-chatgpt':'gpt', 'gift-canva':'canva', 'gift-razer':'razer', 'gift-roblox':'roblox', 'gift-nintendo':'nintendo', 'gift-epic':'epic', 'gift-visa':'visa', 'gift-master':'mc' };
   return map[g.id] || 'steam';
@@ -208,13 +298,31 @@ const bindPanel = () => {
     cur.value = +b.dataset.gmMonth;
     render();
   }));
+  $$('[data-gm-plan]', panel).forEach(b => b.addEventListener('click', () => {
+    cur.planIdx = +b.dataset.gmPlan;
+    render();
+  }));
   $$('[data-gm-cur]', panel).forEach(b => b.addEventListener('click', () => { cur.payCur = b.dataset.gmCur; render(); }));
   const add = $('[data-gm-add]', panel);
   if (add) add.addEventListener('click', () => {
     const g = cur.gift;
-    const region = findRegion(g, cur.regionId);
     const p = pricing();
     if (!p.ready) return;
+    if (g.cat) {
+      const pl = g.plans ? (g.plans[cur.planIdx] || g.plans[0]) : null;
+      const meta = {
+        kind: 'gift', giftId: g.id, brand: g.t, type: g.plans ? 'plans' : 'aiusd',
+        cur: 'IRR', value: g.plans ? cur.planIdx : cur.value, planName: pl ? pl.n : '',
+        usd: baseUsd(), pay: p.pay, tomanRial: p.tomanRial, usdIrr: p.usdIrr, rate: p.rate
+      };
+      const id = `gift:${g.id}:${g.plans ? 'p' + cur.planIdx : 'usd' + cur.value}`;
+      const title = titleFor(meta);
+      if (window.SSCart) window.SSCart.add(id, title, 1, meta);
+      if (window.SSUI && window.SSUI.closeModal) window.SSUI.closeModal($('#giftModal'));
+      if (window.SSUI && window.SSUI.openCart) setTimeout(() => window.SSUI.openCart(), 260);
+      return;
+    }
+    const region = findRegion(g, cur.regionId);
     const meta = {
       kind: 'gift', giftId: g.id, brand: g.t, type: g.type,
       regionId: cur.regionId, cur: cur.payCur, value: cur.value,
@@ -249,10 +357,16 @@ const open = giftId => {
   if (lastOpen.id === giftId && now - lastOpen.t < 250) return; /* ضد دوباره‌زنی (اتصال مستقیم + delegation) */
   lastOpen.id = giftId; lastOpen.t = now;
   const g = findGift(giftId);
-  if (!g) return;
+  const a = g ? null : findAI(giftId);
+  if (!g && !a) return;
   panel = $('#giftPanel');
   if (!panel) return;
-  cur = { gift: g, regionId: g.regions[0].id, value: g.type === 'months' ? (g.monthOpts ? g.monthOpts[0] : g.minM) : (g.presets ? g.presets[0] : g.min), payCur: g.regions[0].cur };
+  if (a) {
+    const ai = Object.assign({}, a, a.custom ? { min: 5, max: 500, step: 1, presets: [10, 20, 50, 100] } : {});
+    cur = { gift: ai, planIdx: 0, value: a.custom ? 10 : 0, payCur: 'IRR' };
+  } else {
+    cur = { gift: g, regionId: g.regions[0].id, value: g.type === 'months' ? (g.monthOpts ? g.monthOpts[0] : g.minM) : (g.presets ? g.presets[0] : g.min), payCur: g.regions[0].cur };
+  }
   render();
   const m = $('#giftModal');
   if (m && window.SSUI) window.SSUI.openModal(m);
@@ -263,7 +377,7 @@ document.addEventListener('click', e => {
   const el = e.target.closest('[data-gift-open]');
   if (el) { open(el.dataset.giftOpen); }
 });
-document.addEventListener('ss:lang', () => { if (cur && panel && !$('#giftModal').hidden) { const id = cur.gift.id; const keep = { regionId: cur.regionId, value: cur.value, payCur: cur.payCur }; const g = findGift(id); if (g) { cur = Object.assign({ gift: g }, keep); render(); } } });
+document.addEventListener('ss:lang', () => { if (cur && panel && !$('#giftModal').hidden) { const id = cur.gift.id; const keep = cur.gift.cat ? { planIdx: cur.planIdx, value: cur.value, payCur: cur.payCur } : { regionId: cur.regionId, value: cur.value, payCur: cur.payCur }; const g = findGift(id) || findAI(id); if (g) { cur = Object.assign({ gift: g.cat ? Object.assign({}, g, g.custom ? { min: 5, max: 500, step: 1, presets: [10, 20, 50, 100] } : {}) : g }, keep); render(); } } });
 if (window.SSRates) window.SSRates.subscribe(() => { if (cur && panel && $('#giftModal') && !$('#giftModal').hidden) { /* recalc فقط قیمت */ const tb = $('.gm-total', panel) || $('.gm-total.loading', panel); if (tb) render(); } });
 
 /* ── public API ── */

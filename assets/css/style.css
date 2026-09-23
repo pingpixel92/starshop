@@ -979,3 +979,44 @@ body[data-theme="dark"] .art-item{background:rgba(255,255,255,.04)}
 .gc-epic{background:linear-gradient(160deg,#0c0c0c,#313131)}
 .gc-visa{background:linear-gradient(160deg,#0e1440,#1a1f71)}
 .gc-mc{background:linear-gradient(160deg,#3a1010,#eb001b 55%,#f79e1b)}
+
+/* ═══ فروشگاه هوش مصنوعی — کاتالوگ کامل (مطابق ایرانیکارت) ═══ */
+.ai-shop{margin-top:34px;border:1px solid var(--line);border-radius:22px;background:var(--surface);padding:22px 20px 20px}
+.ai-shop-head h3{font-size:21px;font-weight:900;color:var(--ink);margin:0 0 4px}
+.ai-shop-head p{font-size:12.5px;color:var(--muted);margin:0}
+.ai-shop-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin:16px 0 14px}
+.ai-cats{display:flex;flex-wrap:wrap;gap:7px}
+.ai-cat{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:999px;padding:7px 14px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .3s var(--spring)}
+.ai-cat:hover{border-color:var(--brand);color:var(--brand)}
+.ai-cat.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.ai-search{position:relative;flex:1 1 200px;max-width:270px}
+.ai-search input{width:100%;border:1px solid var(--line);border-radius:12px;padding:9px 38px 9px 12px;font-size:12.5px;font-family:inherit;background:var(--bg);color:var(--ink);outline:none;transition:border-color .25s}
+.ai-search input:focus{border-color:var(--brand)}
+.ai-search .ic{position:absolute;inset-inline-start:12px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--muted);pointer-events:none}
+.ai-tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:9px}
+.ai-tool{display:flex;align-items:center;gap:11px;border:1px solid var(--line);border-radius:14px;padding:10px 12px;background:var(--bg);cursor:pointer;text-align:start;font-family:inherit;transition:border-color .25s,transform .45s var(--spring),box-shadow .3s}
+.ai-tool:hover{border-color:var(--brand);transform:translateY(-2px);box-shadow:0 8px 22px -14px color-mix(in srgb,var(--brand) 55%,transparent)}
+.ai-tool.disabled{opacity:.55;cursor:not-allowed}
+.ai-tool .go{margin-inline-start:auto;width:15px;height:15px;color:var(--muted);transition:transform .3s}
+.ai-tool:hover .go{color:var(--brand);transform:translateX(var(--go-dir,4px))}
+[dir="rtl"] .ai-tool:hover .go{transform:translateX(-4px)}
+.ai-mono{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:12px;color:#fff;font-weight:900;font-size:16px;flex:0 0 auto;letter-spacing:0}
+.ai-mono.cat-text{background:linear-gradient(150deg,#2563eb,#7c3aed)}
+.ai-mono.cat-av{background:linear-gradient(150deg,#9333ea,#db2777)}
+.ai-mono.cat-code{background:linear-gradient(150deg,#059669,#0d9488)}
+.gm-logo.ai-mono{width:52px;height:52px;font-size:20px;border-radius:15px}
+.ai-tool-body{display:flex;flex-direction:column;gap:1px;min-width:0}
+.ai-tool-body b{font-size:13px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ai-tool-body i{font-style:normal;font-size:10px;color:var(--muted);direction:ltr;text-align:start;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ai-price{font-size:11px;color:var(--muted);margin-top:3px;font-family:var(--font-num)}
+.ai-price b{color:var(--brand);font-weight:800}
+.ai-price.custom{color:#b45309}
+.ai-price.off{color:#e02424}
+.ai-none{grid-column:1/-1;text-align:center;font-size:12.5px;color:var(--muted);padding:22px 0}
+@media (max-width:640px){
+  .ai-tools{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
+  .ai-shop{padding:18px 14px 16px}
+  .ai-mono{width:34px;height:34px;font-size:14px;border-radius:10px}
+  .ai-tool-body b{font-size:12px}
+  .ai-price{font-size:10.5px}
+}

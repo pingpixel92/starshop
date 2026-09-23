@@ -148,6 +148,49 @@ const renderAI = () => {
   }).join('');
 };
 
+/* ── فروشگاه هوش مصنوعی (کاتالوگ کامل مطابق ایرانیکارت) ── */
+let aiCat = 'all', aiQ = '';
+const aiTomanOf = item => {
+  const ic = window.SS_AI_IC || { unitRial: 2333000, refUsdRial: 2225050 };
+  const st = window.SSRates ? window.SSRates.get() : null;
+  const scale = st && st.usdIrr ? st.usdIrr / ic.refUsdRial : 1;
+  const usds = item.plans ? item.plans.map(p => p.usd) : null;
+  if (!usds) return null;
+  return (Math.min(...usds) + 1) * ic.unitRial * scale / 10;
+};
+const renderAIShop = () => {
+  const grid = $('#aiToolsGrid'); if (!grid) return;
+  const tools = window.SS_AI_TOOLS || [];
+  const lang = window.SS_LANG || 'fa';
+  const catsBox = $('#aiCats');
+  if (catsBox) {
+    const cats = [['all', t('ai.catAll')], ['text', t('ai.catText')], ['av', t('ai.catAV')], ['code', t('ai.catCode')]];
+    catsBox.innerHTML = cats.map(([k, lb]) => `<button type="button" class="ai-cat${aiCat === k ? ' on' : ''}" data-ai-cat="${k}">${escapeHtml(lb)}</button>`).join('');
+    $$('[data-ai-cat]', catsBox).forEach(b => b.addEventListener('click', () => { aiCat = b.dataset.aiCat; renderAIShop(); }));
+  }
+  const nq = aiQ.trim().toLowerCase();
+  const list = tools.filter(x => (aiCat === 'all' || x.cat === aiCat) && (!nq || (x.t + ' ' + (x.n.fa || '') + ' ' + (x.n.en || '')).toLowerCase().includes(nq)));
+  grid.innerHTML = list.map((x, i) => {
+    const nm = x.n[lang] || x.t;
+    const mono = (x.t || '?').replace(/[^A-Za-z0-9]/g, '').charAt(0).toUpperCase() || '?';
+    const tm = aiTomanOf(x);
+    const price = x.avail === false
+      ? `<span class="ai-price off">${escapeHtml(t('ai.unavail'))}</span>`
+      : tm != null
+        ? `<span class="ai-price">${(x.plans && x.plans.length > 1) ? escapeHtml(t('ai.from')) + ' ' : ''}<b>${tm.toLocaleString(D().meta.numLocale || 'fa-IR', { maximumFractionDigits: 0 })}</b> ${escapeHtml(t('rates.toman'))}</span>`
+        : `<span class="ai-price custom">${escapeHtml(t('ai.customChip'))}</span>`;
+    return `<button type="button" class="ai-tool${x.avail === false ? ' disabled' : ''}" data-gift-open="${x.id}" ${x.avail === false ? 'aria-disabled="true"' : ''} style="animation-delay:${Math.min(i, 14) * 25}ms">
+      <span class="ai-mono cat-${x.cat}" aria-hidden="true">${escapeHtml(mono)}</span>
+      <span class="ai-tool-body"><b>${escapeHtml(nm)}</b><i dir="ltr">${escapeHtml(x.t)}</i>${price}</span>
+      <svg class="ic go" viewBox="0 0 24 24"><use href="#i-arrow"/></svg>
+    </button>`;
+  }).join('') || `<p class="ai-none">${escapeHtml(t('ai.none'))}</p>`;
+};
+const initAIShop = () => {
+  const inp = $('#aiSearch'); if (!inp) return;
+  inp.addEventListener('input', () => { aiQ = inp.value; renderAIShop(); });
+};
+
 const renderGifts = () => {
   const g = $('#giftTrack'); if (!g) return;
   g.innerHTML = D().gifts.map((x, i) => {
@@ -241,7 +284,7 @@ const renderFAQ = () => {
 
 const renderAll = () => {
   renderHeroCard(); renderQuick(); renderExplorer(); renderSelect();
-  renderPay(); renderAI(); renderGifts(); renderBanks(); renderPP();
+  renderPay(); renderAI(); renderAIShop(); renderGifts(); renderBanks(); renderPP();
   renderShop(); renderIncome(); renderExams(); renderHW(); renderHow();
   renderWhy(); renderStats(); renderTestimonials(); renderMag(); renderFAQ();
   wireDirect();
@@ -893,7 +936,7 @@ const boot = async () => {
   splitWords();
   initScroll(); initAnchors(); initTheme(); initProgress(); initHeaderState();
   initCursor(); initMagnetic(); initTilt();
-  initMenu(); initLangToggle(); initSearch(); initContactForm(); initCalcForm();
+  initMenu(); initLangToggle(); initSearch(); initContactForm(); initCalcForm(); initAIShop();
   initProcess(); initHow(); initStats(); initDelegation();
   initCarousel($('#giftTrack'), $('#giftPrev'), $('#giftNext'), 4200);
   initCarousel($('#testTrack'), $('#testPrev'), $('#testNext'), 5200);
