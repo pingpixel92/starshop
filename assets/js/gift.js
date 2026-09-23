@@ -210,7 +210,7 @@ const renderAI = () => {
   const head = `
     <button class="modal-close" data-close-modal aria-label="${escapeHtml(t('cart.close'))}"><svg class="ic" viewBox="0 0 24 24"><use href="#i-close"/></svg></button>
     <div class="gm-head">
-      <span class="gm-logo ai-logo"><img src="assets/logos/ai/${g.id}.webp" alt="" width="40" height="40"></span>
+      <span class="gm-logo ai-logo"><img src="assets/logos/ai/${g.id}.webp?v=20260932" alt="" width="48" height="48"></span>
       <div><span class="chip">${t('pay.ai')}</span><h3 id="gmTitle">${escapeHtml(nm)}</h3><p dir="ltr">${escapeHtml(g.t)}</p></div>
     </div>`;
 

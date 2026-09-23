@@ -178,7 +178,7 @@ const renderAIShop = () => {
         ? `<span class="ai-price">${(x.plans && x.plans.length > 1) ? escapeHtml(t('ai.from')) + ' ' : ''}<b>${tm.toLocaleString(D().meta.numLocale || 'fa-IR', { maximumFractionDigits: 0 })}</b> ${escapeHtml(t('rates.toman'))}</span>`
         : `<span class="ai-price custom">${escapeHtml(t('ai.customChip'))}</span>`;
     return `<button type="button" class="ai-tool${x.avail === false ? ' disabled' : ''}" data-gift-open="${x.id}" ${x.avail === false ? 'aria-disabled="true"' : ''} style="animation-delay:${Math.min(i, 14) * 25}ms">
-      <span class="ai-logo" aria-hidden="true"><img src="assets/logos/ai/${x.id}.webp" alt="" loading="lazy"></span>
+      <span class="ai-logo" aria-hidden="true"><img src="assets/logos/ai/${x.id}.webp?v=20260932" alt="" loading="lazy"></span>
       <span class="ai-tool-body"><b>${escapeHtml(nm)}</b><i dir="ltr">${escapeHtml(x.t)}</i>${price}</span>
       <svg class="ic go" viewBox="0 0 24 24"><use href="#i-arrow"/></svg>
     </button>`;
