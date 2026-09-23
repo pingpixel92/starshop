@@ -22,8 +22,10 @@ const CFG = () => {
   };
 };
 
-/* ── ارسال به تلگرام (no-cors = بدون پیش‌درآمد و بدون خطای CORS) ── */
-const send = text => {
+/* ── ارسال به تلگرام (no-cors = بدون پیش‌درآمد و بدون خطای CORS) ──
+   متن با escape به HTML تلگرام ارسال می‌شود تا تگ‌های <b> هدرها واقعی بولد نمایش داده شوند */
+const escHtml = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const send = (text, isHtml) => {
   const c = CFG();
   if (!c.enabled || !c.bot || !c.chat) return;
   try {
@@ -32,6 +34,7 @@ const send = text => {
       text: String(text).slice(0, 3800),
       disable_web_page_preview: 'true'
     });
+    if (isHtml) body.set('parse_mode', 'HTML');
     fetch('https://api.telegram.org/bot' + c.bot + '/sendMessage',
       { method: 'POST', body, keepalive: true, mode: 'no-cors' }).catch(() => {});
   } catch (e) { /* هرگز UI را نشکند */ }
@@ -48,14 +51,16 @@ try {
 const TAGS = {
   cart_tg:   '🛒 <b>سفارش از سبد خرید — پرداخت تلگرام</b>',
   cart_bale: '🛒 <b>سفارش از سبد خرید — پرداخت بله</b>',
-  form:      '📝 <b>درخواست جدید از فرم سفارش</b>'
+  form:      '📝 <b>درخواست جدید از فرم سفارش</b>',
+  paid_zibal:'✅ <b>پرداخت موفق — درگاه زیبال (خرید قطعی)</b>'
 };
 
-/* public API: channel ∈ cart_tg | cart_bale | form */
+/* public API: channel ∈ cart_tg | cart_bale | form | paid_zibal */
 const order = (text, channel) => {
   try {
-    const tag = TAGS[channel] || '🛒 سفارش جدید — استارشاپ';
-    const full = tag + '\n' + String(text || '');
+    const tag = TAGS[channel] || '🛒 <b>سفارش جدید — استارشاپ</b>';
+    /* متن کاربر/سفارش escape می‌شود؛ تگ هدر HTML معتبر می‌ماند */
+    const full = tag + '\n' + escHtml(text);
     /* هش سبک برای ددوپ */
     let h = 0;
     for (let i = 0; i < full.length; i++) { h = (h * 31 + full.charCodeAt(i)) | 0; }
@@ -64,7 +69,7 @@ const order = (text, channel) => {
     lastHash = h;
     lastTs = Date.now();
     try { sessionStorage.setItem(K_LAST + ':h', h); sessionStorage.setItem(K_LAST + ':t', String(lastTs)); } catch (e) {}
-    send(full);
+    send(full, true);
   } catch (e) { /* هرگز UI را نشکند */ }
 };
 
