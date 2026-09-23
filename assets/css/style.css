@@ -943,7 +943,7 @@ body[data-theme="dark"] .art-item{background:rgba(255,255,255,.04)}
 .rm-h4{font-size:13px;font-weight:800;margin:14px 0 9px;color:var(--ink)}
 .rm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:8px;max-height:340px;overflow-y:auto;overscroll-behavior:contain;padding:2px}
 .rm-grid-gold{max-height:none}
-.rm-card{display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:"flag name val" "flag val val";align-items:center;column-gap:9px;row-gap:2px;border:1px solid var(--line);border-radius:13px;padding:9px 11px;background:var(--surface);transition:border-color .25s,transform .45s var(--spring)}
+.rm-card{display:grid;grid-template-columns:auto 1fr;grid-template-areas:"flag name" "flag val";align-items:center;column-gap:9px;row-gap:2px;border:1px solid var(--line);border-radius:13px;padding:9px 11px;background:var(--surface);transition:border-color .25s,transform .45s var(--spring)}
 .rm-card:hover{border-color:var(--brand);transform:translateY(-2px)}
 .rm-card.up{border-inline-start:3px solid #0e9f6e}
 .rm-card.down{border-inline-start:3px solid #e02424}
