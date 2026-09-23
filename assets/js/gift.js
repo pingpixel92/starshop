@@ -20,8 +20,8 @@ const localDig = n => {
   return String(n);
 };
 
-/* نرخ فالبک ارزها وقتی سرویس زنده در دسترس نیست (تقریبی) */
-const FALLBACK_FX = { AED: 3.67, EUR: 0.92, TRY: 34, GBP: 0.79, SAR: 3.75, CAD: 1.37, AUD: 1.50 };
+/* نرخ فالبک ارزها وقتی سرویس زنده در دسترس نیست (تقریبی — هر واحد به ازای ۱ دلار) */
+const FALLBACK_FX = { AED: 3.67, EUR: 0.92, TRY: 34, GBP: 0.79, SAR: 3.75, QAR: 3.64, KWD: 0.31, CAD: 1.37, AUD: 1.50, CHF: 0.88, CNY: 7.10, JPY: 150, INR: 84, RUB: 92 };
 const RIAL_NAMES  = { fa: 'ریال ایران', en: 'Iranian Rial', ar: 'الريال الإيراني' };
 
 let cur = null;   // {gift, regionId, value, payCur}
@@ -29,7 +29,9 @@ let panel = null;
 
 /* ── lookups ── */
 const findGift = id => D().gifts.find(g => g.id === id) || window.SS_DATA.fa.gifts.find(g => g.id === id);
-const findRegion = (g, rid) => g.regions.find(r => r.id === rid);
+/* ریجن‌های کارت + استخر کشورهای اضافی (بدون تکرار) — همه کشورها برای همه کارت‌ها */
+const regionsAll = g => g.regions.concat(((window.SS_DATA[window.SS_LANG || 'fa'] || window.SS_DATA.fa).regionsExtra || []).filter(r => !g.regions.some(x => x.id === r.id)));
+const findRegion = (g, rid) => regionsAll(g).find(r => r.id === rid);
 
 /* ── pricing ── */
 const baseUsd = () => {
@@ -96,7 +98,7 @@ const render = () => {
   const p = pricing();
   const isMonths = g.type === 'months';
 
-  const regionChips = g.regions.map(r => `
+  const regionChips = regionsAll(g).map(r => `
     <button type="button" class="gm-chip${r.id === cur.regionId ? ' on' : ''}" data-gm-region="${r.id}">
       <span class="gm-flag">${r.flag}</span><span>${escapeHtml(r.label)}</span><b dir="ltr">${r.cur}</b>
     </button>`).join('');

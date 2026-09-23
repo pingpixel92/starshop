@@ -841,8 +841,9 @@ body[data-theme="dark"] .art-item{background:rgba(255,255,255,.04)}
 .rates-head .ic{width:16px;height:16px;color:var(--accent)}
 .rates-refresh{font-size:12px}
 .rates-refresh.spin{opacity:.5;pointer-events:none}
-.rates-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-.rate-chip{background:color-mix(in srgb,var(--brand) 4%,transparent);border:1px solid var(--line);border-radius:14px;padding:10px 14px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.rates-row{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;padding-bottom:4px}
+.rates-row::-webkit-scrollbar{display:none}
+.rate-chip{background:color-mix(in srgb,var(--brand) 4%,transparent);border:1px solid var(--line);border-radius:14px;padding:10px 14px;display:flex;flex-direction:column;gap:3px;flex:0 0 auto;min-width:148px}
 .rate-label{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rate-val{font-size:14px;font-weight:800;color:var(--ink);font-family:var(--font-num);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;direction:ltr;text-align:left}
 .rate-val i{font-style:normal;font-size:10.5px;font-weight:600;color:var(--muted)}
@@ -850,9 +851,11 @@ body[data-theme="dark"] .art-item{background:rgba(255,255,255,.04)}
 .rate-dir{font-style:normal;font-size:10px;margin-inline-start:2px}
 .rate-chip.up .rate-dir{color:#0e9f6e}
 .rate-chip.down .rate-dir{color:#e02424}
-.rates-meta{margin-top:10px;font-size:11px;color:var(--muted)}
+.rates-meta{margin-top:10px;font-size:11px;color:var(--muted);display:flex;align-items:center;gap:7px}
 .rates-meta.offline{color:#b45309}
-@media (max-width:820px){.rates-row{grid-template-columns:repeat(2,1fr)}}
+.dot-live{width:7px;height:7px;border-radius:50%;background:#0e9f6e;box-shadow:0 0 0 0 rgba(14,159,110,.55);animation:ssPulse 1.6s infinite}
+@keyframes ssPulse{0%{box-shadow:0 0 0 0 rgba(14,159,110,.5)}70%{box-shadow:0 0 0 7px rgba(14,159,110,0)}100%{box-shadow:0 0 0 0 rgba(14,159,110,0)}}
+@media (max-width:820px){.rate-chip{min-width:136px}}
 
 /* ═════════ v3 — مودال گیفت کارت ═════════ */
 .gift-panel{width:min(600px,100%)}

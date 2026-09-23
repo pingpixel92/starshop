@@ -254,6 +254,11 @@ const init = () => {
   renderBadge(); renderDrawer();
   document.addEventListener('ss:lang', () => { renderBadge(); renderDrawer(); });
   document.addEventListener('ss:auth', () => { reloadForUser(); renderBadge(); renderDrawer(); });
+  /* نرخ لحظه‌ای عوض شد → قیمت‌های تومانی سبد باز همیشه تازه بمانند */
+  if (window.SSRates) window.SSRates.subscribe(() => {
+    const m = document.getElementById('cartModal');
+    if (m && !m.hidden) renderDrawer();
+  });
 };
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
