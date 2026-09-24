@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 352" role="img" aria-label="کارت بانکی استار شاپ">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0a1f4d"/>
+      <stop offset=".45" stop-color="#1557d6"/>
+      <stop offset="1" stop-color="#071a3a"/>
+    </linearGradient>
+    <linearGradient id="sheen" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".22"/>
+      <stop offset=".5" stop-color="#ffffff" stop-opacity=".04"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="chip" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffe08a"/>
+      <stop offset=".5" stop-color="#f7c948"/>
+      <stop offset="1" stop-color="#d9930a"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#f7c948"/>
+      <stop offset="1" stop-color="#ffe9a8"/>
+    </linearGradient>
+    <radialGradient id="orb1" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#4e8cff" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#4e8cff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="orb2" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#00a6a6" stop-opacity=".4"/>
+      <stop offset="1" stop-color="#00a6a6" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- body -->
+  <rect x="0" y="0" width="560" height="352" rx="30" fill="url(#bg)"/>
+  <circle cx="470" cy="30" r="150" fill="url(#orb1)"/>
+  <circle cx="60" cy="330" r="160" fill="url(#orb2)"/>
+  <polygon points="0,352 230,0 330,0 60,352" fill="url(#sheen)"/>
+  <rect x="0" y="0" width="560" height="352" rx="30" fill="none" stroke="#ffffff" stroke-opacity=".16" stroke-width="1.5"/>
+
+  <!-- top row -->
+  <g font-family="Vazirmatn, Tahoma, 'Segoe UI', sans-serif">
+    <text x="528" y="52" text-anchor="end" fill="#ffffff" fill-opacity=".95" font-size="20" font-weight="700">بانک ملی ایران</text>
+    <text x="528" y="76" text-anchor="end" fill="#9ec3ff" fill-opacity=".85" font-size="12" font-weight="600">MEMBER SINCE 2024</text>
+
+    <!-- star brand -->
+    <g transform="translate(34,30)">
+      <path d="M14 1.6l3.5 7.6 8.3 1-6.2 5.7 1.7 8.2-7.3-4.1-7.3 4.1 1.7-8.2L2.2 10.2l8.3-1z" fill="url(#gold)"/>
+      <text x="34" y="20" fill="#ffffff" font-size="17" font-weight="800" letter-spacing="3">STARSHOP</text>
+    </g>
+
+    <!-- contactless -->
+    <g transform="translate(34,96)" stroke="#ffffff" stroke-opacity=".85" stroke-width="3.4" fill="none" stroke-linecap="round">
+      <path d="M4 8a18 18 0 0 1 0 22"/>
+      <path d="M12 3a26 26 0 0 1 0 32"/>
+      <path d="M20 -2a34 34 0 0 1 0 42"/>
+    </g>
+  </g>
+
+  <!-- chip -->
+  <g transform="translate(34,150)">
+    <rect x="0" y="0" width="62" height="46" rx="9" fill="url(#chip)" stroke="#b47b06" stroke-width="1"/>
+    <path d="M0 15h20M0 31h20M42 15h20M42 31h20M31 0v46M20 15c7 3 7 11 0 14M42 15c-7 3-7 11 0 14" stroke="#8a5c04" stroke-width="1.6" fill="none"/>
+  </g>
+
+  <!-- number -->
+  <g font-family="Vazirmatn, Tahoma, 'Segoe UI', sans-serif" fill="#ffffff">
+    <text x="280" y="238" text-anchor="middle" font-size="34" font-weight="800" letter-spacing="5" direction="ltr" style="text-shadow:0 2px 10px rgba(0,0,0,.4)">6104 3311 8892 8551</text>
+    <text x="280" y="262" text-anchor="middle" font-size="10.5" font-weight="600" letter-spacing="6" fill="#9ec3ff" direction="ltr">6104 ------ 8551</text>
+  </g>
+
+  <!-- holder -->
+  <g font-family="Vazirmatn, Tahoma, 'Segoe UI', sans-serif">
+    <text x="528" y="316" text-anchor="end" fill="#ffffff" fill-opacity=".92" font-size="17" font-weight="700">به نام: مجید احمدوند</text>
+    <text x="34" y="316" fill="#9ec3ff" fill-opacity=".9" font-size="12" font-weight="700" letter-spacing="2" direction="ltr">PREMIUM CARD</text>
+  </g>
+</svg>

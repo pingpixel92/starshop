@@ -445,7 +445,7 @@ function verdict(pass, checks, ctx) {
     return `<li class="${c.state}"><span class="ci">${ic}</span><span><b>${esc2(c.k)}:</b> ${esc2(c.msg)}</span></li>`;
   }).join('');
   const v = $('#verdict');
-  v.className = 'verdict ' + (pass ? 'pass' : 'fail');
+  v.className = 'c2c-verdict ' + (pass ? 'pass' : 'fail');
   v.innerHTML = pass
     ? '🎉 فیش شما تأیید شد! حالا برای ارسال به پشتیبانی، دکمه زیر را بزنید.'
     : '❌ فیش تأیید نشد — موارد قرمز بالا را اصلاح کنید و فیش درست را آپلود کنید.';

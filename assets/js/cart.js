@@ -1,7 +1,6 @@
 /* ═══════════════════════════════════════════════════
    STARSHOP — cart.js
-   سبد خرید + پرداخت از طریق تلگرام و بله
-   با ارسال خودکار جزئیات سفارش (بدون تایپ توسط کاربر)
+   سبد خرید + پرداخت کارت به کارت (آپلود فیش + تایید هوش مصنوعی)
    ═══════════════════════════════════════════════════ */
 (() => {
 'use strict';
@@ -150,41 +149,6 @@ const buildMessage = () => {
   return { text: L.join('\n'), code };
 };
 
-/* ── checkout channels ── */
-const checkoutTelegram = () => {
-  if (!items.length) { toastFn(t('cart.empty')); return; }
-  const { text, code } = buildMessage();
-  saveOrder('tg', code);
-  /* اطلاع فوری سفارش به ربات مالک — حتی اگر کاربر پیام را نفرستد */
-  try { if (window.SSNotify) window.SSNotify.order(text, 'cart_tg'); } catch (e) {}
-  const url = `${CFG().telegram.url}?text=${encodeURIComponent(text)}`;
-  save();
-  toastFn(t('cart.sent.tg'));
-  const w = window.open(url, '_blank', 'noopener,noreferrer');
-  if (!w) location.href = url;
-};
-
-const checkoutBale = async () => {
-  if (!items.length) { toastFn(t('cart.empty')); return; }
-  const { text, code } = buildMessage();
-  saveOrder('bale', code);
-  /* اطلاع فوری سفارش به ربات مالک — حتی اگر کاربر پیام را نفرستد */
-  try { if (window.SSNotify) window.SSNotify.order(text, 'cart_bale'); } catch (e) {}
-  let copied = false;
-  try { await navigator.clipboard.writeText(text); copied = true; } catch (e) {
-    try {
-      const ta = document.createElement('textarea');
-      ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
-      document.body.appendChild(ta); ta.select();
-      copied = document.execCommand('copy');
-      ta.remove();
-    } catch (e2) { copied = false; }
-  }
-  toastFn(copied ? t('cart.sent.bale') : t('toast.copyfail'));
-  const w = window.open(CFG().bale.url, '_blank', 'noopener,noreferrer');
-  if (!w) location.href = CFG().bale.url;
-};
-
 /* ── کارت به کارت: اسنپ‌شات سفارش → صفحه آپلود فیش ── */
 const checkoutC2C = () => {
   if (!items.length) { toastFn(t('cart.empty')); return; }
@@ -299,8 +263,6 @@ document.addEventListener('click', e => {
   const del = e.target.closest('[data-cart-del]');
   if (del) { remove(del.dataset.cartDel); return; }
   if (e.target.closest('[data-cart-clear]')) { clear(); return; }
-  if (e.target.closest('[data-checkout-tg]')) { e.preventDefault(); checkoutTelegram(); return; }
-  if (e.target.closest('[data-checkout-bale]')) { e.preventDefault(); checkoutBale(); return; }
   if (e.target.closest('[data-checkout-c2c]')) { e.preventDefault(); checkoutC2C(); return; }
 });
 
@@ -309,7 +271,6 @@ document.addEventListener('click', e => {
 /* ── init ── */
 const init = () => {
   reloadForUser();
-  const tg = $('[data-checkout-tg]'), bl = $('[data-checkout-bale]');
   renderBadge(); renderDrawer();
   document.addEventListener('ss:lang', () => { renderBadge(); renderDrawer(); });
   document.addEventListener('ss:auth', () => { reloadForUser(); renderBadge(); renderDrawer(); });
@@ -324,5 +285,5 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
 else init();
 
 /* ── public API ── */
-window.SSCart = { add, remove, setQty, clear, count, items: () => items.slice(), renderBadge, renderDrawer, renderTotal, buildMessage, checkoutTelegram, checkoutBale, checkoutC2C, tomanRialTotal, setToast, getOrders, reloadForUser };
+window.SSCart = { add, remove, setQty, clear, count, items: () => items.slice(), renderBadge, renderDrawer, renderTotal, buildMessage, checkoutC2C, tomanRialTotal, setToast, getOrders, reloadForUser };
 })();
