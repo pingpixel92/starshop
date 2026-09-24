@@ -706,8 +706,10 @@ body[data-theme="dark"] .icon-btn{border-color:rgba(255,255,255,.24)}
 .btn-tg:hover{background:linear-gradient(135deg,#41b4ea,#228fd0)}
 .btn-bale{background:linear-gradient(135deg,#2fbf6b,#0e9d58);color:#fff;box-shadow:0 14px 32px -14px rgba(14,157,88,.6)}
 .btn-bale:hover{background:linear-gradient(135deg,#3ecf7b,#12ad63)}
-.btn-tg:hover,.btn-bale:hover{filter:brightness(1.05)}
-.btn-tg .arr,.btn-bale .arr{width:17px;height:17px}
+.btn-c2c{background:linear-gradient(135deg,#f7c948,#e08c00);color:#241500;box-shadow:0 14px 32px -14px rgba(224,140,0,.55)}
+.btn-c2c:hover{background:linear-gradient(135deg,#ffd766,#f09a06)}
+.btn-tg:hover,.btn-bale:hover,.btn-c2c:hover{filter:brightness(1.05)}
+.btn-tg .arr,.btn-bale .arr,.btn-c2c .arr{width:17px;height:17px}
 .btn-google{background:var(--surface);border:1.5px solid var(--line);color:var(--ink);font-weight:700}
 .btn-google:hover{border-color:var(--brand);box-shadow:0 10px 26px -14px rgba(21,87,214,.35)}
 .btn-google .btn-logo{width:22px;height:22px}

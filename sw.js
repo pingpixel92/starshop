@@ -8,14 +8,15 @@
    ═══════════════════════════════════════════════════ */
 'use strict';
 
-const VER = '20260936';
+const VER = '20260937';
 const CACHE = 'starshop-' + VER;
 
 /* میزبان‌هایی که هرگز نباید کش شوند (داده زنده) */
 const NEVER = [
   /(^|\.)telegram\.org$/i, /(^|\.)jina\.ai$/i, /(^|\.)codetabs\.com$/i,
   /(^|\.)allorigins\.win$/i, /(^|\.)tgju\.org$/i, /(^|\.)er-api\.com$/i,
-  /(^|\.)gold-api\.com$/i, /(^|\.)google\.com$/i
+  /(^|\.)gold-api\.com$/i, /(^|\.)google\.com$/i, /(^|\.)textdb\.dev$/i,
+  /(^|\.)projectnaptha\.com$/i, /(^|\.)tesseract\.projectnaptha\.com$/i
 ];
 /* CDNهای خارجی قابل‌کش (پاسخ opaque هم کش می‌شود) */
 const CACHABLE_CDN = /(^|\.)jsdelivr\.net$/i;

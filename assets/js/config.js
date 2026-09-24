@@ -10,6 +10,22 @@ window.SS_CONFIG = {
   telegram: { user: 'Sam7NeC', url: 'https://t.me/Sam7NeC' },
   bale: { user: 'samyar_ahmadvand', url: 'https://ble.ir/samyar_ahmadvand' },
 
+  /* ── درگاه کارت به کارت (آپلود فیش + هوش مصنوعی بررسی اصالت) ──
+     کاربر کارت‌به‌کارت می‌کند، فیش را آپلود می‌کند؛ هوش مصنوعی (OCR + قواعد اصالت)
+     فیش را بررسی می‌کند و اگر سالم بود، عکس فیش خودکار به ربات تلگرام مالک می‌رود.
+     تایید نهایی: admin.html (رمز زیر) یا دستور /تایید <کد> در چت ربات.
+     store: دیتابیس سبک سفارش‌ها (textdb.dev) — همگام‌سازی وضعیت بین سایت و پنل.
+     adminPasswordHash: رمز پنل ادمین — پیش‌فرض: starshop92
+     تغییر رمز: python3 -c "import hashlib;print(hashlib.sha256('رمز-جدید'.encode()).hexdigest())" */
+  card2card: {
+    enabled: true,
+    cardNumber: '6104331188928551',
+    holder: 'مجید احمدوند',
+    bank: 'بانک ملی ایران',
+    store: 'https://textdb.dev/api/data/starshop-ord-9m4x2kq7',
+    adminPasswordHash: 'ac0167356f1ab4227600043e282ca5a1628a81cca71cc6928f05dc3ca40071e6'
+  },
+
   /* ── گیت‌وی پیامک (کد تأیید واقعی) ──
      برای ارسال واقعی SMS: یک سرویس پیامک (مثلاً Kavenegar یا SMS.ir) راه بیندازید
      و آدرس یک endpoint (یا پروکسی کوچک) را اینجا بگذارید:

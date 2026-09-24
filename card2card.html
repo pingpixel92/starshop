@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: blob:; font-src https://cdn.jsdelivr.net data:; connect-src 'self' https://textdb.dev https://api.telegram.org https://cdn.jsdelivr.net https://tessdata.projectnaptha.com; worker-src 'self' blob:; base-uri 'self'; form-action 'self'; object-src 'none'">
+<title>پرداخت کارت به کارت | استار شاپ</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#05070b">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vazirmatn@33.0.3/Vazirmatn-font-face.css">
+<link rel="stylesheet" href="assets/css/style.css?v=20260937">
+<style>
+body{background:var(--bg);color:var(--ink);font-family:var(--font);margin:0;min-height:100vh;line-height:1.9}
+.c2c-wrap{max-width:680px;margin:0 auto;padding:clamp(18px,4vw,36px) var(--gutter) 80px}
+.c2c-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px}
+.c2c-top a{display:inline-flex;align-items:center;gap:6px;color:var(--muted);text-decoration:none;font-size:14px;font-weight:600}
+.c2c-top a:hover{color:var(--brand)}
+.c2c-logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:15px}
+.c2c-logo img{width:26px;height:26px}
+h1.c2c-title{font-size:clamp(22px,4vw,30px);margin:0 0 6px;display:flex;align-items:center;gap:10px}
+p.c2c-sub{color:var(--muted);margin:0 0 24px;font-size:14.5px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);padding:clamp(16px,3.5vw,26px);box-shadow:var(--shadow);margin-bottom:18px}
+.panel h2{font-size:16.5px;margin:0 0 14px;display:flex;align-items:center;gap:8px}
+.panel h2 .step-n{width:26px;height:26px;border-radius:9px;background:var(--brand);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13.5px;flex:none}
+/* ── سفارش ── */
+.o-row{display:flex;justify-content:space-between;gap:10px;font-size:14.5px;padding:7px 0;border-bottom:1px dashed var(--line)}
+.o-row:last-child{border-bottom:0}
+.o-row b{font-weight:700}
+.o-total{background:rgba(21,87,214,.06);border:1px dashed var(--brand);border-radius:var(--radius-md);padding:10px 14px;margin-top:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px}
+.o-total .rial{color:var(--muted);font-size:12.5px}
+/* ── کارت ── */
+.card-visual{background:linear-gradient(135deg,var(--brand-deep),#0e2f6e);border-radius:var(--radius-md);color:#fff;padding:20px 18px;position:relative;overflow:hidden}
+.card-visual::after{content:'';position:absolute;inset:-40% -20% auto auto;width:220px;height:220px;background:radial-gradient(circle,rgba(78,140,255,.35),transparent 65%)}
+.cv-bank{display:flex;justify-content:space-between;align-items:center;font-size:13px;opacity:.92;margin-bottom:14px}
+.cv-chip{width:38px;height:28px;border-radius:6px;background:linear-gradient(135deg,#f7c948,#e08c00);flex:none}
+.cv-num{direction:ltr;text-align:center;font-size:clamp(20px,5vw,27px);font-weight:800;letter-spacing:2px;font-family:var(--font-num);text-shadow:0 2px 10px rgba(0,0,0,.35)}
+.cv-holder{margin-top:14px;font-size:13.5px;opacity:.95;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px}
+.cv-holder b{font-weight:800}
+.copy-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.btn-mini{border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.12);color:#fff;border-radius:999px;padding:5px 14px;font-size:12.5px;font-family:var(--font);font-weight:700;cursor:pointer;transition:.2s}
+.btn-mini:hover{background:rgba(255,255,255,.22)}
+.warn{display:flex;gap:8px;align-items:flex-start;background:rgba(224,140,0,.09);border:1px solid rgba(224,140,0,.35);color:#8a5a00;border-radius:var(--radius-md);padding:10px 14px;font-size:13px;margin-top:14px}
+/* ── آپلود ── */
+.drop{border:2px dashed var(--line);border-radius:var(--radius-md);padding:26px 16px;text-align:center;cursor:pointer;transition:.25s;background:var(--bg)}
+.drop:hover,.drop.over{border-color:var(--brand);background:rgba(21,87,214,.05)}
+.drop .d-ic{font-size:34px}
+.drop b{display:block;font-size:15px;margin-top:6px}
+.drop span{font-size:12.5px;color:var(--muted)}
+.preview{margin-top:14px;display:none}
+.preview img{max-width:100%;max-height:300px;border-radius:var(--radius-md);border:1px solid var(--line);display:block;margin:0 auto}
+.preview .p-meta{font-size:12px;color:var(--muted);text-align:center;margin-top:6px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:999px;padding:13px 26px;font-family:var(--font);font-size:15px;font-weight:800;cursor:pointer;transition:.25s}
+.w100{width:100%}
+.btn-brand{background:linear-gradient(135deg,var(--brand),var(--brand-light));color:#fff;box-shadow:0 14px 32px -14px rgba(21,87,214,.6)}
+.btn-brand:hover{filter:brightness(1.07)}
+.btn-brand:disabled{opacity:.55;cursor:not-allowed;filter:none}
+.btn-ghost{background:var(--surface);border:1.5px solid var(--line);color:var(--ink)}
+.mt14{margin-top:14px}
+/* ── پیشرفت هوش مصنوعی ── */
+.ai-prog{display:none;margin-top:16px}
+.ai-prog .bar{height:9px;border-radius:99px;background:var(--line);overflow:hidden}
+.ai-prog .bar i{display:block;height:100%;width:0%;border-radius:99px;background:linear-gradient(90deg,var(--brand),var(--brand-light));transition:width .4s var(--ease)}
+.ai-steps{list-style:none;margin:10px 0 0;padding:0;font-size:13px;color:var(--muted)}
+.ai-steps li{padding:3px 0;opacity:.45;transition:.3s}
+.ai-steps li.on{opacity:1;color:var(--brand);font-weight:700}
+.ai-steps li.done{opacity:.8;color:var(--ink)}
+/* ── نتیجه ── */
+.ai-result{display:none;margin-top:16px}
+.chk{list-style:none;margin:0;padding:0}
+.chk li{display:flex;gap:10px;align-items:flex-start;padding:9px 12px;border-radius:var(--radius-sm);font-size:13.5px;margin-bottom:6px;background:var(--bg);border:1px solid var(--line)}
+.chk li .ci{flex:none;font-size:15px;line-height:1.4}
+.chk li.ok{border-color:rgba(14,157,88,.4);background:rgba(14,157,88,.06)}
+.chk li.bad{border-color:rgba(211,47,47,.45);background:rgba(211,47,47,.06)}
+.chk li.soft{border-color:rgba(224,140,0,.4);background:rgba(224,140,0,.06)}
+.chk li b{font-weight:800}
+.verdict{border-radius:var(--radius-md);padding:13px 16px;font-size:14.5px;font-weight:800;margin-top:12px;display:none}
+.verdict.pass{display:block;background:rgba(14,157,88,.1);border:1px solid rgba(14,157,88,.45);color:#0b6c3d}
+.verdict.fail{display:block;background:rgba(211,47,47,.08);border:1px solid rgba(211,47,47,.4);color:#a32626}
+/* ── وضعیت ── */
+.status-card{border-radius:var(--radius-lg);padding:22px 20px;text-align:center;display:none;border:1.5px solid}
+.status-card.show{display:block;animation:pop .45s var(--spring)}
+@keyframes pop{from{transform:scale(.94);opacity:0}to{transform:scale(1);opacity:1}}
+.status-card .s-ic{font-size:44px}
+.status-card h3{margin:8px 0 6px;font-size:18px}
+.status-card p{margin:0;font-size:14px;color:var(--muted)}
+.status-card.pending{background:rgba(224,140,0,.07);border-color:rgba(224,140,0,.45)}
+.status-card.pending h3{color:#8a5a00}
+.status-card.review{background:rgba(21,87,214,.06);border-color:rgba(21,87,214,.4)}
+.status-card.review h3{color:var(--brand)}
+.status-card.approved{background:linear-gradient(135deg,rgba(14,157,88,.14),rgba(0,166,166,.12));border-color:rgba(14,157,88,.55)}
+.status-card.approved h3{color:#0b6c3d;font-size:19px}
+.status-card.rejected{background:rgba(211,47,47,.07);border-color:rgba(211,47,47,.45)}
+.status-card.rejected h3{color:#a32626}
+.pulse{display:inline-block;width:11px;height:11px;border-radius:50%;background:#e08c00;margin-left:6px;animation:pl 1.2s infinite}
+@keyframes pl{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
+.last-check{font-size:11.5px;color:var(--muted);margin-top:10px}
+/* ── فرم دستی ── */
+.f-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.f-grid .full{grid-column:1/-1}
+.f-grid label{font-size:12.5px;color:var(--muted);display:block;margin-bottom:4px}
+.f-grid input,.f-grid textarea{width:100%;box-sizing:border-box;border:1.5px solid var(--line);border-radius:var(--radius-sm);padding:10px 12px;font-family:var(--font);font-size:14px;background:var(--bg);color:var(--ink)}
+.f-grid input:focus,.f-grid textarea:focus{outline:none;border-color:var(--brand)}
+footer.c2c-foot{text-align:center;color:var(--muted);font-size:13px;margin-top:26px}
+footer.c2c-foot a{color:var(--brand);text-decoration:none;font-weight:700}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--ink);color:var(--bg);padding:10px 22px;border-radius:999px;font-size:13.5px;font-weight:700;opacity:0;transition:.35s var(--spring);z-index:99;max-width:90vw}
+#toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+@media(max-width:560px){.f-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main class="c2c-wrap">
+
+  <div class="c2c-top">
+    <a href="index.html">→ بازگشت به فروشگاه</a>
+    <span class="c2c-logo"><img src="assets/favicon.svg" alt=""> استار شاپ</span>
+  </div>
+
+  <h1 class="c2c-title">💳 پرداخت کارت به کارت</h1>
+  <p class="c2c-sub">مبلغ را به کارت زیر کارت‌به‌کارت کنید، سپس فیش واریز را آپلود کنید. هوش مصنوعی فیش را بررسی می‌کند و پس از تأیید پشتیبانی، سفارش شما وارد صف آماده‌سازی می‌شود.</p>
+
+  <!-- ── خلاصه سفارش ── -->
+  <section class="panel" id="orderBox">
+    <h2><span class="step-n">۱</span> مشخصات سفارش</h2>
+    <div id="orderBody"></div>
+  </section>
+
+  <!-- ── فرم دستی (وقتی سفارش سبد پیدا نشد) ── -->
+  <section class="panel" id="manualBox" hidden>
+    <h2><span class="step-n">۱</span> مشخصات سفارش (ورود دستی)</h2>
+    <div class="f-grid">
+      <div><label>نام و نام خانوادگی</label><input id="mName" placeholder="مثلاً علی رضایی"></div>
+      <div><label>شماره موبایل</label><input id="mPhone" placeholder="۰۹۱۲۳۴۵۶۷۸۹" dir="ltr"></div>
+      <div><label>مبلغ واریزی (تومان) *</label><input id="mAmount" inputmode="numeric" placeholder="مثلاً 250000" dir="ltr"></div>
+      <div><label>شرح سفارش</label><input id="mDesc" placeholder="مثلاً گیفت کارت Steam 50 دلاری"></div>
+    </div>
+  </section>
+
+  <!-- ── اطلاعات کارت ── -->
+  <section class="panel">
+    <h2><span class="step-n">۲</span> کارت‌به‌کارت به این کارت</h2>
+    <div class="card-visual">
+      <div class="cv-bank"><span id="cvBank">بانک ملی ایران</span><span class="cv-chip"></span></div>
+      <div class="cv-num" id="cvNum" dir="ltr">6104 3311 8892 8551</div>
+      <div class="cv-holder"><span>به نام: <b id="cvHolder">مجید احمدوند</b></span><span id="cvHolderEn"></span></div>
+      <div class="copy-row">
+        <button class="btn-mini" type="button" data-copy="card">📋 کپی شماره کارت</button>
+        <button class="btn-mini" type="button" data-copy="holder">کپی نام صاحب کارت</button>
+        <button class="btn-mini" type="button" data-copy="amount">کپی مبلغ (تومان)</button>
+      </div>
+    </div>
+    <div class="warn">⚠️ <span>فقط به همین کارت و <b>دقیقاً با همین مبلغ</b> واریز کنید. مبلغ کمتر/بیشتر یا کارت اشتباه توسط هوش مصنوعی رد می‌شود. پس از واریز، <b>اسکرین‌شات فیش موفق</b> (صفحه‌ای که مبلغ، شماره پیگیری و کارت مقصد را نشان می‌دهد) را در مرحله بعد آپلود کنید.</span></div>
+  </section>
+
+  <!-- ── آپلود فیش + هوش مصنوعی ── -->
+  <section class="panel">
+    <h2><span class="step-n">۳</span> آپلود فیش واریز</h2>
+    <div class="drop" id="drop" role="button" tabindex="0" aria-label="انتخاب تصویر فیش">
+      <div class="d-ic">🧾</div>
+      <b>فیش واریز را اینجا بگذارید</b>
+      <span>کلیک کنید یا اسکرین‌شات را با Ctrl+V پیست کنید — JPG / PNG</span>
+    </div>
+    <input type="file" id="file" accept="image/*" hidden>
+    <div class="preview" id="preview"><img id="pvImg" alt="پیش‌نمایش فیش"><div class="p-meta" id="pvMeta"></div></div>
+
+    <button class="btn btn-brand w100 mt14" id="btnCheck" disabled>🤖 بررسی فیش با هوش مصنوعی</button>
+
+    <div class="ai-prog" id="aiProg">
+      <div class="bar"><i id="aiBar"></i></div>
+      <ul class="ai-steps">
+        <li id="st1">آماده‌سازی تصویر…</li>
+        <li id="st2">خواندن متن فیش (OCR)…</li>
+        <li id="st3">استخراج مبلغ، کارت مقصد و شماره پیگیری…</li>
+        <li id="st4">بررسی اصالت و تطبیق با سفارش…</li>
+      </ul>
+    </div>
+
+    <div class="ai-result" id="aiResult">
+      <ul class="chk" id="chkList"></ul>
+      <div class="verdict" id="verdict"></div>
+      <button class="btn btn-brand w100 mt14" id="btnSubmit" style="display:none">📤 ثبت و ارسال به پشتیبانی</button>
+      <button class="btn btn-ghost w100 mt14" id="btnManualReview" style="display:none">🙋 ارسال برای بررسی دستی پشتیبانی</button>
+      <button class="btn btn-ghost w100 mt14" id="btnRetry" style="display:none">🔄 آپلود فیش دیگر</button>
+    </div>
+  </section>
+
+  <!-- ── وضعیت سفارش ── -->
+  <section class="panel" id="statusPanel" hidden>
+    <h2><span class="step-n">۴</span> وضعیت تأیید</h2>
+    <div class="status-card" id="stPending">
+      <div class="s-ic">⏳</div>
+      <h3><span class="pulse"></span>در انتظار تأیید پشتیبانی</h3>
+      <p>فیش شما دریافت و برای پشتیبانی ارسال شد. به‌محض تأیید، همین صفحه خودکار به‌روز می‌شود (این صفحه را نبندید).</p>
+    </div>
+    <div class="status-card" id="stReview">
+      <div class="s-ic">🔎</div>
+      <h3>در بررسی دستی پشتیبانی</h3>
+      <p>فیش شما برای بررسی دقیق‌تر توسط اپراتور در صف قرار گرفت؛ نتیجه همین‌جا اعلام می‌شود.</p>
+    </div>
+    <div class="status-card" id="stApproved">
+      <div class="s-ic">✅</div>
+      <h3>رسید شما از طرف پشتیبانی تأیید شد!</h3>
+      <p>سفارش شما در حال آماده‌سازی است 🎉 — کد سفارش: <b id="apCode"></b>. از اعتماد شما سپاسگزاریم.</p>
+    </div>
+    <div class="status-card" id="stRejected">
+      <div class="s-ic">❌</div>
+      <h3>فیش شما تأیید نشد</h3>
+      <p id="rejReason"></p>
+      <button class="btn btn-brand w100 mt14" id="btnReUpload">🔄 آپلود فیش جدید</button>
+    </div>
+    <div class="last-check" id="lastCheck"></div>
+  </section>
+
+  <footer class="c2c-foot">
+    سوالی دارید؟ پشتیبانی: <a href="https://t.me/Sam7NeC" target="_blank" rel="noopener">تلگرام</a> · <a href="https://ble.ir/samyar_ahmadvand" target="_blank" rel="noopener">بله</a>
+    <br><small>این صفحه توسط هوش مصنوعی استار شاپ فیش شما را بررسی می‌کند؛ اطلاعات فیش فقط برای همین سفارش استفاده می‌شود.</small>
+  </footer>
+</main>
+<div id="toast" role="status"></div>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js" defer></script>
+<script src="assets/js/card2card.js?v=20260937" defer></script>
+</body>
+</html>

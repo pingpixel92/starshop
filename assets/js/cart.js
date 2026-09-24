@@ -185,6 +185,31 @@ const checkoutBale = async () => {
   if (!w) location.href = CFG().bale.url;
 };
 
+/* ── کارت به کارت: اسنپ‌شات سفارش → صفحه آپلود فیش ── */
+const checkoutC2C = () => {
+  if (!items.length) { toastFn(t('cart.empty')); return; }
+  const tot = tomanRialTotal();
+  if (!tot.ready || !(tot.rial > 0)) { toastFn(t('cart.c2c.ready')); return; }
+  const { text, code } = buildMessage();
+  saveOrder('c2c', code);
+  const user = window.SSAuth ? window.SSAuth.session() : null;
+  const prof = window.SSAuth ? window.SSAuth.profile() : null;
+  const snap = {
+    code, createdAt: Date.now(),
+    name: (prof && prof.name) || '',
+    phone: user ? (user.phone || '') : '',
+    items: items.map(i => ({ title: giftTitle(i), qty: i.qty, lines: giftLines(i) })),
+    totalRial: tot.rial,
+    totalToman: Math.round(tot.rial / 10),
+    message: text
+  };
+  try { localStorage.setItem('ss_c2c_order_' + code, JSON.stringify(snap)); } catch (e) {}
+  /* اطلاع فوری به ربات مالک: سفارش ثبت شد، فیش در راه است */
+  try { if (window.SSNotify) window.SSNotify.order('💳 کد سفارش: ' + code + '\n⏳ در انتظار آپلود فیش توسط کاربر…', 'cart_c2c'); } catch (e) {}
+  toastFn('در حال انتقال به صفحه پرداخت کارت به کارت…');
+  location.href = 'card2card.html?order=' + encodeURIComponent(code);
+};
+
 const saveOrder = (channel, code) => {
   try {
     const kOrders = activeUid ? 'ss_orders:u:' + String(activeUid).replace(/[^a-z0-9_@.\-]/gi, '_') : 'ss_orders';
@@ -276,6 +301,7 @@ document.addEventListener('click', e => {
   if (e.target.closest('[data-cart-clear]')) { clear(); return; }
   if (e.target.closest('[data-checkout-tg]')) { e.preventDefault(); checkoutTelegram(); return; }
   if (e.target.closest('[data-checkout-bale]')) { e.preventDefault(); checkoutBale(); return; }
+  if (e.target.closest('[data-checkout-c2c]')) { e.preventDefault(); checkoutC2C(); return; }
 });
 
 /* gift tiles: کلیک روی گیفت کارت → مودال انتخاب ریجن/مبلغ/ارز (در gift.js) */
@@ -298,5 +324,5 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
 else init();
 
 /* ── public API ── */
-window.SSCart = { add, remove, setQty, clear, count, items: () => items.slice(), renderBadge, renderDrawer, renderTotal, buildMessage, checkoutTelegram, checkoutBale, tomanRialTotal, setToast, getOrders, reloadForUser };
+window.SSCart = { add, remove, setQty, clear, count, items: () => items.slice(), renderBadge, renderDrawer, renderTotal, buildMessage, checkoutTelegram, checkoutBale, checkoutC2C, tomanRialTotal, setToast, getOrders, reloadForUser };
 })();

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src https://cdn.jsdelivr.net data:; connect-src 'self' https://textdb.dev https://api.telegram.org; base-uri 'self'; form-action 'self'; object-src 'none'">
+<title>پنل تأیید سفارش‌ها | استار شاپ</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vazirmatn@33.0.3/Vazirmatn-font-face.css">
+<style>
+:root{--bg:#0b111c;--surface:#101827;--line:rgba(255,255,255,.1);--ink:#f2f5fb;--muted:#8b93a7;--brand:#4e8cff;--ok:#12ad63;--bad:#e05252;--warn:#e0a12f;--radius:16px;--font:"Vazirmatn",Tahoma,Arial,sans-serif}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);margin:0;padding:26px 16px 80px;line-height:1.9}
+.wrap{max-width:860px;margin:0 auto}
+header.adm{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+header.adm h1{font-size:20px;margin:0;display:flex;gap:8px;align-items:center}
+.adm-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px}
+.btn{border:0;border-radius:999px;padding:9px 18px;font-family:var(--font);font-size:13.5px;font-weight:800;cursor:pointer;transition:.2s}
+.btn-b{background:var(--brand);color:#fff}
+.btn-g{background:var(--ok);color:#fff}
+.btn-r{background:var(--bad);color:#fff}
+.btn-o{background:transparent;border:1.5px solid var(--line);color:var(--ink)}
+.btn:hover{filter:brightness(1.12)}
+.btn:disabled{opacity:.5;cursor:wait}
+.stats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;font-size:12.5px}
+.chip{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 14px}
+.chip b{color:var(--brand)}
+/* gate */
+#gate{position:fixed;inset:0;background:rgba(5,7,11,.92);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:50}
+#gate .g-box{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:30px 26px;width:min(92vw,380px);text-align:center}
+#gate h2{margin:0 0 6px;font-size:19px}
+#gate p{margin:0 0 16px;color:var(--muted);font-size:13px}
+#gate input{width:100%;border:1.5px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);padding:12px 14px;font-family:var(--font);font-size:15px;text-align:center;margin-bottom:12px}
+#gate input:focus{outline:none;border-color:var(--brand)}
+#gErr{color:var(--bad);font-size:12.5px;min-height:20px}
+/* order cards */
+.order{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px}
+.order.flagged{border-color:rgba(224,161,47,.5)}
+.o-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.o-code{font-weight:800;direction:ltr}
+.badge{font-size:11.5px;font-weight:800;border-radius:999px;padding:3px 12px}
+.badge.pending{background:rgba(224,161,47,.15);color:var(--warn);border:1px solid rgba(224,161,47,.45)}
+.badge.review{background:rgba(78,140,255,.14);color:var(--brand);border:1px solid rgba(78,140,255,.45)}
+.badge.approved{background:rgba(18,173,99,.14);color:var(--ok);border:1px solid rgba(18,173,99,.45)}
+.badge.rejected{background:rgba(224,82,82,.13);color:var(--bad);border:1px solid rgba(224,82,82,.4)}
+.o-meta{font-size:13px;color:var(--muted);display:grid;gap:3px}
+.o-meta b{color:var(--ink)}
+.o-items{font-size:13px;background:rgba(255,255,255,.03);border-radius:10px;padding:8px 12px;margin:8px 0}
+.o-ai{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;font-size:11.5px}
+.o-ai span{border:1px solid var(--line);border-radius:999px;padding:2px 10px}
+.o-img{max-width:230px;max-height:230px;border-radius:12px;border:1px solid var(--line);cursor:zoom-in;display:block}
+.o-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.empty{text-align:center;color:var(--muted);padding:50px 0;font-size:14.5px}
+label.tgl{display:inline-flex;align-items:center;gap:6px;cursor:pointer;color:var(--muted)}
+label.tgl input{accent-color:var(--brand)}
+#admToast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(70px);background:var(--ink);color:var(--bg);padding:9px 20px;border-radius:999px;font-size:13px;font-weight:800;opacity:0;transition:.3s;z-index:60}
+#admToast.show{transform:translateX(-50%) translateY(0);opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="adm">
+    <h1>🛡️ پنل تأیید سفارش‌های کارت به کارت</h1>
+    <div class="adm-actions">
+      <label class="tgl"><input type="checkbox" id="botListen" checked> گوش‌دهی به دستورات ربات</label>
+      <button class="btn btn-o" id="btnPw">تغییر رمز</button>
+      <button class="btn btn-b" id="btnRefresh">↻ به‌روزرسانی</button>
+    </div>
+  </header>
+
+  <div class="stats" id="stats"></div>
+  <div id="list"><div class="empty">در حال بارگذاری…</div></div>
+</div>
+
+<div id="gate">
+  <div class="g-box">
+    <h2>🔐 ورود مدیر</h2>
+    <p>رمز پنل تأیید سفارش‌ها را وارد کنید</p>
+    <input type="password" id="gPass" placeholder="رمز مدیر" autocomplete="current-password">
+    <div id="gErr"></div>
+    <button class="btn btn-b w100" id="gBtn" style="width:100%">ورود</button>
+  </div>
+</div>
+<div id="admToast" role="status"></div>
+
+<script src="assets/js/admin.js?v=20260937" defer></script>
+</body>
+</html>
