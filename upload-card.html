@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>ارسال عکس کارت — استار شاپ</title>
+<style>
+  :root{--bg:#0a1020;--bg2:#0e1730;--card:#111c38;--brand:#d71635;--brand2:#ff4d6b;--txt:#eaf0ff;--mut:#93a1c8;--ok:#2fd27d}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:18px;
+    font-family:Vazirmatn,system-ui,sans-serif;color:var(--txt);
+    background:radial-gradient(1200px 600px at 80% -10%,#1b2a55 0%,var(--bg2) 45%,var(--bg) 100%)}
+  .box{width:min(460px,100%);background:linear-gradient(160deg,var(--card),#0d1428);
+    border:1px solid rgba(255,255,255,.09);border-radius:24px;padding:26px 22px;
+    box-shadow:0 30px 80px -20px rgba(0,0,0,.7)}
+  .logo{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:6px}
+  .logo b{font-size:19px;background:linear-gradient(90deg,#fff,#ffd7de);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{text-align:center;color:var(--mut);font-size:13px;line-height:2;margin-bottom:18px}
+  .drop{border:2px dashed rgba(255,255,255,.22);border-radius:18px;padding:26px 14px;text-align:center;cursor:pointer;transition:.2s}
+  .drop:hover,.drop.on{border-color:var(--brand2);background:rgba(215,22,53,.08)}
+  .drop .big{font-size:34px}
+  .drop p{color:var(--mut);font-size:13px;margin-top:6px}
+  .drop b{color:var(--txt);font-size:15px}
+  #pv{display:none;width:100%;border-radius:14px;margin-top:14px;box-shadow:0 12px 30px -10px rgba(0,0,0,.6)}
+  .meta{text-align:center;color:var(--mut);font-size:12px;margin-top:8px;min-height:16px}
+  .btn{display:none;width:100%;margin-top:16px;border:0;border-radius:14px;padding:15px;font-family:inherit;
+    font-size:16px;font-weight:800;color:#fff;cursor:pointer;
+    background:linear-gradient(135deg,var(--brand),#8f0d22);box-shadow:0 14px 34px -10px rgba(215,22,53,.55)}
+  .btn:disabled{opacity:.6;cursor:wait}
+  .state{text-align:center;margin-top:14px;font-size:14px;line-height:2;display:none}
+  .state.ok{color:var(--ok);display:block}
+  .state.err{color:var(--brand2);display:block}
+  input[type=file]{display:none}
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="logo"><b>⭐ استار شاپ — ارسال عکس کارت</b></div>
+  <p class="sub">عکس کارت بانکی را انتخاب و ارسال کن تا روی صفحه پرداخت سایت قرار بگیرد.<br>این صفحه فقط برای ارسال همین عکس است — اطلاعات دیگری ثبت نمی‌شود.</p>
+
+  <label class="drop" id="drop">
+    <div class="big">🖼️</div>
+    <b>انتخاب عکس</b>
+    <p>بزن و عکس را از گالری/فایل‌ها انتخاب کن (JPG یا PNG)</p>
+  </label>
+  <input type="file" id="f" accept="image/*">
+
+  <img id="pv" alt="پیش‌نمایش">
+  <div class="meta" id="meta"></div>
+
+  <button class="btn" id="go">📤 ارسال به سازنده سایت</button>
+  <div class="state" id="st"></div>
+</div>
+
+<script>
+'use strict';
+const $ = s => document.querySelector(s);
+const STORE = 'https://textdb.dev/api/data/starshop-card-img-8k2pvn46';
+let file = null;
+
+$('#drop').addEventListener('click', () => $('#f').click());
+$('#drop').addEventListener('dragover', e => { e.preventDefault(); $('#drop').classList.add('on'); });
+$('#drop').addEventListener('dragleave', () => $('#drop').classList.remove('on'));
+$('#drop').addEventListener('drop', e => { e.preventDefault(); $('#drop').classList.remove('on'); pick(e.dataTransfer.files[0]); });
+$('#f').addEventListener('change', e => pick(e.target.files[0]));
+
+function pick(fl) {
+  if (!fl || !fl.type.startsWith('image/')) return;
+  file = fl;
+  const url = URL.createObjectURL(fl);
+  $('#pv').src = url; $('#pv').style.display = 'block';
+  $('#meta').textContent = fl.name + ' — ' + (fl.size / 1024).toFixed(0) + ' KB';
+  $('#go').style.display = 'block';
+  $('#st').className = 'state'; $('#st').textContent = '';
+}
+
+/* فشرده‌سازی سبک مثل صفحه پرداخت: عرض ۸۲۰، JPEG */
+function compress(img) {
+  const sc = Math.min(1, 820 / img.naturalWidth);
+  const c = document.createElement('canvas');
+  c.width = Math.round(img.naturalWidth * sc); c.height = Math.round(img.naturalHeight * sc);
+  c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+  return c.toDataURL('image/jpeg', 0.72);
+}
+
+$('#go').addEventListener('click', async () => {
+  if (!file) return;
+  const btn = $('#go'), st = $('#st');
+  btn.disabled = true; btn.textContent = '⏳ در حال ارسال…';
+  st.className = 'state'; st.textContent = '';
+  try {
+    const img = new Image();
+    await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = URL.createObjectURL(file); });
+    const dataUrl = compress(img);
+    if (dataUrl.length > 900000) throw new Error('حجم عکس زیاد است — لطفاً عکس کوچک‌تری انتخاب کن');
+    const r = await fetch(STORE, { method: 'POST', headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ img: dataUrl, name: file.name, ts: Date.now() }) });
+    if (!r.ok) throw new Error('خطای سرور');
+    $('#go').style.display = 'none';
+    st.className = 'state ok';
+    st.textContent = '✅ عکس با موفقیت ارسال شد! حالا به سازنده سایت بگو «فرستادم».';
+  } catch (e) {
+    btn.disabled = false; btn.textContent = '📤 دوباره تلاش کن';
+    st.className = 'state err';
+    st.textContent = '❌ ارسال نشد: ' + (e.message || 'اینترنت را چک کن') + ' — دوباره بزن.';
+  }
+});
+</script>
+</body>
+</html>
