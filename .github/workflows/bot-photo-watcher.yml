@@ -1,0 +1,91 @@
+name: bot-photo-watcher
+
+# نگهبان همیشگی ربات — هر ۵ دقیقه:
+# عکس‌هایی که مالک مستقیم به ربات می‌فرستد را از صف getUpdates برمی‌دارد،
+# file_id + file_path را در دیتابیس سبک (textdb) بایگانی می‌کند و تأیید می‌کند،
+# تا عکس‌ها دیگر توسط تب باز پنل ادمین (جاوااسکریپت قدیمی) گم نشوند.
+# برای دستورات متنی (/تایید /رد) چیزی را مصرف نمی‌کند — آن‌ها برای پنل می‌مانند.
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Archive owner photos to lightweight KV
+        env:
+          BOT: ${{ secrets.TG_BOT_TOKEN }}
+          CHAT: ${{ secrets.TG_OWNER_CHAT }}
+          PSTORE: 'https://textdb.dev/api/data/starshop-ph-7vq3nz52'
+        run: |
+          python3 - << 'PYEOF'
+          import json, os, time, urllib.request, urllib.parse
+
+          BOT = os.environ["BOT"]; CHAT = os.environ["CHAT"]; PSTORE = os.environ["PSTORE"]
+          API = f"https://api.telegram.org/bot{BOT}/"
+          OFF = os.environ.get("GITHUB_RUN_ID", str(int(time.time())))
+
+          def call(ep, params=None, timeout=30):
+              url = API + ep
+              if params: url += "?" + urllib.parse.urlencode(params)
+              with urllib.request.urlopen(url, timeout=timeout) as r:
+                  return json.loads(r.read().decode())
+
+          # ۱) بایگانی فعلی را بخوان (برای dedupe)
+          try:
+              with urllib.request.urlopen(PSTORE + "?cb=" + str(time.time()), timeout=30) as r:
+                  doc = json.loads(r.read().decode() or "{}")
+              photos = doc.get("photos", []) if isinstance(doc, dict) else []
+          except Exception:
+              photos = []
+          seen = {p.get("id") for p in photos}
+
+          # ۲) بدون تأییدِ صف بخوان — دستورات متنی برای پنل ادمین دست‌نخورده می‌مانند
+          #    عکس‌های تکراری با update_id dedupe می‌شوند
+          taken, offset = [], 0
+          for attempt in range(3):
+              try:
+                  params = {"timeout": "2", "limit": "50", "allowed_updates": '["message"]'}
+                  if offset: params["offset"] = str(offset)
+                  for up in call("getUpdates", params).get("result", []):
+                      offset = max(offset, up["update_id"] + 1)
+                      m = up.get("message") or {}
+                      if str((m.get("chat") or {}).get("id")) != CHAT: continue
+                      ph = m.get("photo")
+                      if not ph: continue
+                      pid = "P" + str(up["update_id"])
+                      if pid in seen: continue
+                      fid = ph[-1]["file_id"]
+                      try:
+                          fp = call("getFile", {"file_id": fid})["result"]["file_path"]
+                      except Exception:
+                          fp = ""
+                      taken.append({"id": pid, "fid": fid,
+                                    "path": fp, "cap": (m.get("caption") or "")[:200],
+                                    "ts": up.get("message", {}).get("date", int(time.time())) * 1000})
+              except Exception as e:
+                  print("getUpdates error:", e); time.sleep(2)
+
+          if not taken:
+              print("no new owner photos"); raise SystemExit(0)
+
+          # ۳) بایگانی کن — بدون confirm کردن صف (پنل ادمین مسئول آپدیت‌های متنی خودش است)
+          photos = (taken + photos)[:30]
+          body = json.dumps({"photos": photos}, ensure_ascii=False).encode()
+          req = urllib.request.Request(PSTORE, data=body, headers={"Content-Type": "text/plain"}, method="POST")
+          with urllib.request.urlopen(req, timeout=30) as r:
+              r.read()
+          print("archived:", json.dumps([t["id"] for t in taken]))
+
+          # ۴) خبر بده
+          n = len(taken)
+          txt = f"📥 {n} عکس از تلگرام دریافت و بایگانی شد — برای استفاده در سایت آماده است."
+          try:
+              data = json.dumps({"chat_id": CHAT, "text": txt}).encode()
+              req2 = urllib.request.Request(f"{API}sendMessage", data=data, headers={"Content-Type": "application/json"})
+              with urllib.request.urlopen(req2, timeout=30) as r: r.read()
+          except Exception as e:
+              print("notify error:", e)
+          PYEOF
