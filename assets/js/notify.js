@@ -51,11 +51,10 @@ try {
 const TAGS = {
   cart_tg:   '🛒 <b>سفارش از سبد خرید — پرداخت تلگرام</b>',
   cart_bale: '🛒 <b>سفارش از سبد خرید — پرداخت بله</b>',
-  form:      '📝 <b>درخواست جدید از فرم سفارش</b>',
-  paid_zibal:'✅ <b>پرداخت موفق — درگاه زیبال (خرید قطعی)</b>'
+  form:      '📝 <b>درخواست جدید از فرم سفارش</b>'
 };
 
-/* public API: channel ∈ cart_tg | cart_bale | form | paid_zibal */
+/* public API: channel ∈ cart_tg | cart_bale | form */
 const order = (text, channel) => {
   try {
     const tag = TAGS[channel] || '🛒 <b>سفارش جدید — استارشاپ</b>';
