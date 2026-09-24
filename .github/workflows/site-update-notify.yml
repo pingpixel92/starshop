@@ -16,28 +16,23 @@ jobs:
         env:
           BOT: ${{ secrets.TG_BOT_TOKEN }}
           CHAT: ${{ secrets.TG_OWNER_CHAT }}
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
         run: |
           SHORT="${GITHUB_SHA::7}"
-          TITLE="$(printf '%s' "${{ github.event.head_commit.message }}" | head -n 1 | cut -c1-200)"
+          TITLE="$(printf '%s' "$COMMIT_MSG" | head -n 1 | cut -c1-200)"
           [ -z "$TITLE" ] && TITLE="آپدیت دستی"
           DATE="$(TZ=Asia/Tehran date '+%Y-%m-%d %H:%M')"
 
-          TEXT="🚀 سایت استارشاپ آپدیت شد
-─────────────
-📝 ${TITLE}
-🔖 کامیت: ${SHORT}
-🕐 ${DATE} (تهران)
-🌐 https://starshop.kdns.fr"
+          TEXT=$(printf '🚀 سایت استارشاپ آپدیت شد\n─────────────\n📝 %s\n🔖 کامیت: %s\n🕐 %s (تهران)\n🌐 https://starshop.kdns.fr' "$TITLE" "$SHORT" "$DATE")
 
-          DESC="⭐ ربات پشتیبانی استارشاپ
-آخرین به‌روزرسانی سایت: ${DATE} (${SHORT})
-پرداخت کارت به کارت بانک ملت + بررسی خودکار اصالت فیش با هوش مصنوعی
-تایید سفارش: /approve کد یا /تایید کد — رد: /reject کد دلیل"
+          DESC=$(printf '⭐ ربات پشتیبانی استارشاپ\nآخرین به‌روزرسانی سایت: %s (%s)\nپرداخت کارت به کارت بانک ملت + بررسی خودکار اصالت فیش با هوش مصنوعی\nتایید سفارش: /approve کد یا /تایید کد — رد: /reject کد دلیل' "$DATE" "$SHORT")
 
           curl -fsS -H 'Content-Type: application/json' \
             -d "$(printf '%s' "$TEXT" | jq -Rs --arg c "$CHAT" '{chat_id:$c, text:.}')" \
-            "https://api.telegram.org/bot${BOT}/sendMessage" || true
+            "https://api.telegram.org/bot${BOT}/sendMessage" > /tmp/tg1.json || true
 
           curl -fsS -H 'Content-Type: application/json' \
             -d "$(printf '%s' "$DESC" | jq -Rs '{description:.}')" \
-            "https://api.telegram.org/bot${BOT}/setMyDescription" || true
+            "https://api.telegram.org/bot${BOT}/setMyDescription" > /tmp/tg2.json || true
+
+          cat /tmp/tg1.json /tmp/tg2.json
