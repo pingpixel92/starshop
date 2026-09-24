@@ -157,6 +157,15 @@ async function setStatus(code, status, reason) {
 
 /* ── گوش‌دهی به دستورات ربات (/تایید کد ، /رد کد دلیل) ── */
 let OFFSET = 0, botT = null;
+/* بایگانی عکس‌های ارسالی ادمین به ربات — دیتابیس سبک جداگانه */
+const PSTORE = 'https://textdb.dev/api/data/starshop-ph-7vq3nz52';
+async function stashTgPhoto(fileId, cap) {
+  if (!PSTORE || !fileId) return;
+  let photos = [];
+  try { const r = await fetch(PSTORE + '?_=' + Date.now(), { cache: 'no-store' }); const jx = JSON.parse(await r.text()); if (Array.isArray(jx.photos)) photos = jx.photos; } catch (e) {}
+  photos.unshift({ id: 'P' + Date.now().toString(36), fid: fileId, cap: String(cap || '').slice(0, 200), ts: Date.now() });
+  await fetch(PSTORE, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ photos: photos.slice(0, 20) }) });
+}
 async function botTick() {
   if (!TG.bot || !TG.chat) return;
   try {
@@ -166,7 +175,13 @@ async function botTick() {
     for (const up of (j.result || [])) {
       OFFSET = Math.max(OFFSET, up.update_id + 1);
       const m = up.message;
-      if (!m || !m.text || String(m.chat.id) !== String(TG.chat)) continue;
+      if (!m || String(m.chat.id) !== String(TG.chat)) continue;
+      /* عکس فرستاده‌شده به ربات گم نشود — بایگانی + اطلاع */
+      if (m.photo && m.photo.length) {
+        try { await stashTgPhoto(m.photo[m.photo.length - 1].file_id, m.caption || ''); toast('📸 عکس از تلگرام دریافت و بایگانی شد'); } catch (e) {}
+        continue;
+      }
+      if (!m.text) continue;
       const mt = norm(m.text);
       const mm = mt.match(/^\/?(تایید|taeed|ok|approve)\s+([a-z0-9\-]+)\s*$/i) ||
                  mt.match(/^\/?(رد|ردشد|reject|rad)\s+([a-z0-9\-]+)\s*([\s\S]*)$/i);
