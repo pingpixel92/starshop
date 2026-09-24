@@ -21,7 +21,7 @@ window.SS_CONFIG = {
     enabled: true,
     cardNumber: '6104331188928551',
     holder: 'مجید احمدوند',
-    bank: 'بانک ملی ایران',
+    bank: 'بانک ملت',
     store: 'https://textdb.dev/api/data/starshop-ord-9m4x2kq7',
     adminPasswordHash: 'ac0167356f1ab4227600043e282ca5a1628a81cca71cc6928f05dc3ca40071e6'
   },

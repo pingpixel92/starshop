@@ -1,0 +1,43 @@
+name: site-update-notify
+
+# هر تغییری که روی سایت (main) پوش شود، ربات پشتیبانی خودکار:
+# ۱) پیام «سایت آپدیت شد» به چت مالک می‌فرستد
+# ۲) پروفایل (Description) خودش را با آخرین وضعیت دیپلوی به‌روز می‌کند
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  telegram:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify owner + auto-refresh bot profile
+        env:
+          BOT: ${{ secrets.TG_BOT_TOKEN }}
+          CHAT: ${{ secrets.TG_OWNER_CHAT }}
+        run: |
+          SHORT="${GITHUB_SHA::7}"
+          TITLE="$(printf '%s' "${{ github.event.head_commit.message }}" | head -n 1 | cut -c1-200)"
+          [ -z "$TITLE" ] && TITLE="آپدیت دستی"
+          DATE="$(TZ=Asia/Tehran date '+%Y-%m-%d %H:%M')"
+
+          TEXT="🚀 سایت استارشاپ آپدیت شد
+─────────────
+📝 ${TITLE}
+🔖 کامیت: ${SHORT}
+🕐 ${DATE} (تهران)
+🌐 https://starshop.kdns.fr"
+
+          DESC="⭐ ربات پشتیبانی استارشاپ
+آخرین به‌روزرسانی سایت: ${DATE} (${SHORT})
+پرداخت کارت به کارت بانک ملت + بررسی خودکار اصالت فیش با هوش مصنوعی
+تایید سفارش: /approve کد یا /تایید کد — رد: /reject کد دلیل"
+
+          curl -fsS -H 'Content-Type: application/json' \
+            -d "$(printf '%s' "$TEXT" | jq -Rs --arg c "$CHAT" '{chat_id:$c, text:.}')" \
+            "https://api.telegram.org/bot${BOT}/sendMessage" || true
+
+          curl -fsS -H 'Content-Type: application/json' \
+            -d "$(printf '%s' "$DESC" | jq -Rs '{description:.}')" \
+            "https://api.telegram.org/bot${BOT}/setMyDescription" || true

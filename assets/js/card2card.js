@@ -17,7 +17,7 @@ const TG  = CFG.orderNotify || {};
 const STORE = C2C.store || '';
 const CARD  = String(C2C.cardNumber || '6104331188928551').replace(/\D/g, '');
 const HOLDER = C2C.holder || 'مجید احمدوند';
-const BANK   = C2C.bank || 'بانک ملی ایران';
+const BANK   = C2C.bank || 'بانک ملت';
 const CARD_LAST4 = CARD.slice(-4);
 const CARD_FIRST6 = CARD.slice(0, 6);
 
@@ -505,6 +505,7 @@ async function submitReceipt(manualReview) {
       'نام: ' + esc2(name || '—') + ' | موبایل: ' + esc2(phone || '—') + '\n' +
       '🧾 اقلام: ' + esc2(items.map(i => i.title + (i.qty > 1 ? '×' + i.qty : '')).join(' + ').slice(0, 160)) + '\n' +
       '💰 مبلغ: <b>' + money(totalToman) + ' تومان</b> (' + money(totalRial) + ' ریال)\n' +
+      '🏦 مقصد: ' + esc2(BANK) + ' — کارت ' + toFa(CARD_LAST4) + ' به نام ' + esc2(HOLDER) + '\n' +
       '🤖 هوش مصنوعی: ' + (manualReview ? '⚠️ <b>نیازمند بررسی دستی</b>' : pass ? '✅ <b>تأیید خودکار</b>' : '—') + '\n' +
       (okIcons ? 'بررسی‌ها: ' + okIcons + '\n' : '') +
       (rec.ref ? 'شماره پیگیری: <code>' + esc2(rec.ref) + '</code>\n' : '') +

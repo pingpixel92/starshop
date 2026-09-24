@@ -1,12 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 352" role="img" aria-label="کارت بانکی استار شاپ">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 352" role="img" aria-label="کارت بانک ملت — استار شاپ">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#0a1f4d"/>
-      <stop offset=".45" stop-color="#1557d6"/>
-      <stop offset="1" stop-color="#071a3a"/>
+      <stop offset="0" stop-color="#a90f26"/>
+      <stop offset=".48" stop-color="#d71635"/>
+      <stop offset="1" stop-color="#57091a"/>
     </linearGradient>
     <linearGradient id="sheen" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#ffffff" stop-opacity=".22"/>
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".20"/>
       <stop offset=".5" stop-color="#ffffff" stop-opacity=".04"/>
       <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
     </linearGradient>
@@ -19,57 +19,122 @@
       <stop offset="0" stop-color="#f7c948"/>
       <stop offset="1" stop-color="#ffe9a8"/>
     </linearGradient>
-    <radialGradient id="orb1" cx=".5" cy=".5" r=".5">
-      <stop offset="0" stop-color="#4e8cff" stop-opacity=".55"/>
-      <stop offset="1" stop-color="#4e8cff" stop-opacity="0"/>
+    <radialGradient id="glow1" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#ff8fa5" stop-opacity=".5"/>
+      <stop offset="1" stop-color="#ff8fa5" stop-opacity="0"/>
     </radialGradient>
-    <radialGradient id="orb2" cx=".5" cy=".5" r=".5">
-      <stop offset="0" stop-color="#00a6a6" stop-opacity=".4"/>
-      <stop offset="1" stop-color="#00a6a6" stop-opacity="0"/>
-    </radialGradient>
+    <radialGradient id="MELLAT_G1" cx="102.0404663" cy="41.313755" r="37.7397079" fx="78.5114517" fy="20.3117523" gradientUnits="userSpaceOnUse">
+		<stop  offset="0" style="stop-color:#FFFFFF"/>
+		<stop  offset="0.0255132" style="stop-color:#FDF8F8"/>
+		<stop  offset="0.2973083" style="stop-color:#EEADB4"/>
+		<stop  offset="0.5401202" style="stop-color:#E1717E"/>
+		<stop  offset="0.745488" style="stop-color:#D94657"/>
+		<stop  offset="0.9052967" style="stop-color:#D32C3F"/>
+		<stop  offset="1" style="stop-color:#D12236"/>
+	</radialGradient>
+    <linearGradient id="MELLAT_G2" gradientUnits="userSpaceOnUse" x1="134.7217255" y1="114.6244202" x2="96.320816" y2="74.8863297">
+		<stop  offset="0.0811578" style="stop-color:#FFD88B"/>
+		<stop  offset="0.3899239" style="stop-color:#FFD667"/>
+		<stop  offset="0.7925526" style="stop-color:#FFD33E"/>
+		<stop  offset="1" style="stop-color:#FFD22E"/>
+	</linearGradient>
+    <path fill-rule="evenodd" clip-rule="evenodd" fill="url(#MELLAT_G1)" stroke="#8e1220" stroke-width="3" d="
+		M154.9982605,35.2635803v17.4064026l-44.9999542-25.9817524c-2-1.154747-4.5000381,0.2886276-4.5000381,2.5980511v30.0937233
+		c-14.4299927,2.1699829-25.5,14.6199951-25.5,29.6599731c0,3.8600464,0.7299805,7.5400391,2.0700073,10.9299927
+		l-17.0700073,9.8500366v-74.556427c0-3.5727024,1.9060364-6.8740082,5.0001068-8.6603203l35-20.2066498
+		c3.093956-1.7862411,6.9058228-1.7862411,9.9997787,0l35,20.2066498
+		C153.0922241,28.3895721,154.9982605,31.6908779,154.9982605,35.2635803z"/>
+    <path fill="#D12236" stroke="#8e1220" stroke-width="3" d="M40.9271736,76.959938l15.0739479-8.7032013v51.9619827
+		c-0.0000381,2.3094254,2.4995384,3.7528381,4.4995613,2.5981293l26.061924-15.0468674
+		c9.0942612,11.4117508,25.411293,14.7736511,38.4362946,7.2536621c3.3428955-1.9300232,6.1648712-4.4021988,8.4306488-7.2576752
+		l17.0653839,9.8580475l-64.5677567,37.2782059c-3.0940552,1.7863617-6.9060898,1.7863312-10.0001144-0.000061
+		l-34.9994774-20.2075653c-3.0939064-1.7863159-5.000103-5.0874939-5.0001488-8.6600571V85.6203232
+		C35.9273911,82.0476227,37.8331223,78.7462921,40.9271736,76.959938z"/>
+    <path fill="#D12236" stroke="#8e1220" stroke-width="3" d="M134.0728302,154.9002228l-15.0743942-8.7032013l45.0008316-25.9802322
+		c2.0000458-1.1546783,2.0000763-4.0414658,0.0000458-5.1961746l-26.0619202-15.0468597
+		c5.3357391-13.5817337,0.0887146-29.3936462-12.9362946-36.9136391c-3.3428955-1.9300232-6.8925476-3.1378365-10.4983444-3.6723137
+		V39.6797218l64.570076,37.2782173c3.0940399,1.7863464,4.9997864,5.087677,4.9997253,8.6603775v40.4142151
+		c-0.0000458,3.5725708-1.9062347,6.8737335-5.0001373,8.6600647l-34.9994812,20.2075653
+		C140.9789124,156.686554,137.1668701,156.6865692,134.0728302,154.9002228z"/>
+    <circle fill="url(#MELLAT_G2)" stroke="#e08900" stroke-width="3.5" cx="109.9994202" cy="89.0412445" r="21"/>
   </defs>
 
   <!-- body -->
-  <rect x="0" y="0" width="560" height="352" rx="30" fill="url(#bg)"/>
-  <circle cx="470" cy="30" r="150" fill="url(#orb1)"/>
-  <circle cx="60" cy="330" r="160" fill="url(#orb2)"/>
-  <polygon points="0,352 230,0 330,0 60,352" fill="url(#sheen)"/>
-  <rect x="0" y="0" width="560" height="352" rx="30" fill="none" stroke="#ffffff" stroke-opacity=".16" stroke-width="1.5"/>
+  <rect width="560" height="352" rx="30" fill="url(#bg)"/>
+  <g fill="none" stroke="#ffffff" opacity=".08">
+    <circle cx="486" cy="28" r="148" stroke-width="1"/>
+    <circle cx="516" cy="-6" r="196" stroke-width="1"/>
+    <circle cx="56" cy="336" r="142" stroke-width="1"/>
+    <circle cx="18" cy="368" r="188" stroke-width="1"/>
+  </g>
+  <circle cx="490" cy="30" r="150" fill="url(#glow1)"/>
+  <polygon points="0,352 232,0 330,0 62,352" fill="url(#sheen)"/>
+  <rect width="560" height="352" rx="30" fill="none" stroke="#ffffff" stroke-opacity=".17" stroke-width="1.5"/>
 
-  <!-- top row -->
+  <!-- Mellat emblem on white badge (top-left) -->
+  <g transform="translate(30,24)">
+    <rect width="70" height="70" rx="17" fill="#ffffff" fill-opacity=".97"/>
+    <rect width="70" height="70" rx="17" fill="none" stroke="#d71635" stroke-opacity=".25"/>
+    <g transform="translate(6.4,14.2) scale(0.26)">
+      <g><path fill-rule="evenodd" clip-rule="evenodd" fill="url(#MELLAT_G1)" stroke="#8e1220" stroke-width="3" d="
+		M154.9982605,35.2635803v17.4064026l-44.9999542-25.9817524c-2-1.154747-4.5000381,0.2886276-4.5000381,2.5980511v30.0937233
+		c-14.4299927,2.1699829-25.5,14.6199951-25.5,29.6599731c0,3.8600464,0.7299805,7.5400391,2.0700073,10.9299927
+		l-17.0700073,9.8500366v-74.556427c0-3.5727024,1.9060364-6.8740082,5.0001068-8.6603203l35-20.2066498
+		c3.093956-1.7862411,6.9058228-1.7862411,9.9997787,0l35,20.2066498
+		C153.0922241,28.3895721,154.9982605,31.6908779,154.9982605,35.2635803z"/></g>
+      <g><path fill="#D12236" stroke="#8e1220" stroke-width="3" d="M40.9271736,76.959938l15.0739479-8.7032013v51.9619827
+		c-0.0000381,2.3094254,2.4995384,3.7528381,4.4995613,2.5981293l26.061924-15.0468674
+		c9.0942612,11.4117508,25.411293,14.7736511,38.4362946,7.2536621c3.3428955-1.9300232,6.1648712-4.4021988,8.4306488-7.2576752
+		l17.0653839,9.8580475l-64.5677567,37.2782059c-3.0940552,1.7863617-6.9060898,1.7863312-10.0001144-0.000061
+		l-34.9994774-20.2075653c-3.0939064-1.7863159-5.000103-5.0874939-5.0001488-8.6600571V85.6203232
+		C35.9273911,82.0476227,37.8331223,78.7462921,40.9271736,76.959938z"/></g>
+      <g><path fill="#D12236" stroke="#8e1220" stroke-width="3" d="M134.0728302,154.9002228l-15.0743942-8.7032013l45.0008316-25.9802322
+		c2.0000458-1.1546783,2.0000763-4.0414658,0.0000458-5.1961746l-26.0619202-15.0468597
+		c5.3357391-13.5817337,0.0887146-29.3936462-12.9362946-36.9136391c-3.3428955-1.9300232-6.8925476-3.1378365-10.4983444-3.6723137
+		V39.6797218l64.570076,37.2782173c3.0940399,1.7863464,4.9997864,5.087677,4.9997253,8.6603775v40.4142151
+		c-0.0000458,3.5725708-1.9062347,6.8737335-5.0001373,8.6600647l-34.9994812,20.2075653
+		C140.9789124,156.686554,137.1668701,156.6865692,134.0728302,154.9002228z"/></g>
+      <circle fill="url(#MELLAT_G2)" stroke="#e08900" stroke-width="3.5" cx="109.9994202" cy="89.0412445" r="21"/>
+    </g>
+  </g>
+
+  <!-- bank name (top-right) -->
   <g font-family="Vazirmatn, Tahoma, 'Segoe UI', sans-serif">
-    <text x="528" y="52" text-anchor="end" fill="#ffffff" fill-opacity=".95" font-size="20" font-weight="700">بانک ملی ایران</text>
-    <text x="528" y="76" text-anchor="end" fill="#9ec3ff" fill-opacity=".85" font-size="12" font-weight="600">MEMBER SINCE 2024</text>
+    <text x="530" y="52" text-anchor="end" fill="#ffffff" font-size="21" font-weight="800">بانک ملت</text>
+    <text x="530" y="75" text-anchor="end" fill="#ffd0d9" font-size="11.5" font-weight="700" letter-spacing="3.5">BANK MELLAT</text>
+  </g>
 
-    <!-- star brand -->
-    <g transform="translate(34,30)">
-      <path d="M14 1.6l3.5 7.6 8.3 1-6.2 5.7 1.7 8.2-7.3-4.1-7.3 4.1 1.7-8.2L2.2 10.2l8.3-1z" fill="url(#gold)"/>
-      <text x="34" y="20" fill="#ffffff" font-size="17" font-weight="800" letter-spacing="3">STARSHOP</text>
-    </g>
-
-    <!-- contactless -->
-    <g transform="translate(34,96)" stroke="#ffffff" stroke-opacity=".85" stroke-width="3.4" fill="none" stroke-linecap="round">
-      <path d="M4 8a18 18 0 0 1 0 22"/>
-      <path d="M12 3a26 26 0 0 1 0 32"/>
-      <path d="M20 -2a34 34 0 0 1 0 42"/>
+  <!-- chip + contactless -->
+  <g transform="translate(30,116)">
+    <rect width="58" height="44" rx="9" fill="url(#chip)"/>
+    <g fill="none" stroke="#8a5b06" stroke-width="1.6" opacity=".8">
+      <rect x="10" y="9" width="38" height="26" rx="5"/>
+      <line x1="10" y1="18" x2="48" y2="18"/><line x1="10" y1="26" x2="48" y2="26"/>
+      <line x1="22" y1="9" x2="22" y2="35"/><line x1="36" y1="9" x2="36" y2="35"/>
     </g>
   </g>
-
-  <!-- chip -->
-  <g transform="translate(34,150)">
-    <rect x="0" y="0" width="62" height="46" rx="9" fill="url(#chip)" stroke="#b47b06" stroke-width="1"/>
-    <path d="M0 15h20M0 31h20M42 15h20M42 31h20M31 0v46M20 15c7 3 7 11 0 14M42 15c-7 3-7 11 0 14" stroke="#8a5c04" stroke-width="1.6" fill="none"/>
+  <g transform="translate(102,124)" fill="none" stroke="#ffffff" stroke-opacity=".9" stroke-width="2.4" stroke-linecap="round">
+    <path d="M0 6a16 16 0 0 1 0 20"/>
+    <path d="M7 0a26 26 0 0 1 0 32"/>
+    <path d="M14 -6a36 36 0 0 1 0 44"/>
   </g>
 
-  <!-- number -->
-  <g font-family="Vazirmatn, Tahoma, 'Segoe UI', sans-serif" fill="#ffffff">
-    <text x="280" y="238" text-anchor="middle" font-size="34" font-weight="800" letter-spacing="5" direction="ltr" style="text-shadow:0 2px 10px rgba(0,0,0,.4)">6104 3311 8892 8551</text>
-    <text x="280" y="262" text-anchor="middle" font-size="10.5" font-weight="600" letter-spacing="6" fill="#9ec3ff" direction="ltr">6104 ------ 8551</text>
-  </g>
+  <!-- card number -->
+  <text x="30" y="252" font-family="'Courier New', monospace" font-size="30" font-weight="700" letter-spacing="2" fill="#ffffff">6104 3311 8892 8551</text>
 
   <!-- holder -->
   <g font-family="Vazirmatn, Tahoma, 'Segoe UI', sans-serif">
-    <text x="528" y="316" text-anchor="end" fill="#ffffff" fill-opacity=".92" font-size="17" font-weight="700">به نام: مجید احمدوند</text>
-    <text x="34" y="316" fill="#9ec3ff" fill-opacity=".9" font-size="12" font-weight="700" letter-spacing="2" direction="ltr">PREMIUM CARD</text>
+    <text x="30" y="290" font-size="10.5" font-weight="700" fill="#ffc9d2" letter-spacing="1">صاحب کارت — CARD HOLDER</text>
+    <text x="30" y="318" font-size="19" font-weight="800" fill="#ffffff">مجید احمدوند</text>
+  </g>
+
+  <!-- shop brand (bottom-right) -->
+  <g transform="translate(530,296)" font-family="Vazirmatn, Tahoma, 'Segoe UI', sans-serif" text-anchor="end">
+    <g transform="translate(-134,-14) scale(1.15)">
+      <path d="M13 1.5l3.2 7 7.7.9-5.7 5.3 1.6 7.6-6.8-3.8-6.8 3.8 1.6-7.6L2.1 9.4l7.7-.9z" fill="url(#gold)"/>
+    </g>
+    <text x="0" y="0" fill="#ffe9a8" font-size="15" font-weight="800" letter-spacing="2.5">STARSHOP</text>
+    <!-- star rendered separately left of the wordmark -->
+    <text x="0" y="20" fill="#ffd0d9" font-size="10" font-weight="600" letter-spacing="1.2">کارت به کارت — SHETAB</text>
   </g>
 </svg>
