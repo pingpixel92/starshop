@@ -1128,3 +1128,16 @@ body[data-theme="dark"] .art-item{background:rgba(255,255,255,.04)}
   .sup-bub,.sup-fab,.sup-fab svg,.sup-panel,.sup-chip,.sup-send{transition:none;animation:none}
   .sup-dot{animation:none}
 }
+
+/* ═══ پیگیری وضعیت سفارش‌ها (orders.html + پنل حساب) — v20260945 ═══ */
+.ost-chip{font-weight:800}
+.ost-chip.ost-pending{color:#b06e00;background:rgba(224,140,0,.1)}
+.ost-chip.ost-review{color:var(--brand);background:rgba(21,87,214,.08)}
+.ost-chip.ost-approved{color:#0b8f56;background:rgba(14,157,88,.1)}
+.ost-chip.ost-delivered{color:#00888a;background:rgba(0,166,166,.1)}
+.ost-chip.ost-rejected{color:#d34040;background:rgba(211,47,47,.09)}
+.ost-chip.ost-new{color:#7d93b8;background:rgba(125,147,184,.1)}
+.ost-chip.ost-sent{color:#9d7bff;background:rgba(157,123,255,.1)}
+.acc-track{margin-bottom:8px}
+.acc-track-link{display:inline-block;margin-top:9px;font-size:12px;font-weight:800;color:var(--brand);text-decoration:none}
+.acc-track-link:hover{text-decoration:underline}

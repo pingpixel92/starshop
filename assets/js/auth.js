@@ -264,21 +264,25 @@ const renderAccount = () => {
   if (phoneEl) phoneEl.textContent = s.phone || '—';
   if (sinceEl) sinceEl.textContent = new Date(s.since || Date.now()).toLocaleDateString(locale);
   if (nameInput && p.name) nameInput.value = p.name;
-  /* orders (مخصوص همان کاربر) */
+  /* orders (مخصوص همان کاربر) + چیپ وضعیت زنده از مسیر کارت به کارت */
   const list = $('[data-acc-orders]', modal);
   if (list) {
     const orders = (window.SSCart && window.SSCart.getOrders ? window.SSCart.getOrders() : read('ss_orders', [])).slice().reverse();
     if (!orders.length) {
       list.innerHTML = `<div class="acc-empty"><svg class="ic" viewBox="0 0 24 24"><use href="#i-box"/></svg><b>${t('auth.orders.empty')}</b><p>${t('auth.orders.empty.hint')}</p></div>`;
     } else {
+      const OST = { new: 'ost.new', sent: 'ost.sent', pending: 'ost.pending', review: 'ost.review', approved: 'ost.approved', delivered: 'ost.delivered', rejected: 'ost.rejected' };
       list.innerHTML = orders.map(o => {
         const items = (o.items || []).map(i => `<li>${escapeHtml(i.title)} <b>×${localDig(i.qty)}</b></li>`).join('');
         const ch = o.channel === 'bale' ? t('order.channel.bale') : t('order.channel.tg');
         const dt = new Date(o.ts).toLocaleDateString(locale);
+        /* وضعیت ذخیره‌شده از صفحه پرداخت (هر ۱۲ ثانیه همان‌جا تازه می‌شود) */
+        let st = null; try { st = localStorage.getItem('ss_c2c_status_' + o.code); } catch (e) {}
+        const stChip = (st && OST[st]) ? `<span class="chip ost-chip ost-${escapeHtml(st)}">${t(OST[st])}</span>` : '';
         return `<article class="acc-order">
-          <div class="acc-order-head"><b dir="ltr">${escapeHtml(o.code)}</b><span class="chip">${escapeHtml(ch)}</span><small>${dt}</small></div>
+          <div class="acc-order-head"><b dir="ltr">${escapeHtml(o.code)}</b><span class="chip">${escapeHtml(ch)}</span>${stChip}<small>${dt}</small></div>
           <ul>${items}</ul>
-          <p class="acc-order-price">${t('order.priceNote') || ''}</p>
+          <a class="acc-track-link" href="orders.html">${t('auth.orders.track')} ←</a>
         </article>`;
       }).join('');
     }

@@ -79,7 +79,7 @@ $('#btnPw').addEventListener('click', async () => {
 
 /* ── لیست سفارش‌ها ── */
 let ORDERS = [];
-const ST_FA = { pending: 'در انتظار تأیید', review: 'بررسی دستی', approved: 'تأیید شده ✓', rejected: 'رد شده ✗' };
+const ST_FA = { pending: 'در انتظار تأیید', review: 'بررسی دستی', approved: 'تأیید شده ✓', delivered: 'تحویل شد 📦', rejected: 'رد شده ✗' };
 async function load() {
   const db = await dbRead();
   ORDERS = db.orders || [];
@@ -89,14 +89,16 @@ function render() {
   const list = $('#list');
   const pend = ORDERS.filter(o => o.status === 'pending' || o.status === 'review').length;
   const appr = ORDERS.filter(o => o.status === 'approved').length;
+  const delv = ORDERS.filter(o => o.status === 'delivered').length;
   const rej = ORDERS.filter(o => o.status === 'rejected').length;
   $('#stats').innerHTML =
     `<span class="chip">کل: <b>${toFa(ORDERS.length)}</b></span>` +
     `<span class="chip">در صف: <b>${toFa(pend)}</b></span>` +
     `<span class="chip">تأییدشده: <b>${toFa(appr)}</b></span>` +
+    `<span class="chip">تحویل‌شده: <b>${toFa(delv)}</b></span>` +
     `<span class="chip">ردشده: <b>${toFa(rej)}</b></span>`;
   if (!ORDERS.length) { list.innerHTML = '<div class="empty">هنوز سفارشی ثبت نشده است.</div>'; return; }
-  const rank = s => s === 'review' ? 0 : s === 'pending' ? 1 : s === 'rejected' ? 2 : 3;
+  const rank = s => s === 'review' ? 0 : s === 'pending' ? 1 : s === 'rejected' ? 2 : s === 'delivered' ? 4 : 3;
   const sorted = ORDERS.slice().sort((a, b) => rank(a.status) - rank(b.status) || (b.updatedAt || 0) - (a.updatedAt || 0));
   list.innerHTML = sorted.map(o => {
     const d = new Date(o.updatedAt || o.createdAt || Date.now());
@@ -124,7 +126,8 @@ function render() {
       <div class="o-ai">${ai}</div>
       ${img}${reason}
       <div class="o-actions">
-        ${o.status !== 'approved' ? `<button class="btn btn-g" data-approve="${esc2(o.code)}">✅ تأیید</button>` : ''}
+        ${o.status !== 'approved' && o.status !== 'delivered' ? `<button class="btn btn-g" data-approve="${esc2(o.code)}">✅ تأیید</button>` : ''}
+        ${o.status === 'approved' ? `<button class="btn btn-g" data-deliver="${esc2(o.code)}">📦 تحویل شد</button>` : ''}
         ${o.status !== 'rejected' ? `<button class="btn btn-r" data-reject="${esc2(o.code)}">❌ رد</button>` : ''}
         <button class="btn btn-o" data-del="${esc2(o.code)}">🗑 حذف</button>
       </div>
@@ -133,9 +136,11 @@ function render() {
 }
 $('#list').addEventListener('click', async e => {
   const ap = e.target.closest('[data-approve]');
+  const dv = e.target.closest('[data-deliver]');
   const rj = e.target.closest('[data-reject]');
   const dl = e.target.closest('[data-del]');
   if (ap) return setStatus(ap.dataset.approve, 'approved', null);
+  if (dv) return setStatus(dv.dataset.deliver, 'delivered', null);
   if (rj) {
     const reason = prompt('دلیل رد فیش (برای نمایش به کاربر):');
     if (reason === null) return;
@@ -151,8 +156,10 @@ async function setStatus(code, status, reason) {
   o.status = status; o.reason = reason; o.updatedAt = Date.now();
   await dbWrite(ORDERS);
   render();
-  tgSendText((status === 'approved' ? '✅ سفارش ' : '❌ سفارش ') + code + (status === 'approved' ? ' تأیید شد — وضعیت در سایت برای کاربر به‌روز شد.' : ' رد شد' + (reason ? '؛ دلیل: ' + reason : '') + '.'));
-  toast(status === 'approved' ? 'تأیید شد ✓ کاربر می‌بیند' : 'رد شد — کاربر دلیل را می‌بیند');
+  tgSendText(status === 'approved' ? '✅ سفارش ' + code + ' تأیید شد — وضعیت در سایت برای کاربر به‌روز شد.'
+    : status === 'delivered' ? '📦 سفارش ' + code + ' تحویل شد — در صفحه «وضعیت سفارش‌ها» کاربر نمایش داده می‌شود.'
+    : '❌ سفارش ' + code + ' رد شد' + (reason ? '؛ دلیل: ' + reason : '') + '.');
+  toast(status === 'approved' ? 'تأیید شد ✓ کاربر می‌بیند' : status === 'delivered' ? 'تحویل شد 📦 کاربر می‌بیند' : 'رد شد — کاربر دلیل را می‌بیند');
 }
 
 /* ── گوش‌دهی به دستورات ربات (/تایید کد ، /رد کد دلیل) ── */
@@ -184,10 +191,12 @@ async function botTick() {
       if (!m.text) continue;
       const mt = norm(m.text);
       const mm = mt.match(/^\/?(تایید|taeed|ok|approve)\s+([a-z0-9\-]+)\s*$/i) ||
+                 mt.match(/^\/?(تحویل|tahvil|deliver)\s+([a-z0-9\-]+)\s*$/i) ||
                  mt.match(/^\/?(رد|ردشد|reject|rad)\s+([a-z0-9\-]+)\s*([\s\S]*)$/i);
       if (!mm) continue;
       const code = mm[2].toUpperCase();
       if (mm[1].match(/تایید|taeed|ok|approve/i)) await setStatus(code, 'approved', null);
+      else if (mm[1].match(/تحویل|tahvil|deliver/i)) await setStatus(code, 'delivered', null);
       else await setStatus(code, 'rejected', (mm[3] || '').trim() || 'فیش تأیید نشد');
       toast('از ربات: سفارش ' + code + ' به‌روزرسانی شد');
     }

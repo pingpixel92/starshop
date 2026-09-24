@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#05070b">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vazirmatn@33.0.3/Vazirmatn-font-face.css">
-<link rel="stylesheet" href="assets/css/style.css?v=20260944">
+<link rel="stylesheet" href="assets/css/style.css?v=20260945">
 <style>
 /* ═══ صفحه کارت به کارت — همه کلاس‌ها c2c- (بدون تداخل با style.css) ═══ */
 *{box-sizing:border-box}
@@ -117,6 +117,8 @@ p.c2c-sub{margin:0;max-width:560px;color:rgba(255,255,255,.68);font-size:15px}
 .c2c-pulse{display:inline-block;width:11px;height:11px;border-radius:50%;background:#e08c00;margin-left:6px;animation:c2cPl 1.2s infinite}
 @keyframes c2cPl{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
 .c2c-lastcheck{font-size:11.5px;color:var(--muted);margin-top:12px;text-align:center}
+.c2c-tracklink{display:inline-flex;align-items:center;gap:7px;margin-top:12px;background:linear-gradient(135deg,var(--brand),var(--brand-light));color:#fff;text-decoration:none;font-weight:800;font-size:13.5px;border-radius:999px;padding:10px 22px;box-shadow:0 12px 28px -12px rgba(21,87,214,.55);transition:.25s}
+.c2c-tracklink:hover{filter:brightness(1.08);transform:translateY(-1px)}
 /* ── فوتر ── */
 .c2c-foot{text-align:center;color:var(--muted);font-size:13px;margin-top:30px}
 .c2c-foot a{color:var(--brand);text-decoration:none;font-weight:800}
@@ -226,6 +228,7 @@ p.c2c-sub{margin:0;max-width:560px;color:rgba(255,255,255,.68);font-size:15px}
       <div class="s-ic">✅</div>
       <h3>رسید شما از طرف پشتیبانی تأیید شد!</h3>
       <p>سفارش شما در حال آماده‌سازی است 🎉 — کد سفارش: <b id="apCode"></b>. از اعتماد شما سپاسگزاریم.</p>
+      <a class="c2c-tracklink" href="orders.html">📦 پیگیری در «وضعیت سفارش‌های من»</a>
     </div>
     <div class="c2c-status" id="stRejected">
       <div class="s-ic">❌</div>

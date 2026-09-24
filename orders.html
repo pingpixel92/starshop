@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data:; font-src https://cdn.jsdelivr.net data:; connect-src 'self' https://textdb.dev https://api.telegram.org https://accounts.google.com; base-uri 'self'; form-action 'self'; object-src 'none'">
+<title>وضعیت سفارش‌ها | استار شاپ</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#05070b">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vazirmatn@33.0.3/Vazirmatn-font-face.css">
+<link rel="stylesheet" href="assets/css/style.css?v=20260945">
+<style>
+/* ═══ صفحه وضعیت سفارش‌ها — همه کلاس‌ها ord- (بدون تداخل) ═══ */
+*{box-sizing:border-box}
+/* ── هدر شیشه‌ای ── */
+.ord-head{position:sticky;top:0;z-index:40;background:color-mix(in srgb,#070a12 82%,transparent);backdrop-filter:blur(18px) saturate(1.5);-webkit-backdrop-filter:blur(18px) saturate(1.5);border-bottom:1px solid rgba(255,255,255,.07)}
+.ord-head-in{width:min(860px,100%);margin-inline:auto;padding:0 var(--gutter);height:64px;display:flex;align-items:center;justify-content:space-between;gap:14px}
+.ord-brand{display:inline-flex;align-items:center;gap:10px;color:#fff;text-decoration:none;font-weight:900;font-size:16px}
+.ord-brand img{width:30px;height:30px;filter:drop-shadow(0 2px 8px rgba(78,140,255,.5))}
+.ord-back{display:inline-flex;align-items:center;gap:7px;color:rgba(255,255,255,.75);text-decoration:none;font-size:13.5px;font-weight:700;padding:8px 16px;border:1px solid rgba(255,255,255,.14);border-radius:999px;transition:.25s}
+.ord-back:hover{color:#fff;border-color:rgba(255,255,255,.35);background:rgba(255,255,255,.06)}
+/* ── هیرو ── */
+.ord-hero{position:relative;overflow:hidden;background:linear-gradient(165deg,#05070b 10%,#071a3a 55%,#0a2a5e);color:#fff;padding:clamp(38px,7vw,68px) var(--gutter) clamp(76px,10vw,110px)}
+.ord-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(640px 300px at 82% -8%,rgba(78,140,255,.28),transparent 65%),radial-gradient(520px 320px at 8% 112%,rgba(0,166,166,.2),transparent 60%);pointer-events:none}
+.ord-hero-in{position:relative;width:min(860px,100%);margin-inline:auto}
+.ord-badge{display:inline-flex;align-items:center;gap:8px;width:max-content;padding:7px 16px;border-radius:999px;font-size:12.5px;font-weight:800;color:#ffd97a;background:rgba(247,201,72,.1);border:1px solid rgba(247,201,72,.35)}
+.ord-badge i{width:7px;height:7px;border-radius:50%;background:#f7c948;box-shadow:0 0 12px 2px rgba(247,201,72,.8);animation:ordGlow 2s infinite}
+@keyframes ordGlow{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.75)}}
+h1.ord-title{font-size:clamp(26px,5.4vw,44px);font-weight:900;margin:12px 0 10px;line-height:1.35;background:linear-gradient(120deg,#fff 20%,#9ec3ff 75%,#4e8cff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+p.ord-sub{margin:0;max-width:600px;color:rgba(255,255,255,.68);font-size:15px}
+/* ── بدنه ── */
+.ord-main{width:min(860px,100%);margin:clamp(-56px,-7vw,-44px) auto 0;padding:0 var(--gutter) 90px;position:relative}
+.ord-panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);padding:clamp(18px,3.6vw,30px);box-shadow:var(--shadow);margin-bottom:20px}
+.ord-panel>h2{font-size:17px;font-weight:900;margin:0 0 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ord-panel>h2 .grow{flex:1}
+.ord-stepnum{width:29px;height:29px;border-radius:10px;background:linear-gradient(135deg,var(--brand),var(--brand-light));color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex:none;box-shadow:0 8px 20px -8px rgba(21,87,214,.55)}
+.ord-hint{font-size:12.5px;color:var(--muted);margin:10px 0 0}
+/* ── گیت ورود ── */
+.ord-gate{text-align:center;display:grid;justify-items:center;gap:6px;padding:clamp(30px,6vw,52px) 22px}
+.ord-gate .g-ic{width:76px;height:76px;border-radius:24px;background:linear-gradient(135deg,rgba(21,87,214,.14),rgba(78,140,255,.2));display:grid;place-items:center;font-size:34px;margin-bottom:6px}
+.ord-gate h2{margin:0;font-size:20px;font-weight:900}
+.ord-gate p{margin:0 0 14px;color:var(--muted);font-size:14px;max-width:420px}
+/* ── جستجوی کد ── */
+.ord-lookup{display:flex;gap:10px;flex-wrap:wrap}
+.ord-lookup input{flex:1;min-width:200px;border:1.5px solid var(--line);border-radius:var(--radius-sm);padding:12px 16px;font-family:var(--font);font-size:14.5px;font-weight:700;background:var(--bg);color:var(--ink);letter-spacing:1px;transition:border-color .25s}
+.ord-lookup input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 4px rgba(21,87,214,.08)}
+.ord-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:999px;padding:12px 26px;font-family:var(--font);font-size:14.5px;font-weight:800;cursor:pointer;transition:.25s}
+.ord-btn-brand{background:linear-gradient(135deg,var(--brand),var(--brand-light));color:#fff;box-shadow:0 14px 32px -14px rgba(21,87,214,.6)}
+.ord-btn-brand:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.ord-btn-ghost{background:var(--surface);border:1.5px solid var(--line);color:var(--ink);padding:9px 18px;font-size:13px}
+.ord-btn-ghost:hover{border-color:var(--brand);color:var(--brand)}
+.ord-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+/* ── آمار ── */
+.ord-stats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.ord-stats .chip{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:6px 14px;font-size:12.5px;font-weight:700;color:var(--muted)}
+.ord-stats .chip b{color:var(--ink)}
+/* ── کارت سفارش ── */
+.ord-list{display:grid;gap:14px}
+.ord-card{background:var(--bg);border:1px solid var(--line);border-radius:var(--radius-md);padding:18px 18px 16px;transition:border-color .3s}
+.ord-card:focus-code{border-color:var(--brand);box-shadow:0 0 0 3px rgba(21,87,214,.15)}
+.ord-card-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ord-code{font-weight:900;font-size:15px;letter-spacing:.5px;color:var(--ink)}
+.ord-ch{font-size:11px;font-weight:800;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:3px 10px}
+.ord-card-head .push{flex:1}
+.ord-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;border-radius:999px;padding:5px 13px;border:1px solid}
+.ord-badge .dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+.ord-badge .dot.pulse{animation:ordPl 1.2s infinite}
+@keyframes ordPl{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.75)}}
+.ord-badge.new{color:#7d93b8;border-color:rgba(125,147,184,.4);background:rgba(125,147,184,.08)}
+.ord-badge.sent{color:#9d7bff;border-color:rgba(157,123,255,.4);background:rgba(157,123,255,.08)}
+.ord-badge.pending{color:#b06e00;border-color:rgba(224,140,0,.45);background:rgba(224,140,0,.08)}
+.ord-badge.review{color:var(--brand-light,#5f8fff);border-color:rgba(21,87,214,.45);background:rgba(21,87,214,.08)}
+.ord-badge.approved{color:#0b8f56;border-color:rgba(14,157,88,.5);background:rgba(14,157,88,.09)}
+.ord-badge.delivered{color:#00a6a6;border-color:rgba(0,166,166,.5);background:rgba(0,166,166,.1)}
+.ord-badge.rejected{color:#d34040;border-color:rgba(211,47,47,.5);background:rgba(211,47,47,.08)}
+.ord-meta{display:flex;gap:6px 18px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:9px}
+.ord-meta b{color:var(--ink);font-weight:800}
+.ord-items{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:4px}
+.ord-items li{font-size:13.5px;padding:6px 12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);display:flex;justify-content:space-between;gap:10px}
+.ord-items li b{font-weight:800;color:var(--muted)}
+/* ── تایم‌لاین مراحل ── */
+.ord-tl{display:flex;align-items:flex-start;margin-top:16px;gap:0}
+.ord-tl .tl-st{display:grid;justify-items:center;gap:6px;flex:none;width:86px;text-align:center}
+.ord-tl .tl-ic{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:14px;font-weight:900;border:2px solid var(--line);color:var(--muted);background:var(--surface);transition:.3s}
+.ord-tl .tl-st span{font-size:10.5px;font-weight:800;color:var(--muted);line-height:1.5}
+.ord-tl .tl-line{flex:1;height:2.5px;margin-top:16px;background:var(--line);border-radius:2px;min-width:12px}
+.ord-tl .done .tl-ic{background:linear-gradient(135deg,#0e9d58,#00a6a6);border-color:transparent;color:#fff}
+.ord-tl .done span{color:#0b8f56}
+.ord-tl .done + .tl-line,.ord-tl .tl-line.done{background:linear-gradient(90deg,#0e9d58,#00a6a6)}
+.ord-tl .cur .tl-ic{border-color:var(--brand);color:var(--brand);box-shadow:0 0 0 5px rgba(21,87,214,.12);animation:ordCur 2s infinite}
+@keyframes ordCur{0%,100%{box-shadow:0 0 0 4px rgba(21,87,214,.12)}50%{box-shadow:0 0 0 9px rgba(21,87,214,.05)}}
+.ord-tl .cur span{color:var(--brand)}
+/* ── رد شده / پیوست ── */
+.ord-reason{margin-top:12px;background:rgba(211,47,47,.07);border:1px solid rgba(211,47,47,.4);color:#d34040;border-radius:var(--radius-sm);padding:11px 14px;font-size:12.5px;line-height:1.9}
+.ord-reason a{color:#fff;background:rgba(211,47,47,.75);text-decoration:none;font-weight:800;border-radius:999px;padding:4px 13px;margin-inline-start:8px;white-space:nowrap}
+.ord-note{margin-top:12px;background:rgba(157,123,255,.06);border:1px solid rgba(157,123,255,.3);color:#b9a5ff;border-radius:var(--radius-sm);padding:11px 14px;font-size:12.5px;line-height:1.9}
+.ord-okbox{margin-top:12px;background:rgba(14,157,88,.07);border:1px solid rgba(14,157,88,.4);color:#0b8f56;border-radius:var(--radius-sm);padding:11px 14px;font-size:12.5px;line-height:1.9}
+.ord-okbox b{font-weight:900}
+/* ── خالی ── */
+.ord-empty{text-align:center;padding:36px 16px;color:var(--muted)}
+.ord-empty .e-ic{width:70px;height:70px;margin:0 auto 12px;border-radius:22px;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;font-size:30px}
+.ord-empty b{display:block;font-size:15px;color:var(--ink);margin-bottom:4px}
+.ord-empty p{margin:0;font-size:13px}
+.ord-lastcheck{font-size:11.5px;color:var(--muted);margin-top:14px;text-align:center}
+/* ── فوتر ── */
+.ord-foot{text-align:center;color:var(--muted);font-size:13px;margin-top:30px}
+.ord-foot a{color:var(--brand);text-decoration:none;font-weight:800}
+.ord-foot small{display:block;margin-top:8px;color:#8b93a7}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--ink);color:var(--bg);padding:11px 24px;border-radius:999px;font-size:13.5px;font-weight:700;opacity:0;transition:.35s cubic-bezier(.2,1.4,.4,1);z-index:99;max-width:90vw;box-shadow:0 18px 44px -12px rgba(0,0,0,.4)}
+#toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+@media(max-width:560px){
+  .ord-head-in{height:58px}
+  .ord-tl .tl-st{width:64px}
+  .ord-tl .tl-st span{font-size:9.5px}
+  .ord-tl .tl-ic{width:30px;height:30px;font-size:12.5px}
+}
+</style>
+</head>
+<body data-theme="dark">
+
+<header class="ord-head">
+  <div class="ord-head-in">
+    <a class="ord-brand" href="index.html"><img src="assets/favicon.svg" alt=""> استار شاپ</a>
+    <a class="ord-back" href="index.html">بازگشت به فروشگاه ←</a>
+  </div>
+</header>
+
+<section class="ord-hero">
+  <div class="ord-hero-in">
+    <span class="ord-badge"><i></i> حساب کاربری · پیگیری زنده</span>
+    <h1 class="ord-title">وضعیت سفارش‌ها</h1>
+    <p class="ord-sub">سفارش‌های خود را مرحله‌به‌مرحله دنبال کنید — از ثبت سفارش و بررسی فیش تا تأیید پشتیبانی و تحویل نهایی. وضعیت‌ها به‌صورت زنده به‌روز می‌شوند.</p>
+  </div>
+</section>
+
+<main class="ord-main">
+
+  <!-- ── گیت ورود ── -->
+  <section class="ord-panel ord-gate" id="gate" hidden>
+    <div class="g-ic">🔐</div>
+    <h2>برای پیگیری سفارش‌ها وارد شوید</h2>
+    <p>وضعیت سفارش‌ها به حساب کاربری شما متصل است. با شماره موبایل یا گوگل وارد شوید تا سفارش‌هایتان را ببینید.</p>
+    <button class="ord-btn ord-btn-brand" id="btnGateLogin">ورود / ثبت‌نام</button>
+  </section>
+
+  <!-- ── جستجوی کد (همیشه قابل استفاده) ── -->
+    <section class="ord-panel">
+      <h2><span class="ord-stepnum">۱</span> پیگیری سریع با کد سفارش</h2>
+      <div class="ord-lookup">
+        <input id="lookupInput" placeholder="مثلاً SS-A1B2C3" dir="ltr" maxlength="20" autocomplete="off">
+        <button class="ord-btn ord-btn-brand" id="btnLookup">جستجو</button>
+      </div>
+      <p class="ord-hint">اگر با دستگاه یا مرورگر دیگری خرید کرده‌اید، کد سفارش (مثلاً SS-A1B2C3 یا C2C-XXXXX) را وارد کنید تا وضعیتش را ببینید.</p>
+      <div class="ord-list ord-lookup-result" id="lookupResult" style="margin-top:14px"></div>
+    </section>
+
+  <!-- ── اپ ── -->
+  <div id="app" hidden>
+    <section class="ord-panel">
+      <h2>
+        <span class="ord-stepnum">۲</span> سفارش‌های من
+        <span class="grow"></span>
+        <button class="ord-btn ord-btn-ghost" id="btnRefresh">🔄 به‌روزرسانی</button>
+      </h2>
+      <div class="ord-stats" id="stats"></div>
+      <div class="ord-list" id="list"></div>
+      <div class="ord-lastcheck" id="lastCheck"></div>
+    </section>
+  </div>
+
+  <footer class="ord-foot">
+    سوالی درباره سفارش دارید؟ پشتیبانی: <a href="https://t.me/Sam7NeC" target="_blank" rel="noopener">تلگرام</a> · <a href="https://ble.ir/samyar_ahmadvand" target="_blank" rel="noopener">بله</a>
+    <small>وضعیت سفارش‌های کارت به کارت هر ۱۵ ثانیه خودکار به‌روز می‌شود.</small>
+  </footer>
+</main>
+
+<!-- ═══ AUTH MODAL (مشابه صفحه اصلی) ═══ -->
+<div class="modal" id="authModal" role="dialog" aria-modal="true" aria-labelledby="authHead" hidden>
+  <div class="modal-backdrop" data-close-modal></div>
+  <div class="modal-panel auth-panel">
+    <button class="modal-close" data-close-modal aria-label="بستن"><svg class="ic" viewBox="0 0 24 24"><use href="#i-close"/></svg></button>
+    <svg class="auth-mark" viewBox="0 0 48 48" aria-hidden="true"><use href="#logo-mark"/></svg>
+    <h3 id="authHead">ورود / ثبت‌نام</h3>
+
+    <div class="auth-step" data-step="phone">
+      <p class="modal-sub">با شماره موبایل وارد شوید؛ سریع و بدون رمز عبور.</p>
+      <button type="button" class="btn btn-google w100" data-auth-google>
+        <img class="btn-logo" src="assets/logos/google-multicolor.svg" alt="Google">
+        <span>ادامه با گوگل</span>
+      </button>
+      <div class="auth-div" aria-hidden="true"><i></i><span>یا</span><i></i></div>
+      <form data-auth-form-phone novalidate>
+        <label class="field"><span>شماره موبایل</span>
+          <input type="tel" data-auth-phone inputmode="tel" autocomplete="tel" dir="ltr" maxlength="16" placeholder="۰۹۱۲۳۴۵۶۷۸۹">
+          <em class="err" data-autherr="phone" hidden>شماره موبایل معتبر وارد کنید (۰۹xxxxxxxxx).</em>
+          <em class="err" data-autherr="lock" hidden>تلاش‌های ناموفق زیاد است. کمی بعد دوباره امتحان کنید.</em>
+          <em class="err" data-autherr="spam" hidden>تعداد درخواست‌ها زیاد است؛ کمی بعد دوباره امتحان کنید.</em>
+        </label>
+        <button class="btn btn-primary btn-lg w100" type="submit">دریافت کد تأیید</button>
+      </form>
+      <p class="auth-secure"><svg class="ic" viewBox="0 0 24 24"><use href="#i-shield"/></svg><span>حریم خصوصی</span></p>
+    </div>
+
+    <div class="auth-step" data-step="google" hidden>
+      <div class="g-local-head"><img class="btn-logo" src="assets/logos/google-multicolor.svg" alt="Google"><span class="chip">حالت محلی — بدون سرور</span></div>
+      <p class="modal-sub">ورود سریع با حساب گوگل (حالت محلی) — اطلاعات فقط روی دستگاه شما ذخیره می‌شود.</p>
+      <form data-auth-form-google novalidate>
+        <label class="field"><span>ایمیل حساب گوگل</span>
+          <input type="email" data-auth-gemail inputmode="email" autocomplete="email" dir="ltr" maxlength="90" placeholder="name@gmail.com">
+          <em class="err" data-autherr="gmail" hidden>ایمیل معتبر وارد کنید.</em>
+        </label>
+        <button class="btn btn-primary btn-lg w100" type="submit">ورود با این حساب</button>
+      </form>
+      <div class="otp-links"><button type="button" class="linklike" data-google-back>بازگشت</button></div>
+    </div>
+
+    <div class="auth-step" data-step="otp" hidden>
+      <p class="modal-sub">کد ۴ رقمی ارسال‌شده به <b dir="ltr" data-otp-phone></b></p>
+      <div class="otp-row" dir="ltr">
+        <input class="otp-input" type="text" maxlength="1" inputmode="numeric" autocomplete="one-time-code" aria-label="رقم اول">
+        <input class="otp-input" type="text" maxlength="1" inputmode="numeric" aria-label="رقم دوم">
+        <input class="otp-input" type="text" maxlength="1" inputmode="numeric" aria-label="رقم سوم">
+        <input class="otp-input" type="text" maxlength="1" inputmode="numeric" aria-label="رقم چهارم">
+      </div>
+      <div class="otp-demo" data-otp-demo hidden>
+        <b><svg class="ic" viewBox="0 0 24 24"><use href="#i-spark"/></svg> کد تأیید برای شما ساخته شد</b>
+        <p><span data-demo-pre></span><b dir="ltr" data-otp-demo-code>----</b><span data-demo-post></span></p>
+        <button type="button" class="btn btn-ghost btn-sm" data-otp-autofill><svg class="ic" viewBox="0 0 24 24"><use href="#i-check"/></svg> درج خودکار کد</button>
+      </div>
+      <div class="otp-timer" data-otp-expire></div>
+      <em class="err" data-autherr="code" hidden>کد واردشده صحیح نیست.</em>
+      <em class="err" data-autherr="expired" hidden>کد منقضی شده؛ کد جدید بگیرید.</em>
+      <em class="err" data-autherr="attempts" hidden><span></span> <b data-left></b></em>
+      <em class="err" data-autherr="lock" hidden></em>
+      <div class="otp-actions">
+        <button class="btn btn-primary btn-lg w100" type="button" data-otp-resend disabled><span data-otp-resend-label>ارسال مجدد کد</span></button>
+        <div class="otp-links">
+          <button type="button" class="linklike" data-otp-edit>ویرایش شماره</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="auth-step" data-step="account" hidden>
+      <div class="acc-profile">
+        <span class="acc-avatar" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><use href="#i-user"/></svg></span>
+        <div>
+          <b data-acc-name>—</b>
+          <span dir="ltr" data-acc-phone>—</span>
+          <small>عضویت از <span data-acc-since></span> · وضعیت: فعال</small>
+        </div>
+      </div>
+      <form class="acc-form" data-acc-profile-form novalidate>
+        <label class="field"><span>نام (اختیاری — برای سفارش‌ها)</span>
+          <input type="text" data-acc-name-input maxlength="60" autocomplete="name">
+        </label>
+        <button class="btn btn-ghost btn-sm" type="submit">ذخیره</button>
+      </form>
+      <h4 class="acc-h4"><svg class="ic" viewBox="0 0 24 24"><use href="#i-box"/></svg> سفارش‌های من</h4>
+      <div class="acc-orders" data-acc-orders></div>
+      <div class="acc-foot">
+        <a class="btn btn-primary w100" href="orders.html"><svg class="ic" viewBox="0 0 24 24"><use href="#i-clock"/></svg> پیگیری وضعیت سفارش‌ها</a>
+        <button class="btn btn-ghost w100" type="button" data-acc-logout><svg class="ic" viewBox="0 0 24 24"><use href="#i-out"/></svg> خروج از حساب</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SVG ICONS (حداقلی برای همین صفحه) ═══ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+<defs>
+<linearGradient id="lg-star" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#4e8cff"/><stop offset="1" stop-color="#00a6a6"/>
+</linearGradient>
+<symbol id="logo-mark" viewBox="0 0 48 48">
+<path d="M24 5 L27.6 20.4 L43 24 L27.6 27.6 L24 43 L20.4 27.6 L5 24 L20.4 20.4 Z" fill="url(#lg-star)"/>
+<path d="M36.5 9.5 A17.5 17.5 0 1 0 41 22.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" opacity=".85"/>
+<circle cx="40.2" cy="25.4" r="2.6" fill="#00a6a6"/>
+</symbol>
+<symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7.5 2.8v5.4c0 4.6-3 8-7.5 9.8-4.5-1.8-7.5-5.2-7.5-9.8V5.8z"/><path d="M9 12l2.2 2.2L15.5 10"/></symbol>
+<symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3c.6 4.8 2.2 6.4 7 7-4.8.6-6.4 2.2-7 7-.6-4.8-2.2-6.4-7-7 4.8-.6 6.4-2.2 7-7z"/><path d="M19 15c.3 2 1 2.7 3 3-2 .3-2.7 1-3 3-.3-2-1-2.7-3-3 2-.3 2.7-1 3-3z"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M4.5 12.5l5 5L19.5 7"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8.4" r="3.6"/><path d="M4.8 20c1.4-3.4 4-5 7.2-5s5.8 1.6 7.2 5"/></symbol>
+<symbol id="i-out" viewBox="0 0 24 24"><path d="M15 4h5v5M20 4l-8 8M19 13.5V18a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h4.5"/></symbol>
+<symbol id="i-box" viewBox="0 0 24 24"><path d="M3.5 7.5 12 3l8.5 4.5v9L12 21l-8.5-4.5z"/><path d="M3.5 7.5 12 12l8.5-4.5M12 12v9"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5.4l3.4 2"/></symbol>
+</defs>
+</svg>
+
+<div id="toast" role="status"></div>
+<script>
+/* مینی‌SSUI برای مودال ورود در این صفحه (بدون main.js) */
+window.SSUI = {
+  openModal(m){ if(!m) return; m.hidden=false; requestAnimationFrame(()=>requestAnimationFrame(()=>m.classList.add('show'))); document.body.style.overflow='hidden'; },
+  closeModal(m){ if(!m||m.hidden) return; m.classList.remove('show'); setTimeout(()=>{m.hidden=true;},460); document.body.style.overflow=''; }
+};
+</script>
+<script src="assets/js/config.js" defer></script>
+<script src="assets/js/data-fa.js" defer></script>
+<script src="assets/js/auth.js?v=20260945" defer></script>
+<script src="assets/js/orders.js?v=20260945" defer></script>
+</body>
+</html>
