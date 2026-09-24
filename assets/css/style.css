@@ -708,7 +708,7 @@ body[data-theme="dark"] .icon-btn{border-color:rgba(255,255,255,.24)}
 .btn-c2c .arr{width:17px;height:17px}
 /* ── باکس پرداخت کارت به کارت (تک‌گزینه) ── */
 .pay-c2c{height:auto;min-height:58px;padding:10px 18px;justify-content:flex-start;gap:14px;text-align:start}
-.btn-cardimg{width:36px;height:54px;border-radius:8px;flex:none;object-fit:cover;object-position:center;box-shadow:0 8px 18px -6px rgba(7,26,58,.55)}
+.btn-cardimg{width:58px;height:37px;border-radius:9px;flex:none;box-shadow:0 8px 18px -6px rgba(7,26,58,.55)}
 .btn-mellatlogo{height:30px;width:auto;flex:none;background:#fff;border-radius:8px;padding:3px 7px;box-shadow:0 4px 12px -4px rgba(0,0,0,.4);margin-inline-start:auto}
 .pay-c2c-txt{display:grid;gap:1px;line-height:1.55;min-width:0}
 .pay-c2c-txt b{font-size:15px;font-weight:800}
