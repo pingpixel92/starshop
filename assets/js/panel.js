@@ -214,7 +214,7 @@ function actionsHtml(o, compact) {
 function tableHtml(list, opt) {
   opt = opt || {};
   const rows = list.map(o => {
-    const items = (o.items || []).map(i => esc(i.title) + (i.qty > 1 ? ' ×' + toFa(i.qty) : '')).join(' + ') || '—';
+    const items = (o.items || []).map(i => esc(i.title) + (i.qty > 1 ? ' ×' + toFa(i.qty) : '') + ((i.flds && i.flds.length) ? `<span class="td-flds">${i.flds.map(f => esc(f.l) + ': ' + esc(f.v)).join(' · ')}</span>` : '')).join(' + ') || '—';
     return `<tr>
       <td class="td-code">${esc(o.code)}</td>
       <td><span class="badge ${ST_CLS[o.status] || 'pending'}">${ST_FA[o.status] || esc(o.status)}</span></td>

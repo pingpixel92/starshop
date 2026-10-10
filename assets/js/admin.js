@@ -103,7 +103,7 @@ function render() {
   list.innerHTML = sorted.map(o => {
     const d = new Date(o.updatedAt || o.createdAt || Date.now());
     const when = toFa(d.toLocaleDateString('fa-IR')) + ' ' + toFa(d.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' }));
-    const items = (o.items || []).map(i => esc2(i.title) + (i.qty > 1 ? ' ×' + toFa(i.qty) : '')).join(' + ') || '—';
+    const items = (o.items || []).map(i => esc2(i.title) + (i.qty > 1 ? ' ×' + toFa(i.qty) : '') + ((i.flds && i.flds.length) ? ` <span style="color:var(--brand)">${i.flds.map(f => esc2(f.l) + ': ' + esc2(f.v)).join(' · ')}</span>` : '')).join(' + ') || '—';
     const ai = (o.ai && o.ai.checks || []).map(c =>
       `<span style="${c.state === 'ok' ? 'color:var(--ok)' : c.state === 'bad' ? 'color:var(--bad)' : 'color:var(--warn)'}">${c.state === 'ok' ? '✓' : c.state === 'bad' ? '✗' : '⚠'} ${esc2(c.k)}</span>`
     ).join(' ') || '<span style="color:var(--muted)">بدون بررسی هوش مصنوعی</span>';

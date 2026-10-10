@@ -201,7 +201,7 @@ function cardHTML(o, focused) {
   const st = ST[o.status] ? o.status : 'pending';
   const meta = ST[st];
   const items = (o.items || []).map(i =>
-    `<li><span>${escapeHtml(i.title)}</span><b>×${toFa(i.qty || 1)}</b></li>`
+    `<li><span>${escapeHtml(i.title)}</span><b>×${toFa(i.qty || 1)}</b>${(i.flds && i.flds.length) ? `<span class="ord-flds">${i.flds.map(f => `<b class="fl">${escapeHtml(f.l)}:</b> <bdi>${escapeHtml(f.v)}</bdi>`).join(' · ')}</span>` : ''}</li>`
   ).join('') || '<li><span>—</span></li>';
   const amt = o.totalToman != null
     ? `<span>💰 <b>${money(o.totalToman)} تومان</b>${o.totalRial != null ? ` <span style="opacity:.7">(${money(o.totalRial)} ریال)</span>` : ''}</span>`

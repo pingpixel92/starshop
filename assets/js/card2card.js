@@ -146,7 +146,7 @@ function renderOrder() {
   const box = $('#orderBody');
   if (ORDER) {
     const items = (ORDER.items || []).map(i =>
-      `<div class="o-row"><span>${esc2(i.title)}${i.qty > 1 ? ' ×' + toFa(i.qty) : ''}</span></div>`
+      `<div class="o-row"><span>${esc2(i.title)}${i.qty > 1 ? ' ×' + toFa(i.qty) : ''}${(i.flds && i.flds.length) ? `<span class="ord-flds" style="display:block;font-size:11.5px;font-weight:700;color:var(--brand);margin-top:3px">${i.flds.map(f => esc2(f.l) + ': ' + esc2(f.v)).join(' · ')}</span>` : ''}</span></div>`
     ).join('');
     box.innerHTML = items +
       `<div class="o-row"><span>کد سفارش</span><b dir="ltr">${esc2(CODE)}</b></div>` +
@@ -466,7 +466,7 @@ async function submitReceipt(manualReview) {
     const name = ORDER ? (ORDER.name || '') : ($('#mName').value || '').trim();
     const phone = ORDER ? (ORDER.phone || '') : ($('#mPhone').value || '').trim();
     const desc = ORDER ? '' : ($('#mDesc').value || '').trim();
-    const items = ORDER ? (ORDER.items || []).map(i => ({ title: i.title, qty: i.qty })) : [{ title: desc || 'سفارش کارت به کارت', qty: 1 }];
+    const items = ORDER ? (ORDER.items || []).map(i => ({ title: i.title, qty: i.qty, flds: i.flds || [] })) : [{ title: desc || 'سفارش کارت به کارت', qty: 1 }];
     if (!ORDER && (!manualTotal || manualTotal < 5000)) { toast('مبلغ واریزی را در بخش مشخصات سفارش وارد کنید'); btn.disabled = false; btn.textContent = '📤 ثبت و ارسال به پشتیبانی'; return; }
 
     const rec = {
@@ -504,6 +504,9 @@ async function submitReceipt(manualReview) {
       'کد: <code>' + esc2(CODE) + '</code>\n' +
       'نام: ' + esc2(name || '—') + ' | موبایل: ' + esc2(phone || '—') + '\n' +
       '🧾 اقلام: ' + esc2(items.map(i => i.title + (i.qty > 1 ? '×' + i.qty : '')).join(' + ').slice(0, 160)) + '\n' +
+      (items.some(i => (i.flds || []).length)
+        ? '⚙️ مشخصات: ' + esc2(items.flatMap(i => i.flds || []).map(f => f.l + ': ' + f.v).join(' | ').slice(0, 200)) + '\n'
+        : '') +
       '💰 مبلغ: <b>' + money(totalToman) + ' تومان</b> (' + money(totalRial) + ' ریال)\n' +
       '🏦 مقصد: ' + esc2(BANK) + ' — کارت ' + toFa(CARD_LAST4) + ' به نام ' + esc2(HOLDER) + '\n' +
       '🤖 هوش مصنوعی: ' + (manualReview ? '⚠️ <b>نیازمند بررسی دستی</b>' : pass ? '✅ <b>تأیید خودکار</b>' : '—') + '\n' +

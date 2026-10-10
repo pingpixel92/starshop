@@ -36,6 +36,53 @@ const IC = () => window.SS_AI_IC || { unitRial: 2334000, premiumToman: 500000 };
 const regionsAll = g => g.noExtra ? g.regions : g.regions.concat(((window.SS_DATA[window.SS_LANG || 'fa'] || window.SS_DATA.fa).regionsExtra || []).filter(r => !g.regions.some(x => x.id === r.id)));
 const findRegion = (g, rid) => regionsAll(g).find(r => r.id === rid);
 
+/* ═ فیلدهای مشخصات هر محصول (مثل آیدی تلگرام برای تلگرام پریمیوم) — الگو: ایران‌کارت
+   هر فیلد: k=کلید، ui=برچسب (کلید ترجمه)، req=الزامی، d=جهت، t=type */
+const FIELD_DEFS = {
+  tg:    { ui: 'fld.tg',    req: true, d: 'ltr', t: 'text'  },
+  email: { ui: 'fld.email', req: true, d: 'ltr', t: 'email' },
+  dc:    { ui: 'fld.dc',    req: true, d: 'ltr', t: 'text'  },
+  pid:   { ui: 'fld.pid',   req: true, d: 'ltr', t: 'text'  },
+  rbx:   { ui: 'fld.rbx',   req: true, d: 'ltr', t: 'text'  },
+  sp:    { ui: 'fld.sp',    req: true, d: 'ltr', t: 'text'  }
+};
+const GIFT_FIELDS = {
+  'gift-telegram': ['tg'],
+  'gift-spotify':  ['sp'],
+  'gift-netflix':  ['email'],
+  'gift-youtube':  ['email'],
+  'gift-discord':  ['dc'],
+  'gift-chatgpt':  ['email'],
+  'gift-canva':    ['email'],
+  'gift-pubg':     ['pid'],
+  'gift-ff':       ['pid'],
+  'gift-roblox':   ['rbx']
+};
+const fieldsFor = g => g ? (g.cat ? ['email'] : (GIFT_FIELDS[g.id] || [])).map(k => Object.assign({ k }, FIELD_DEFS[k])) : [];
+const fieldsUI = g => {
+  const defs = fieldsFor(g);
+  if (!defs.length) return '';
+  cur.fvals = cur.fvals || {};
+  return `<div class="gm-sec gm-flds-sec"><h4>${escapeHtml(t('gift.cfg.fields'))}</h4>
+    ${defs.map(f => `<label class="gm-fld"><span>${escapeHtml(t(f.ui))}${f.req ? ' <i class="gm-req" aria-hidden="true">*</i>' : ''}</span>
+      <input type="${f.t || 'text'}" class="gm-field" data-gf="${f.k}" dir="${f.d || 'ltr'}" placeholder="${escapeHtml(t(f.ui + '.ph'))}" autocomplete="off" spellcheck="false" value="${escapeHtml(cur.fvals[f.k] || '')}" aria-label="${escapeHtml(t(f.ui))}"></label>`).join('')}
+    <p class="gm-note">${escapeHtml(t('gift.cfg.fieldsNote'))}</p></div>`;
+};
+const collectFields = g => {
+  const defs = fieldsFor(g);
+  if (!defs.length) return [];
+  cur.fvals = cur.fvals || {};
+  $$('.gm-field', panel).forEach(inp => { cur.fvals[inp.dataset.gf] = (inp.value || '').trim(); });
+  const missing = defs.find(f => f.req && !(cur.fvals[f.k] || '').trim());
+  if (missing) {
+    const inp = panel.querySelector('.gm-field[data-gf="' + missing.k + '"]');
+    if (inp) { inp.classList.add('err'); inp.focus(); }
+    if (window.SSUI && window.SSUI.toast) window.SSUI.toast(t('gift.cfg.fieldReq').replace('{f}', t(missing.ui)));
+    return null;
+  }
+  return defs.filter(f => (cur.fvals[f.k] || '').trim()).map(f => ({ l: t(f.ui), v: cur.fvals[f.k] }));
+};
+
 /* ── pricing ── */
 const baseUsd = () => {
   if (!cur) return 0;
@@ -98,7 +145,7 @@ const metaLines = item => {
         `${t('cart.meta.pay')}: ~${fmtToman(m.tomanRial)} ${t('rates.toman')}`,
         `${t('cart.meta.icRate')}: 1$ = ${m.usdIrr ? fmtMoney(m.usdIrr, 0) : '—'} IRR`,
         `${t('gift.cfg.icNote')}`
-      ];
+      ].concat((m.fields || []).map(f => `${f.l}: ${f.v}`));
     }
     return [];
   }
@@ -116,7 +163,7 @@ const metaLines = item => {
       : `~${m.payFmt} ${m.cur} ${t('gift.cfg.approx')} ${fmtToman(m.tomanRial)} ${t('rates.toman')}`),
     `${t('cart.meta.rate')}: 1$ = ${rateTxt} ${rateCur}`
   ];
-  return lines;
+  return lines.concat((m.fields || []).map(f => `${f.l}: ${f.v}`));
 };
 
 /* ── render ── */
@@ -194,6 +241,7 @@ const render = () => {
     </div>
     <div class="gm-sec"><h4>${isMonths ? t('gift.cfg.months') : t('gift.cfg.amount')}</h4>${amountUI}</div>
     <div class="gm-sec"><h4>${t('gift.cfg.paycur')}</h4><div class="gm-chips">${payChips}</div></div>
+    ${fieldsUI(g)}
     ${totalBox}
     <button class="btn btn-primary btn-lg w100" type="button" data-gm-add ${p.ready ? '' : 'disabled'}><svg class="ic" viewBox="0 0 24 24"><use href="#i-cart"/></svg>${t('gift.cfg.add')}</button>`;
 
@@ -251,6 +299,7 @@ const renderAI = () => {
 
   panel.innerHTML = `${head}
     <div class="gm-sec"><h4>${g.plans ? t('ai.plans') : t('gift.cfg.amount')}</h4>${chooseUI}</div>
+    ${fieldsUI(g)}
     ${totalBox}
     <button class="btn btn-primary btn-lg w100" type="button" data-gm-add><svg class="ic" viewBox="0 0 24 24"><use href="#i-cart"/></svg>${t('gift.cfg.add')}</button>`;
 
@@ -304,12 +353,14 @@ const bindPanel = () => {
     const g = cur.gift;
     const p = pricing();
     if (!p.ready) return;
+    const flds = collectFields(g);
+    if (flds === null) return;
     if (g.cat) {
       const pl = g.plans ? (g.plans[cur.planIdx] || g.plans[0]) : null;
       const meta = {
         kind: 'gift', giftId: g.id, brand: g.t, type: g.plans ? 'plans' : 'aiusd',
         cur: 'IRR', value: g.plans ? cur.planIdx : cur.value, planName: pl ? pl.n : '',
-        usd: baseUsd(), pay: p.pay, tomanRial: p.tomanRial, usdIrr: p.usdIrr, rate: p.rate
+        usd: baseUsd(), pay: p.pay, tomanRial: p.tomanRial, usdIrr: p.usdIrr, rate: p.rate, fields: flds
       };
       const id = `gift:${g.id}:${g.plans ? 'p' + cur.planIdx : 'usd' + cur.value}`;
       const title = titleFor(meta);
@@ -322,7 +373,7 @@ const bindPanel = () => {
     const meta = {
       kind: 'gift', giftId: g.id, brand: g.t, type: g.type,
       regionId: cur.regionId, cur: cur.payCur, value: cur.value,
-      usd: baseUsd(), pay: p.pay, payFmt: fmtMoney(p.pay), tomanRial: p.tomanRial, usdIrr: p.usdIrr, rate: p.rate
+      usd: baseUsd(), pay: p.pay, payFmt: fmtMoney(p.pay), tomanRial: p.tomanRial, usdIrr: p.usdIrr, rate: p.rate, fields: flds
     };
     const id = `gift:${g.id}:${cur.regionId}:${cur.payCur}:${cur.value}`;
     const title = titleFor(meta);
@@ -359,9 +410,9 @@ const open = giftId => {
   if (!panel) return;
   if (a) {
     const ai = Object.assign({}, a, a.custom ? { min: 5, max: 500, step: 1, presets: [10, 20, 50, 100] } : {});
-    cur = { gift: ai, planIdx: 0, value: a.custom ? 10 : 0, payCur: 'IRR' };
+    cur = { gift: ai, planIdx: 0, value: a.custom ? 10 : 0, payCur: 'IRR', fvals: {} };
   } else {
-    cur = { gift: g, regionId: g.regions[0].id, value: g.type === 'months' ? (g.monthOpts ? g.monthOpts[0] : g.minM) : (g.presets ? g.presets[0] : g.min), payCur: g.regions[0].cur };
+    cur = { gift: g, regionId: g.regions[0].id, value: g.type === 'months' ? (g.monthOpts ? g.monthOpts[0] : g.minM) : (g.presets ? g.presets[0] : g.min), payCur: g.regions[0].cur, fvals: {} };
   }
   render();
   const m = $('#giftModal');
@@ -373,7 +424,16 @@ document.addEventListener('click', e => {
   const el = e.target.closest('[data-gift-open]');
   if (el) { open(el.dataset.giftOpen); }
 });
-document.addEventListener('ss:lang', () => { if (cur && panel && !$('#giftModal').hidden) { const id = cur.gift.id; const keep = cur.gift.cat ? { planIdx: cur.planIdx, value: cur.value, payCur: cur.payCur } : { regionId: cur.regionId, value: cur.value, payCur: cur.payCur }; const g = findGift(id) || findAI(id); if (g) { cur = Object.assign({ gift: g.cat ? Object.assign({}, g, g.custom ? { min: 5, max: 500, step: 1, presets: [10, 20, 50, 100] } : {}) : g }, keep); render(); } } });
+/* حفظ مقادیر فیلدهای مشخصات هنگام تغییر گزینه‌ها (رندر مجدد) + پاک‌کردن خطا هنگام تایپ */
+document.addEventListener('input', e => {
+  const inp = e.target.closest ? e.target.closest('.gm-field') : null;
+  if (inp && cur && panel && panel.contains(inp)) {
+    cur.fvals = cur.fvals || {};
+    cur.fvals[inp.dataset.gf] = inp.value;
+    inp.classList.remove('err');
+  }
+});
+document.addEventListener('ss:lang', () => { if (cur && panel && !$('#giftModal').hidden) { const id = cur.gift.id; const keep = cur.gift.cat ? { planIdx: cur.planIdx, value: cur.value, payCur: cur.payCur, fvals: cur.fvals } : { regionId: cur.regionId, value: cur.value, payCur: cur.payCur, fvals: cur.fvals }; const g = findGift(id) || findAI(id); if (g) { cur = Object.assign({ gift: g.cat ? Object.assign({}, g, g.custom ? { min: 5, max: 500, step: 1, presets: [10, 20, 50, 100] } : {}) : g }, keep); render(); } } });
 if (window.SSRates) window.SSRates.subscribe(() => { if (cur && panel && $('#giftModal') && !$('#giftModal').hidden) { /* recalc فقط قیمت */ const tb = $('.gm-total', panel) || $('.gm-total.loading', panel); if (tb) render(); } });
 
 /* ── public API ── */

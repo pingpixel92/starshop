@@ -162,7 +162,7 @@ const checkoutC2C = () => {
     code, createdAt: Date.now(),
     name: (prof && prof.name) || '',
     phone: user ? (user.phone || '') : '',
-    items: items.map(i => ({ title: giftTitle(i), qty: i.qty, lines: giftLines(i) })),
+    items: items.map(i => ({ title: giftTitle(i), qty: i.qty, lines: giftLines(i), flds: (i.meta && i.meta.fields) || [] })),
     totalRial: tot.rial,
     totalToman: Math.round(tot.rial / 10),
     message: text

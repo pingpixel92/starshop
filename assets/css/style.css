@@ -884,6 +884,21 @@ body[data-theme="dark"] .art-item{background:rgba(255,255,255,.04)}
 .gm-chip.on{border-color:var(--brand);background:color-mix(in srgb,var(--brand) 8%,transparent)}
 .gm-chip.on b{color:var(--brand-deep)}
 .gm-note{font-size:11px;color:var(--muted);margin-top:7px}
+/* ── فیلدهای مشخصات سفارش (مثل آیدی تلگرام) ── */
+.gm-flds-sec{background:color-mix(in srgb,var(--brand) 4%,transparent);border:1.5px dashed color-mix(in srgb,var(--brand) 35%,var(--line));border-radius:16px;padding:13px 14px;margin-bottom:16px}
+.gm-fld{display:block;margin-bottom:10px}
+.gm-fld:last-of-type{margin-bottom:2px}
+.gm-fld>span{display:block;font-size:12px;font-weight:800;color:var(--ink);margin-bottom:5px}
+.gm-req{color:var(--bad,#e11d48);font-style:normal;font-weight:900}
+.gm-field{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:10px 13px;font-size:14px;font-weight:700;background:var(--surface);color:var(--ink);font-family:var(--font-num,var(--font));transition:border-color .2s,box-shadow .2s}
+.gm-field:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px color-mix(in srgb,var(--brand) 15%,transparent)}
+.gm-field.err{border-color:var(--bad,#e11d48);animation:gmShake .35s}
+.gm-field::placeholder{color:var(--muted);opacity:.65;font-weight:600}
+@keyframes gmShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+/* ── نمایش مشخصات در کارت سفارش و جدول پنل ── */
+.ord-flds{display:block;width:100%;font-size:11.5px;font-weight:700;color:var(--brand);background:color-mix(in srgb,var(--brand) 7%,transparent);border-radius:8px;padding:4px 9px;margin-top:5px}
+.ord-flds .fl{color:var(--ink)}
+.td-flds{display:block;font-size:10.5px;font-weight:700;color:var(--brand);margin-top:3px}
 .gm-presets{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
 .gm-amount{font-family:var(--font-num);direction:ltr}
 .gm-slider-row{display:flex;align-items:center;gap:14px}
