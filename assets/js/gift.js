@@ -44,7 +44,10 @@ const FIELD_DEFS = {
   dc:    { ui: 'fld.dc',    req: true, d: 'ltr', t: 'text'  },
   pid:   { ui: 'fld.pid',   req: true, d: 'ltr', t: 'text'  },
   rbx:   { ui: 'fld.rbx',   req: true, d: 'ltr', t: 'text'  },
-  sp:    { ui: 'fld.sp',    req: true, d: 'ltr', t: 'text'  }
+  sp:    { ui: 'fld.sp',    req: true, d: 'ltr', t: 'text'  },
+  acc:   { ui: 'fld.acc',   req: true, d: 'ltr', t: 'email' },
+  pw:    { ui: 'fld.pw',    req: true, d: 'ltr', t: 'password' },
+  aid:   { ui: 'fld.aid',   req: true, d: 'ltr', t: 'email' }
 };
 const GIFT_FIELDS = {
   'gift-telegram': ['tg'],
@@ -56,16 +59,28 @@ const GIFT_FIELDS = {
   'gift-canva':    ['email'],
   'gift-pubg':     ['pid'],
   'gift-ff':       ['pid'],
-  'gift-roblox':   ['rbx']
+  'gift-roblox':   ['rbx'],
+  /* شارژ والت با لاگین اکانت — ایمیل + رمز (الگوی ایران‌کارت) */
+  'gift-ps':       ['acc', 'pw'],
+  'gift-xbox':     ['acc', 'pw'],
+  'gift-steam':    ['acc', 'pw'],
+  'gift-epic':     ['acc', 'pw'],
+  'gift-nintendo': ['acc', 'pw'],
+  'gift-apple':    ['aid']
 };
 const fieldsFor = g => g ? (g.cat ? ['email'] : (GIFT_FIELDS[g.id] || [])).map(k => Object.assign({ k }, FIELD_DEFS[k])) : [];
+const fieldInput = f => {
+  const isPw = f.t === 'password';
+  const inp = `<input type="${f.t || 'text'}" class="gm-field" data-gf="${f.k}" dir="${f.d || 'ltr'}" placeholder="${escapeHtml(t(f.ui + '.ph'))}" autocomplete="${isPw ? 'new-password' : 'off'}" spellcheck="false" value="${escapeHtml(cur.fvals[f.k] || '')}" aria-label="${escapeHtml(t(f.ui))}">`;
+  return isPw ? `<div class="gm-fldwrap">${inp}<button type="button" class="gm-eye" data-gf-eye aria-label="${escapeHtml(t('fld.pw.eye'))}" title="${escapeHtml(t('fld.pw.eye'))}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3.2"/></svg></button></div>` : inp;
+};
 const fieldsUI = g => {
   const defs = fieldsFor(g);
   if (!defs.length) return '';
   cur.fvals = cur.fvals || {};
   return `<div class="gm-sec gm-flds-sec"><h4>${escapeHtml(t('gift.cfg.fields'))}</h4>
     ${defs.map(f => `<label class="gm-fld"><span>${escapeHtml(t(f.ui))}${f.req ? ' <i class="gm-req" aria-hidden="true">*</i>' : ''}</span>
-      <input type="${f.t || 'text'}" class="gm-field" data-gf="${f.k}" dir="${f.d || 'ltr'}" placeholder="${escapeHtml(t(f.ui + '.ph'))}" autocomplete="off" spellcheck="false" value="${escapeHtml(cur.fvals[f.k] || '')}" aria-label="${escapeHtml(t(f.ui))}"></label>`).join('')}
+      ${fieldInput(f)}</label>`).join('')}
     <p class="gm-note">${escapeHtml(t('gift.cfg.fieldsNote'))}</p></div>`;
 };
 const collectFields = g => {
@@ -431,6 +446,14 @@ document.addEventListener('input', e => {
     cur.fvals = cur.fvals || {};
     cur.fvals[inp.dataset.gf] = inp.value;
     inp.classList.remove('err');
+  }
+});
+/* نمایش/مخفی‌کردن رمز اکانت */
+document.addEventListener('click', e => {
+  const eye = e.target.closest ? e.target.closest('.gm-eye') : null;
+  if (eye && panel && panel.contains(eye)) {
+    const inp = $('.gm-field[data-gf="pw"]', panel);
+    if (inp) { inp.type = inp.type === 'password' ? 'text' : 'password'; eye.classList.toggle('on'); }
   }
 });
 document.addEventListener('ss:lang', () => { if (cur && panel && !$('#giftModal').hidden) { const id = cur.gift.id; const keep = cur.gift.cat ? { planIdx: cur.planIdx, value: cur.value, payCur: cur.payCur, fvals: cur.fvals } : { regionId: cur.regionId, value: cur.value, payCur: cur.payCur, fvals: cur.fvals }; const g = findGift(id) || findAI(id); if (g) { cur = Object.assign({ gift: g.cat ? Object.assign({}, g, g.custom ? { min: 5, max: 500, step: 1, presets: [10, 20, 50, 100] } : {}) : g }, keep); render(); } } });
