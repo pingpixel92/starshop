@@ -4,8 +4,10 @@
    هر بازدید یک پیام فشرده به چت تلگرام مالک می‌فرستد:
    شناسه دستگاه، شماره بازدید، دستگاه/مرورگر، زبان/منطقه،
    منبع ورود (referrer/UTM)، صفحه ورود، و اگر لاگین باشد شماره تلفن.
-   محدودسازی: حداقل فاصله minGapMs بین دو پیام از هر دستگاه + پیام ورود حداکثر روزی یک‌بار
-   تنظیمات: config.js → visitorLog (enabled/bot/chat/minGapMs)
+   + شمارنده کل سایت: هر ورود (با همان فاصله زمانی) در textdb +۱ می‌شود
+   و عدد کل در همان پیام تلگرام می‌آید (👥 کل بازدیدکننده‌ها).
+   محدودسازی: حداقل فاصله minGapMs بین دو پیام از هر دستگاه
+   تنظیمات: config.js → visitorLog (enabled/bot/chat/minGapMs/store)
    ═══════════════════════════════════════════════════ */
 (() => {
 'use strict';
@@ -86,12 +88,14 @@ const userPhone = () => {
   } catch (e) { return ''; }
 };
 
-const reportVisit = () => {
+const reportVisit = total => {
   const utm = utmTags();
   const phone = userPhone();
+  const faDig = n => (window.SS_LANG === 'en') ? String(n) : String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
   const lines = [
     '🔔 بازدید جدید — استارشاپ',
     '🆔 ' + vid + ' · بازدید شماره ' + visits + (visits === 1 ? ' (اولین بار!)' : ''),
+    total > 0 ? '👥 کل بازدیدکننده‌های سایت: ' + faDig(total) : '',
     deviceInfo(),
     '🌐 ' + (navigator.language || '?') + ' · ' + ((Intl.DateTimeFormat().resolvedOptions() || {}).timeZone || '?'),
     '🔗 ' + refSource() + (utm ? ' («' + utm + '»)' : ''),
@@ -102,14 +106,44 @@ const reportVisit = () => {
   send(lines.join('\n'));
 };
 
+/* ── شمارنده کل سایت (textdb): خواندن، +۱، نوشتن — هرگز UI را نمی‌شکند ── */
+const todayTehran = () => {
+  const d = new Date(Date.now() + 12600000); /* UTC+3:30 */
+  const pad = n => String(n).padStart(2, '0');
+  return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate());
+};
+const bumpGlobal = async () => {
+  const st = CFG().store;
+  if (!st) return -1;
+  try {
+    const r = await fetch(st + '?_=' + Date.now(), { cache: 'no-store' });
+    const doc = JSON.parse((await r.text()) || '{}');
+    const t = todayTehran();
+    const total = (+doc.total || 0) + 1;
+    const body = JSON.stringify({
+      total: total,
+      today: t,
+      todayCount: doc.today === t ? (+doc.todayCount || 0) + 1 : 1,
+      updatedAt: Date.now()
+    });
+    await fetch(st, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body, keepalive: true });
+    return total;
+  } catch (e) { return -1; }
+};
+
 /* ── throttle: یک پیام به‌ازای هر ~۳۰ دقیقه از هر دستگاه ── */
 const gap = (+CFG().minGapMs) || 1800000;
 let last = 0;
 try { last = +localStorage.getItem(K_SENT) || 0; } catch (e) {}
 if (!last || Date.now() - last > gap) {
   try { localStorage.setItem(K_SENT, String(Date.now())); } catch (e) {}
-  /* پخش تصادفی ورود — زیر ترافیک سنگین همه با هم فشار نمی‌آورند */
-  setTimeout(() => { try { reportVisit(); } catch (e) {} }, 1200 + Math.floor(Math.random() * 2500));
+  /* پخش تصادفی ورود — زیر ترافیک سنگین همه با هم فشار نمی‌آورند؛
+     اول شمارنده کل سایت +۱، بعد پیام تلگرام با عدد جدید */
+  setTimeout(() => {
+    bumpGlobal().then(total => {
+      try { reportVisit(total); } catch (e) {}
+    }).catch(() => { try { reportVisit(-1); } catch (e) {} });
+  }, 1200 + Math.floor(Math.random() * 2500));
 }
 
 /* ── ورود/ثبت‌نام کاربر (شماره واقعی = لید طلایی) — حداکثر روزی یک پیام ── */

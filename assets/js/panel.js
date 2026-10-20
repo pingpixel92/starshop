@@ -354,6 +354,25 @@ async function setStatus(code, status, reason) {
   toast(status === 'approved' ? 'تأیید شد ✓ کاربر می‌بیند' : status === 'delivered' ? 'تحویل شد 📦 کاربر می‌بیند' : 'رد شد — کاربر دلیل را می‌بیند');
 }
 
+/* ── آمار بازدید سایت — دستور /stats یا «بازدید» در چت ربات ── */
+const VSTORE = (CFG.visitorLog && CFG.visitorLog.store) || '';
+async function replyStats() {
+  const fa = n => String(n).replace(/\d/g, d => FA[d]);
+  let msg;
+  try {
+    if (!VSTORE) throw new Error('no store');
+    const r = await fetch(VSTORE + '?_=' + Date.now(), { cache: 'no-store' });
+    const d = JSON.parse((await r.text()) || '{}');
+    const when = +d.updatedAt ? new Date(+d.updatedAt) : null;
+    msg = ['👥 آمار بازدید سایت — استارشاپ', '━━━━━━━━━━━━━━',
+      '📊 کل بازدیدکننده‌ها: ' + fa(+d.total || 0),
+      '📅 امروز: ' + fa(+d.todayCount || 0) + ' نفر',
+      when ? '🕐 آخرین ورود: ' + when.toLocaleDateString('fa-IR') + ' ' + when.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' }) : ''
+    ].filter(Boolean).join('\n');
+  } catch (e) { msg = '📊 آمار بازدید در دسترس نیست — چند لحظه بعد دوباره بفرست.'; }
+  tgSendText(msg);
+}
+
 /* ── گوش‌دهی ربات ── */
 let OFFSET = 0, botT = null;
 async function stashTgPhoto(fileId, cap) {
@@ -378,6 +397,8 @@ async function botTick() {
       }
       if (!m.text) continue;
       const mt = norm(m.text);
+      /* آمار بازدید: /stats یا «بازدید» یا «آمار» */
+      if (/^\/?(stats|stat|visitors|بازدید|آمار|امار)\s*$/.test(mt)) { await replyStats(); continue; }
       const mm = mt.match(/^\/?(تایید|taeed|ok|approve)\s+([a-z0-9\-]+)\s*$/i) ||
                  mt.match(/^\/?(تحویل|tahvil|deliver)\s+([a-z0-9\-]+)\s*$/i) ||
                  mt.match(/^\/?(رد|ردشد|reject|rad)\s+([a-z0-9\-]+)\s*([\s\S]*)$/i);

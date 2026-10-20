@@ -3,7 +3,7 @@
    پنل تأیید سفارش‌های کارت به کارت:
    • لیست سفارش‌ها از دیتابیس سبک (textdb.dev) — فیش + نتیجه هوش مصنوعی
    • تأیید/رد (با ذکر دلیل) → ذخیره → کاربر همان لحظه در صفحه پرداخت می‌بیند
-   • گوش‌دهی به دستورات ربات: /تایید <کد> و /رد <کد> دلیل در چت ربات
+   • گوش‌دهی به دستورات ربات: /تایید <کد> ، /رد <کد> دلیل ، /stats (آمار بازدید) در چت ربات
    رمز پیش‌فرض: starshop92 (قابل تغییر در config.js یا از همین پنل)
    ═══════════════════════════════════════════════════ */
 (() => {
@@ -162,7 +162,28 @@ async function setStatus(code, status, reason) {
   toast(status === 'approved' ? 'تأیید شد ✓ کاربر می‌بیند' : status === 'delivered' ? 'تحویل شد 📦 کاربر می‌بیند' : 'رد شد — کاربر دلیل را می‌بیند');
 }
 
-/* ── گوش‌دهی به دستورات ربات (/تایید کد ، /رد کد دلیل) ── */
+/* ── آمار بازدید سایت — دستور /stats یا «بازدید» در چت ربات ──
+   شمارنده در textdb (config.js → visitorLog.store) نگهداری می‌شود؛
+   هر ورود به سایت (با فاصله ۳۰ دقیقه‌ای هر دستگاه) +۱ می‌شود. */
+const VSTORE = (CFG.visitorLog && CFG.visitorLog.store) || '';
+async function replyStats() {
+  const fa = n => String(n).replace(/\d/g, d => FA[d]);
+  let msg;
+  try {
+    if (!VSTORE) throw new Error('no store');
+    const r = await fetch(VSTORE + '?_=' + Date.now(), { cache: 'no-store' });
+    const d = JSON.parse((await r.text()) || '{}');
+    const when = +d.updatedAt ? new Date(+d.updatedAt) : null;
+    msg = ['👥 آمار بازدید سایت — استارشاپ', '━━━━━━━━━━━━━━',
+      '📊 کل بازدیدکننده‌ها: ' + fa(+d.total || 0),
+      '📅 امروز: ' + fa(+d.todayCount || 0) + ' نفر',
+      when ? '🕐 آخرین ورود: ' + when.toLocaleDateString('fa-IR') + ' ' + when.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' }) : ''
+    ].filter(Boolean).join('\n');
+  } catch (e) { msg = '📊 آمار بازدید در دسترس نیست — چند لحظه بعد دوباره بفرست.'; }
+  tgSendText(msg);
+}
+
+/* ── گوش‌دهی به دستورات ربات (/تایید کد ، /رد کد دلیل ، /stats) ── */
 let OFFSET = 0, botT = null;
 /* بایگانی عکس‌های ارسالی ادمین به ربات — دیتابیس سبک جداگانه */
 const PSTORE = 'https://textdb.dev/api/data/starshop-ph-7vq3nz52';
@@ -190,6 +211,8 @@ async function botTick() {
       }
       if (!m.text) continue;
       const mt = norm(m.text);
+      /* آمار بازدید: /stats یا «بازدید» یا «آمار» */
+      if (/^\/?(stats|stat|visitors|بازدید|آمار|امار)\s*$/.test(mt)) { await replyStats(); continue; }
       const mm = mt.match(/^\/?(تایید|taeed|ok|approve)\s+([a-z0-9\-]+)\s*$/i) ||
                  mt.match(/^\/?(تحویل|tahvil|deliver)\s+([a-z0-9\-]+)\s*$/i) ||
                  mt.match(/^\/?(رد|ردشد|reject|rad)\s+([a-z0-9\-]+)\s*([\s\S]*)$/i);
