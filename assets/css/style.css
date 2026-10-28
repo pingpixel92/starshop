@@ -319,6 +319,18 @@ body[dir="rtl"] .panel{transform:translateX(-34px)}
 .gc-ff{background:linear-gradient(160deg,#5c1610,#b0261f)}
 .gc-netflix{background:linear-gradient(160deg,#141414,#4c0d0d)}
 .gc-gplay{background:linear-gradient(160deg,#202124,#3c4043)}
+/* Task 49 — برندهای جدید گیفت‌کارت */
+.gc-hulu{background:linear-gradient(160deg,#05140b,#1ce783)}
+.gc-tidal{background:linear-gradient(160deg,#0b0b0d,#31313a)}
+.gc-paypal{background:linear-gradient(160deg,#003087,#009cde)}
+.gc-walmart{background:linear-gradient(160deg,#004f9f,#0071ce)}
+.gc-target{background:linear-gradient(160deg,#7a051f,#cc0000)}
+.gc-nike{background:linear-gradient(160deg,#111111,#3d3d3d)}
+.gc-uber{background:linear-gradient(160deg,#09091a,#276ef1)}
+.gc-ebay{background:linear-gradient(160deg,#23272f,#e53238)}
+.gc-huawei{background:linear-gradient(160deg,#8a051d,#cf0a2c)}
+.gc-skrill{background:linear-gradient(160deg,#4d1d70,#862565)}
+.gc-bnet{background:linear-gradient(160deg,#0b1d4d,#1450c8)}
 
 /* ═══ BANK CARDS (dark) ═══ */
 .bank-grid{display:grid;grid-template-columns:repeat(2,minmax(0,420px));justify-content:center;gap:clamp(24px,4vw,44px)}

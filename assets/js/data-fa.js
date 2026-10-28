@@ -130,7 +130,20 @@ window.SS_DATA.fa = {
     {id:'gift-nintendo',logo:'nintendo-w',t:'Nintendo eShop',d:'بازی‌های نینتندو',type:'amount',min:10,max:100,step:5,presets:[10,20,35,50,100],regions:[{id:'us',flag:'🇺🇸',label:'آمریکا',cur:'USD'},{id:'eu',flag:'🇪🇺',label:'اروپا',cur:'EUR'}]},
     {id:'gift-epic',logo:'epicgames-w',t:'Epic Games',d:'فورتنایت / V-Bucks',type:'amount',min:10,max:100,step:5,presets:[10,25,50,100],regions:[{id:'us',flag:'🇺🇸',label:'آمریکا',cur:'USD'},{id:'eu',flag:'🇪🇺',label:'اروپا',cur:'EUR'}]},
     {id:'gift-visa',logo:'visa-w',t:'Visa Card',d:'کارت هدیه ویزا',type:'amount',min:10,max:500,step:5,presets:[25,50,100,200,500],noExtra:true,regions:[{id:'us',flag:'🇺🇸',label:'آمریکا',cur:'USD'}]},
-    {id:'gift-master',logo:'mastercard-w',t:'MasterCard',d:'کارت هدیه مسترکارت',type:'amount',min:10,max:500,step:5,presets:[25,50,100,200,500],noExtra:true,regions:[{id:'us',flag:'🇺🇸',label:'آمریکا',cur:'USD'}]}
+    {id:'gift-master',logo:'mastercard-w',t:'MasterCard',d:'کارت هدیه مسترکارت',type:'amount',min:10,max:500,step:5,presets:[25,50,100,200,500],noExtra:true,regions:[{id:'us',flag:'🇺🇸',label:'آمریکا',cur:'USD'}]},
+    /* Task 49 — برندهای جدید مطابق دسته‌بندی گیفت‌کارت ایرانیکارت (اسکرپ ۲۰۲۶-۱۰-۲۸) */
+    {id:'gift-hulu',logo:'hulu-w',t:'Hulu',d:'فیلم و سریال آنلاین',type:'amount',min:25,max:50,step:5,presets:[25,50],noExtra:true,regions:[{id:'us',flag:'🇺🇸',label:'آمریکا',cur:'USD'}]},
+    {id:'gift-tidal',logo:'tidal-w',t:'Tidal',d:'اشتراک موسیقی HiFi',type:'amount',min:20,max:120,step:5,presets:[20,40,60,120],noExtra:true,regions:[{id:'us',flag:'🇺🇸',label:'آمریکا',cur:'USD'}]},
+    {id:'gift-paypal',logo:'paypal-w',t:'PayPal',d:'شارژ حساب پی‌پال',type:'amount',min:1,max:100,step:1,presets:[5,10,25,50,100],noExtra:true,regions:[{id:'us',flag:'🇺🇸',label:'آمریکا',cur:'USD'}]},
+    {id:'gift-walmart',logo:'walmart-w',t:'Walmart',d:'فروشگاه والمارت',type:'amount',min:5,max:100,step:5,presets:[10,25,50,100],noExtra:true,regions:[{id:'us',flag:'🇺🇸',label:'آمریکا',cur:'USD'}]},
+    {id:'gift-target',logo:'target-w',t:'Target',d:'فروشگاه تارگت',type:'amount',min:10,max:25,step:1,presets:[10,15,20,25],noExtra:true,regions:[{id:'us',flag:'🇺🇸',label:'آمریکا',cur:'USD'}]},
+    {id:'gift-nike',logo:'nike-w',t:'Nike',d:'فروشگاه نایک',type:'amount',min:5,max:500,step:5,presets:[25,50,100,250,500],noExtra:true,regions:[{id:'uk',flag:'🇬🇧',label:'انگلستان',cur:'GBP'}]},
+    {id:'gift-uber',logo:'uber-w',t:'Uber',d:'سفر و سفارش غذا',type:'amount',min:5,max:100,step:5,presets:[10,25,50,100],noExtra:true,regions:[{id:'us',flag:'🇺🇸',label:'آمریکا',cur:'USD'}]},
+    {id:'gift-ebay',logo:'ebay-w',t:'eBay',d:'مارکت‌پلیس ای‌بی',type:'amount',min:5,max:100,step:5,presets:[10,25,50,100],noExtra:true,regions:[{id:'us',flag:'🇺🇸',label:'آمریکا',cur:'USD'}]},
+    {id:'gift-huawei',logo:'huawei-w',t:'Huawei',d:'شارژ AppGallery هواوی',type:'amount',min:5,max:250,step:5,presets:[10,25,50,100,250],noExtra:true,regions:[{id:'ae',flag:'🇦🇪',label:'امارات',cur:'AED'}]},
+    {id:'gift-skrill',logo:'skrill-w',t:'Skrill',d:'کیف پول اسکریل',type:'amount',min:10,max:100,step:5,presets:[10,25,50,100],noExtra:true,regions:[{id:'global',flag:'🌐',label:'گلوبال',cur:'USD'}]},
+    {id:'gift-bnet',logo:'battlenet-w',t:'Battle.net',d:'شارژ والت بلزارد',type:'amount',min:5,max:50,step:5,presets:[10,20,50],noExtra:true,regions:[{id:'us',flag:'🇺🇸',label:'آمریکا',cur:'USD'},{id:'eu',flag:'🇪🇺',label:'اروپا',cur:'EUR'}]},
+    {id:'gift-xboxgp',logo:'xbox-w',t:'Xbox Game Pass',d:'گیم پس کنسول و PC',type:'months',monthOpts:[1,3],tiers:{1:29.99,3:89.99},regions:[{id:'us',flag:'🇺🇸',label:'آمریکا',cur:'USD'},{id:'eu',flag:'🇪🇺',label:'اروپا',cur:'EUR'},{id:'uk',flag:'🇬🇧',label:'انگلستان',cur:'GBP'},{id:'tr',flag:'🇹🇷',label:'ترکیه',cur:'TRY'},{id:'ae',flag:'🇦🇪',label:'امارات',cur:'AED'}]}
   ],
   regionsExtra:[{id:'sa',flag:'🇸🇦',label:'عربستان',cur:'SAR'},{id:'qa',flag:'🇶🇦',label:'قطر',cur:'QAR'},{id:'kw',flag:'🇰🇼',label:'کویت',cur:'KWD'},{id:'ca',flag:'🇨🇦',label:'کانادا',cur:'CAD'},{id:'au',flag:'🇦🇺',label:'استرالیا',cur:'AUD'},{id:'in',flag:'🇮🇳',label:'هند',cur:'INR'},{id:'jp',flag:'🇯🇵',label:'ژاپن',cur:'JPY'},{id:'cn',flag:'🇨🇳',label:'چین',cur:'CNY'},{id:'ch',flag:'🇨🇭',label:'سوئیس',cur:'CHF'},{id:'ru',flag:'🇷🇺',label:'روسیه',cur:'RUB'}],
   bankCards: [

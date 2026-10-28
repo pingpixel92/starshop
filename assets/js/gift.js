@@ -67,7 +67,14 @@ const GIFT_FIELDS = {
   'gift-steam':    ['acc', 'pw'],
   'gift-epic':     ['acc', 'pw'],
   'gift-nintendo': ['acc', 'pw'],
-  'gift-apple':    ['aid']
+  'gift-apple':    ['aid'],
+  /* Task 49 — برندهای جدید (شارژ والت با لاگین اکانت / فعال‌سازی روی اکانت کاربر) */
+  'gift-bnet':     ['acc', 'pw'],
+  'gift-xboxgp':   ['acc', 'pw'],
+  'gift-paypal':   ['acc'],
+  'gift-skrill':   ['acc'],
+  'gift-hulu':     ['email'],
+  'gift-tidal':    ['email']
 };
 const fieldsFor = g => g ? (g.cat ? (g.flds || ['email']) : (GIFT_FIELDS[g.id] || [])).map(k => Object.assign({ k }, FIELD_DEFS[k])) : [];
 const fieldInput = f => {
@@ -327,7 +334,7 @@ const renderAI = () => {
 };
 
 const brandClass = g => {
-  const map = { 'gift-apple':'apple', 'gift-steam':'steam', 'gift-ps':'ps', 'gift-xbox':'xbox', 'gift-amazon':'amazon', 'gift-pubg':'pubg', 'gift-ff':'ff', 'gift-netflix':'netflix', 'gift-gplay':'gplay', 'gift-spotify':'spotify', 'gift-telegram':'tg', 'gift-youtube':'yt', 'gift-discord':'discord', 'gift-chatgpt':'gpt', 'gift-canva':'canva', 'gift-razer':'razer', 'gift-roblox':'roblox', 'gift-nintendo':'nintendo', 'gift-epic':'epic', 'gift-visa':'visa', 'gift-master':'mc' };
+  const map = { 'gift-apple':'apple', 'gift-steam':'steam', 'gift-ps':'ps', 'gift-xbox':'xbox', 'gift-amazon':'amazon', 'gift-pubg':'pubg', 'gift-ff':'ff', 'gift-netflix':'netflix', 'gift-gplay':'gplay', 'gift-spotify':'spotify', 'gift-telegram':'tg', 'gift-youtube':'yt', 'gift-discord':'discord', 'gift-chatgpt':'gpt', 'gift-canva':'canva', 'gift-razer':'razer', 'gift-roblox':'roblox', 'gift-nintendo':'nintendo', 'gift-epic':'epic', 'gift-visa':'visa', 'gift-master':'mc', 'gift-hulu':'hulu', 'gift-tidal':'tidal', 'gift-paypal':'paypal', 'gift-walmart':'walmart', 'gift-target':'target', 'gift-nike':'nike', 'gift-uber':'uber', 'gift-ebay':'ebay', 'gift-huawei':'huawei', 'gift-skrill':'skrill', 'gift-bnet':'bnet', 'gift-xboxgp':'xbox' };
   return map[g.id] || 'steam';
 };
 
