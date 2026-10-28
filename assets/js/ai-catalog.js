@@ -3,6 +3,9 @@
    کاتالوگ کامل اکانت‌های هوش مصنوعی — مطابق فهرست ایرانیکارت
    (https://www.iranicard.ir/payments/accounts/artificial-intelligence/)
    اسکرپ مجدد ۲۰۲۶-۰۹-۲۳: ۶۱ محصول (۵۸ پایه + ۳ اشتراکی)
+   اسکرپ پلن‌ها ۲۰۲۶-۱۰-۲۹ (v2): میدجورنی/دال‌ئی/جاسپر/رایت‌سونیک/سایدر از صفحات
+     محصول ایرانیکارت (#plans) پلن رسمی گرفتند — ماهانه + سالانه؛ بقیه که در
+     ایرانیکارت فقط «ثبت درخواست + مبلغ دلخواه» دارند custom می‌مانند
    فرمول قیمت (ثبت‌شده ۲۰۲۶-۰۹-۲۳ از صفحات محصول ایرانیکارت):
      ریال = (مبلغ دلاری + ۱$) × نرخ دلار  ← حالا «نرخ لحظه‌ای زنده» (SSRates/tgju)
      قیمت استارشاپ = (دلار+۱) × نرخ لحظه‌ای + ۵۰۰٬۰۰۰ تومان (۵٬۰۰۰٬۰۰۰ ریال)
@@ -34,12 +37,12 @@ window.SS_AI_TOOLS = [
   C('ic-perplexity-sh', 'Perplexity Shared', 'پرپلکسیتی اشتراکی', 'text', { custom: true }),
   C('ic-notebooklm', 'NotebookLM', 'نوت‌بوک‌ال‌ام', 'text', { custom: true }),
   C('ic-chatgot', 'Chatgot', 'چت‌گات', 'text', { custom: true }),
-  C('ic-jasper', 'Jasper', 'جاسپر', 'text', { custom: true }),
-  C('ic-writesonic', 'Writesonic', 'رایت‌سونیک', 'text', { custom: true }),
+  C('ic-jasper', 'Jasper', 'جاسپر', 'text', { plans: [{ n: 'Creator', nf: 'کریتور (ماهانه)', usd: 49 }, { n: 'Pro', nf: 'پرو (ماهانه)', usd: 69 }, { n: 'Creator Annual', nf: 'کریتور (سالانه)', usd: 468 }, { n: 'Pro Annual', nf: 'پرو (سالانه)', usd: 708 }] }),
+  C('ic-writesonic', 'Writesonic', 'رایت‌سونیک', 'text', { plans: [{ n: 'Individual', nf: 'اندیویدیوال — ۱۰۰ کریدیت/ماه', usd: 20 }, { n: 'Standard 1K', nf: 'استاندارد — ۱۰۰۰ کریدیت/ماه', usd: 99 }, { n: 'Standard 3K', nf: 'استاندارد — ۳۰۰۰ کریدیت/ماه', usd: 249 }, { n: 'Standard 6.5K', nf: 'استاندارد — ۶۵۰۰ کریدیت/ماه', usd: 499 }] }),
   C('ic-poe', 'Poe', 'پو', 'text', { custom: true }),
   C('ic-sincode', 'Sincode', 'سین‌کد', 'text', { custom: true }),
   C('ic-monica', 'Monica', 'مونیکا', 'text', { plans: [{ n: 'Pro', usd: 9.9 }] }),
-  C('ic-sider', 'Sider', 'سایدر', 'text', { custom: true }),
+  C('ic-sider', 'Sider', 'سایدر', 'text', { plans: [{ n: 'Basic', nf: 'بیسیک (ماهانه)', usd: 10 }, { n: 'Pro', nf: 'پرو (ماهانه)', usd: 20 }, { n: 'Unlimited', nf: 'آنلیمیتد (ماهانه)', usd: 40 }, { n: 'Basic Annual', nf: 'بیسیک (سالانه)', usd: 99.6 }, { n: 'Pro Annual', nf: 'پرو (سالانه)', usd: 199.2 }, { n: 'Unlimited Annual', nf: 'آنلیمیتد (سالانه)', usd: 300 }] }),
   C('ic-rytr', 'Rytr', 'رایتر', 'text', { custom: true }),
   C('ic-wordtune', 'Wordtune', 'وردتیون', 'text', { custom: true }),
   C('ic-quillbot', 'Quillbot', 'کویل‌بات', 'text', { custom: true }),
@@ -49,9 +52,9 @@ window.SS_AI_TOOLS = [
   C('ic-zai', 'z.ai', 'زی‌دات‌ای‌آی', 'text', { custom: true }),
 
   /* ── تولید محتوای صوتی و تصویری ── */
-  C('ic-midjourney', 'Midjourney', 'میدجورنی', 'av', { custom: true }),
+  C('ic-midjourney', 'Midjourney', 'میدجورنی', 'av', { plans: [{ n: 'Basic', usd: 10 }, { n: 'Standard', usd: 30 }, { n: 'Pro', usd: 60 }, { n: 'Mega', usd: 120 }] }),
   C('ic-midjourney-sh', 'Midjourney Shared', 'میدجورنی اشتراکی', 'av', { custom: true }),
-  C('ic-dalle', 'DALL-E', 'دال‌ئی', 'av', { custom: true }),
+  C('ic-dalle', 'DALL-E', 'دال‌ئی', 'av', { plans: [{ n: 'Gold', nf: 'گلد (ماهانه)', usd: 10 }, { n: 'Platinum', nf: 'پلاتینیوم (ماهانه)', usd: 15 }, { n: 'Gold Annual', nf: 'گلد (سالانه)', usd: 70 }, { n: 'Platinum Annual', nf: 'پلاتینیوم (سالانه)', usd: 100 }] }),
   C('ic-nanobanana', 'Nano Banana', 'نانو بنانا', 'av', { custom: true }),
   C('ic-leonardo', 'Leonardo AI', 'لئوناردو ای‌آی', 'av', { custom: true }),
   C('ic-dream', 'Dream.ai', 'دریم.ای', 'av', { custom: true }),
