@@ -333,7 +333,12 @@ const findTool = nq => {
 };
 
 const IC = () => window.SS_AI_IC || { unitRial: 2334000, premiumToman: 500000 };
-const aiToman = usd => Math.round((usd + 1) * IC().unitRial / 10 + (IC().premiumToman || 500000));
+/* نرخ لحظه‌ای دلار (SSRates) با فالبک نرخ آخر ایرانیکارت — قیمت همیشه با نرخ زنده */
+const aiRateToman = () => {
+  const st = window.SSRates ? window.SSRates.get() : null;
+  return ((st && st.usdIrr) || IC().unitRial) / 10;
+};
+const aiToman = usd => Math.round((usd + 1) * aiRateToman() + (IC().premiumToman || 500000));
 
 const toolAnswer = (tl, q) => {
   const lang = pickLang(q);
@@ -356,10 +361,11 @@ const toolAnswer = (tl, q) => {
   const plans = (tl.plans || []).map(p => ({ n: (lang === 'fa' && p.nf) ? p.nf : p.n, t: aiToman(p.usd) })).sort((a, b) => a.t - b.t);
   if (!plans.length) return null;
   const lines = plans.map(p => `• <b>${escapeHtml(p.n)}</b>: ${money(p.t, lang)} ${lang === 'en' ? 'Toman' : 'تومان'}`).join('<br>');
+  const rt = money(aiRateToman(), lang);
   const note = {
-    fa: 'قیمت = نرخ استارشاپ (۱$ = ۲۳۳٬۴۰۰ تومان) + ۵۰۰٬۰۰۰ تومان حق خدمات. برای خرید، سرویس رو در بخش هوش مصنوعی سایت به سبد اضافه کن! 🛒',
-    en: 'Price = Star Shop rate ($1 = 233,400 Toman) + 500,000 Toman service fee. To order, add the service to your cart in the AI section! 🛒',
-    ar: 'السعر = سعر ستار شوب (1$ = 233,400 تومان) + 500,000 تومان. للطلب أضف الخدمة إلى السلة من قسم الذكاء الاصطناعي! 🛒'
+    fa: `قیمت = نرخ لحظه‌ای دلار (۱$ = ${rt} تومان) + ۵۰۰٬۰۰۰ تومان حق خدمات. برای خرید، سرویس رو در بخش هوش مصنوعی سایت به سبد اضافه کن! 🛒`,
+    en: `Price = live USD rate ($1 = ${rt} Toman) + 500,000 Toman service fee. To order, add the service to your cart in the AI section! 🛒`,
+    ar: `السعر = سعر الدولار اللحظي (1$ = ${rt} تومان) + 500,000 تومان. للطلب أضف الخدمة إلى السلة من قسم الذكاء الاصطناعي! 🛒`
   }[lang];
   const head = { fa: `🤖 قیمت <b>${nm}</b> در استارشاپ:`, en: `🤖 <b>${nm}</b> prices at Star Shop:`, ar: `🤖 أسعار <b>${nm}</b> في ستار شوب:` }[lang];
   return `${head}<br>${lines}<br><br>${note}`;

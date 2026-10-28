@@ -107,18 +107,22 @@ const baseUsd = () => {
   return cur.value;
 };
 const aiRial = () => {
-  /* قیمت ایرانیکارت: ریال = (دلار + ۱) × نرخ روز ایرانیکارت + ۵۰۰٬۰۰۰ تومان خدمات استارشاپ */
+  /* قیمت = (دلار + ۱$) × نرخ لحظه‌ای دلار بازار + ۵۰۰٬۰۰۰ تومان خدمات استارشاپ
+     نرخ زنده SSRates (tgju، هر ۱۲ ثانیه) — فالبک: نرخ آخر ایرانیکارت */
   const ic = IC();
-  return { rial: (baseUsd() + 1) * ic.unitRial + (ic.premiumToman || 500000) * 10, live: true };
+  const st = window.SSRates ? window.SSRates.get() : null;
+  const live = st && st.usdIrr ? st.usdIrr : 0;
+  const rate = live || ic.unitRial;
+  return { rial: (baseUsd() + 1) * rate + (ic.premiumToman || 500000) * 10, live: !!live, rate };
 };
 const pricing = () => {
   const R = window.SSRates; const st = R ? R.get() : null;
   const usdIrr = st && st.usdIrr ? st.usdIrr : 0;
   const curCode = cur.payCur;
   if (cur.gift.cat) {
-    /* هوش مصنوعی: قیمت ایرانیکارت + ۵۰۰٬۰۰۰ تومان — پرداخت صرفاً تومانی */
+    /* هوش مصنوعی: (دلار+۱) × نرخ لحظه‌ای + ۵۰۰٬۰۰۰ تومان — پرداخت صرفاً تومانی */
     const a = aiRial();
-    return { rate: IC().unitRial / 10, approx: false, pay: a.rial, tomanRial: a.rial, usdIrr: IC().unitRial, markup: 0, ready: true, ic: true };
+    return { rate: a.rate / 10, approx: !a.live, pay: a.rial, tomanRial: a.rial, usdIrr: a.rate, markup: 0, ready: true, ic: true };
   }
   let rate, approx = false;
   if (curCode === 'IRR') rate = usdIrr;

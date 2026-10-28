@@ -168,12 +168,17 @@ const renderAI = () => {
 
 /* ── فروشگاه هوش مصنوعی (کاتالوگ کامل مطابق ایرانیکارت) ── */
 let aiCat = 'all', aiQ = '';
-/* قیمت = قیمت ایرانیکارت (دلار+۱ × نرخ روز ایرانیکارت) + ۵۰۰٬۰۰۰ تومان خدمات استارشاپ */
+/* نرخ لحظه‌ای دلار (SSRates — tgju زنده، هر ۱۲ ثانیه)؛ فالبک: نرخ آخر ایرانیکارت */
+const aiRateRial = () => {
+  const st = window.SSRates ? window.SSRates.get() : null;
+  return (st && st.usdIrr) ? st.usdIrr : ((window.SS_AI_IC || { unitRial: 2334000 }).unitRial || 2334000);
+};
+/* قیمت = (دلار + ۱$) × نرخ لحظه‌ای دلار + ۵۰۰٬۰۰۰ تومان خدمات استارشاپ */
 const aiTomanOf = item => {
   const ic = window.SS_AI_IC || { unitRial: 2334000, premiumToman: 500000 };
   const usds = item.plans ? item.plans.map(p => p.usd) : null;
   if (!usds) return null;
-  return (Math.min(...usds) + 1) * ic.unitRial / 10 + (ic.premiumToman || 500000);
+  return (Math.min(...usds) + 1) * aiRateRial() / 10 + (ic.premiumToman || 500000);
 };
 const renderAIShop = () => {
   const grid = $('#aiToolsGrid'); if (!grid) return;
@@ -193,7 +198,7 @@ const renderAIShop = () => {
     const price = x.avail === false
       ? `<span class="ai-price off">${escapeHtml(t('ai.unavail'))}</span>`
       : tm != null
-        ? `<span class="ai-price">${(x.plans && x.plans.length > 1) ? escapeHtml(t('ai.from')) + ' ' : ''}<b>${tm.toLocaleString(D().meta.numLocale || 'fa-IR', { maximumFractionDigits: 0 })}</b> ${escapeHtml(t('rates.toman'))}</span>`
+        ? `<span class="ai-price" data-ai-price="${escapeHtml(x.id)}">${(x.plans && x.plans.length > 1) ? escapeHtml(t('ai.from')) + ' ' : ''}<b>${tm.toLocaleString(D().meta.numLocale || 'fa-IR', { maximumFractionDigits: 0 })}</b> ${escapeHtml(t('rates.toman'))}</span>`
         : `<span class="ai-price custom">${escapeHtml(t('ai.customChip'))}</span>`;
     return `<button type="button" class="ai-tool${x.avail === false ? ' disabled' : ''}" data-gift-open="${x.id}" ${x.avail === false ? 'aria-disabled="true"' : ''} style="animation-delay:${Math.min(i, 14) * 25}ms">
       <span class="ai-logo" aria-hidden="true"><img src="assets/logos/ai/${x.id}.webp?v=20260932" alt="" loading="lazy"></span>
@@ -206,6 +211,24 @@ const initAIShop = () => {
   const inp = $('#aiSearch'); if (!inp) return;
   inp.addEventListener('input', () => { aiQ = inp.value; renderAIShop(); });
 };
+/* تازه‌سازی درجای قیمت‌های AI با هر نرخ لحظه‌ای جدید (بدون رندر دوباره = بدون پرش انیمیشن) */
+let aiPriceRate = 0;
+const refreshAIPrices = () => {
+  const rate = aiRateRial();
+  if (!rate || rate === aiPriceRate) return;
+  const grid = $('#aiToolsGrid');
+  if (!grid || !grid.children.length) return;
+  aiPriceRate = rate;
+  const loc2 = D().meta.numLocale || 'fa-IR';
+  $$('[data-ai-price]', grid).forEach(sp => {
+    const x = (window.SS_AI_TOOLS || []).find(tl => tl.id === sp.dataset.aiPrice);
+    const tm = x ? aiTomanOf(x) : null;
+    const b = sp.querySelector('b');
+    if (tm != null && b) b.textContent = tm.toLocaleString(loc2, { maximumFractionDigits: 0 });
+  });
+};
+if (window.SSRates) window.SSRates.subscribe(refreshAIPrices);
+document.addEventListener('ss:lang', () => { aiPriceRate = 0; });
 
 const renderGifts = () => {
   const g = $('#giftTrack'); if (!g) return;
