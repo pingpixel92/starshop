@@ -46,6 +46,7 @@ const FIELD_DEFS = {
   rbx:   { ui: 'fld.rbx',   req: true, d: 'ltr', t: 'text'  },
   sp:    { ui: 'fld.sp',    req: true, d: 'ltr', t: 'text'  },
   acc:   { ui: 'fld.acc',   req: true, d: 'ltr', t: 'email' },
+  user:  { ui: 'fld.user',  req: true, d: 'ltr', t: 'text'  },
   pw:    { ui: 'fld.pw',    req: true, d: 'ltr', t: 'password' },
   aid:   { ui: 'fld.aid',   req: true, d: 'ltr', t: 'email' }
 };
@@ -68,7 +69,7 @@ const GIFT_FIELDS = {
   'gift-nintendo': ['acc', 'pw'],
   'gift-apple':    ['aid']
 };
-const fieldsFor = g => g ? (g.cat ? ['email'] : (GIFT_FIELDS[g.id] || [])).map(k => Object.assign({ k }, FIELD_DEFS[k])) : [];
+const fieldsFor = g => g ? (g.cat ? (g.flds || ['email']) : (GIFT_FIELDS[g.id] || [])).map(k => Object.assign({ k }, FIELD_DEFS[k])) : [];
 const fieldInput = f => {
   const isPw = f.t === 'password';
   const inp = `<input type="${f.t || 'text'}" class="gm-field" data-gf="${f.k}" dir="${f.d || 'ltr'}" placeholder="${escapeHtml(t(f.ui + '.ph'))}" autocomplete="${isPw ? 'new-password' : 'off'}" spellcheck="false" value="${escapeHtml(cur.fvals[f.k] || '')}" aria-label="${escapeHtml(t(f.ui))}">`;

@@ -6,6 +6,10 @@
    اسکرپ پلن‌ها ۲۰۲۶-۱۰-۲۹ (v2): میدجورنی/دال‌ئی/جاسپر/رایت‌سونیک/سایدر از صفحات
      محصول ایرانیکارت (#plans) پلن رسمی گرفتند — ماهانه + سالانه؛ بقیه که در
      ایرانیکارت فقط «ثبت درخواست + مبلغ دلخواه» دارند custom می‌مانند
+   فیلدهای اکانت ۲۰۲۶-۱۰-۲۹ (v3): سرویس‌هایی که اشتراک روی اکانت خودِ کاربر فعال
+     می‌شود flds:['user','pw'] گرفتند (مطابق متن صفحات ایرانیکارت):
+     گروک «روی اکانت شما فعال می‌شوند» + رایتر/سایدر «نام کاربری و رمز عبور را
+     هنگام سفارش بنویسید»؛ بقیه تحویل از طریق پنل هستند → فقط ایمیل (پیش‌فرض)
    فرمول قیمت (ثبت‌شده ۲۰۲۶-۰۹-۲۳ از صفحات محصول ایرانیکارت):
      ریال = (مبلغ دلاری + ۱$) × نرخ دلار  ← حالا «نرخ لحظه‌ای زنده» (SSRates/tgju)
      قیمت استارشاپ = (دلار+۱) × نرخ لحظه‌ای + ۵۰۰٬۰۰۰ تومان (۵٬۰۰۰٬۰۰۰ ریال)
@@ -29,7 +33,7 @@ window.SS_AI_TOOLS = [
   C('ic-chatgpt', 'ChatGPT', 'چت‌جی‌پی‌تی', 'text', { plans: [{ n: 'Go', usd: 12 }, { n: 'Plus', usd: 20 }, { n: 'Plus', nf: 'پلاس آماده', usd: 12 }, { n: 'Pro', usd: 100 }] }),
   C('ic-gemini', 'Gemini', 'جمنای', 'text', { plans: [{ n: 'Google AI Pro', usd: 19.99 }, { n: 'Google AI Ultra', usd: 249.99 }] }),
   C('ic-claude', 'Claude', 'کلود', 'text', { plans: [{ n: 'Pro', usd: 20 }, { n: 'Max', usd: 50 }] }),
-  C('ic-grok', 'Grok', 'گروک', 'text', { plans: [{ n: 'SuperGrok Lite', usd: 10 }, { n: 'SuperGrok', usd: 30 }, { n: 'SuperGrok Plus', usd: 100 }, { n: 'SuperGrok Heavy', usd: 300 }] }),
+  C('ic-grok', 'Grok', 'گروک', 'text', { flds: ['user','pw'], plans: [{ n: 'SuperGrok Lite', usd: 10 }, { n: 'SuperGrok', usd: 30 }, { n: 'SuperGrok Plus', usd: 100 }, { n: 'SuperGrok Heavy', usd: 300 }] }),
   C('ic-grok-sh', 'Grok Shared', 'گروک اشتراکی', 'text', { custom: true }),
   C('ic-copilot', 'Microsoft Copilot', 'مایکروسافت کوپایلت', 'text', { avail: false }),
   C('ic-deepseek', 'DeepSeek', 'دیپ‌سیک', 'text', { custom: true }),
@@ -42,8 +46,8 @@ window.SS_AI_TOOLS = [
   C('ic-poe', 'Poe', 'پو', 'text', { custom: true }),
   C('ic-sincode', 'Sincode', 'سین‌کد', 'text', { custom: true }),
   C('ic-monica', 'Monica', 'مونیکا', 'text', { plans: [{ n: 'Pro', usd: 9.9 }] }),
-  C('ic-sider', 'Sider', 'سایدر', 'text', { plans: [{ n: 'Basic', nf: 'بیسیک (ماهانه)', usd: 10 }, { n: 'Pro', nf: 'پرو (ماهانه)', usd: 20 }, { n: 'Unlimited', nf: 'آنلیمیتد (ماهانه)', usd: 40 }, { n: 'Basic Annual', nf: 'بیسیک (سالانه)', usd: 99.6 }, { n: 'Pro Annual', nf: 'پرو (سالانه)', usd: 199.2 }, { n: 'Unlimited Annual', nf: 'آنلیمیتد (سالانه)', usd: 300 }] }),
-  C('ic-rytr', 'Rytr', 'رایتر', 'text', { custom: true }),
+  C('ic-sider', 'Sider', 'سایدر', 'text', { flds: ['user','pw'], plans: [{ n: 'Basic', nf: 'بیسیک (ماهانه)', usd: 10 }, { n: 'Pro', nf: 'پرو (ماهانه)', usd: 20 }, { n: 'Unlimited', nf: 'آنلیمیتد (ماهانه)', usd: 40 }, { n: 'Basic Annual', nf: 'بیسیک (سالانه)', usd: 99.6 }, { n: 'Pro Annual', nf: 'پرو (سالانه)', usd: 199.2 }, { n: 'Unlimited Annual', nf: 'آنلیمیتد (سالانه)', usd: 300 }] }),
+  C('ic-rytr', 'Rytr', 'رایتر', 'text', { custom: true, flds: ['user','pw'] }),
   C('ic-wordtune', 'Wordtune', 'وردتیون', 'text', { custom: true }),
   C('ic-quillbot', 'Quillbot', 'کویل‌بات', 'text', { custom: true }),
   C('ic-praktika', 'Praktika', 'پراکتیکا', 'text', { custom: true }),
