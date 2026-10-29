@@ -25,6 +25,18 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://starshop.kdns.fr/gift-apple.html</loc>
+    <lastmod>2026-10-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://starshop.kdns.fr/gift-psn-xbox.html</loc>
+    <lastmod>2026-10-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://starshop.kdns.fr/ai-chatgpt.html</loc>
     <lastmod>2026-10-29</lastmod>
     <changefreq>weekly</changefreq>
