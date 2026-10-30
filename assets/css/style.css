@@ -1202,3 +1202,28 @@ body[data-theme="light"] .hero-card-head h2{color:var(--ink)}
 body[data-theme="light"] .hero-card-list button{color:var(--ink)}
 body[data-theme="light"] .hero-card-list button .ic{color:var(--brand)}
 body[data-theme="light"] .hero-card-list button:hover{background:color-mix(in srgb,var(--brand) 8%,transparent);color:var(--brand)}
+
+/* ═══ v37: فیکس کنتراست دارک + کارت فیزیکی (مدارک/آپلود) ═══ */
+body[data-theme="dark"] .gm-chip b{color:var(--brand-light)}
+body[data-theme="dark"] .gm-chip.on b{color:var(--brand-light)}
+body[data-theme="dark"] .gm-chip.on span,body[data-theme="dark"] .gm-chip span{color:var(--muted-dark)}
+body[data-theme="dark"] .gm-chip:hover{border-color:var(--brand-light)}
+
+/* ── فیلد آپلود عکس (پاسپورت) ── */
+.gm-filewrap{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.gm-file-btn{display:inline-flex;align-items:center;gap:9px;height:46px;padding:0 18px;border-radius:13px;border:1.5px dashed color-mix(in srgb,var(--brand) 45%,transparent);background:color-mix(in srgb,var(--brand) 6%,transparent);color:var(--brand);font-weight:700;font-size:13.5px;transition:border-color .3s,background .3s,transform .45s var(--spring)}
+.gm-file-btn:hover{border-color:var(--brand);background:color-mix(in srgb,var(--brand) 11%,transparent)}
+.gm-file-btn:active{transform:scale(.97)}
+.gm-file-btn .ic{width:18px;height:18px}
+.gm-file-thumb{width:56px;height:56px;border-radius:12px;object-fit:cover;border:1px solid var(--line);box-shadow:var(--shadow)}
+.gm-file-name{font-size:12px;color:var(--muted);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gm-file-ok{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;color:var(--accent)}
+
+/* ── کارت‌های بانکی قابل کلیک (کارت فیزیکی) ── */
+.bank[data-phys-open]{cursor:pointer}
+.bank[data-phys-open]::after{content:"ثبت سفارش +";position:absolute;bottom:14px;inset-inline-start:18px;z-index:2;font-size:11px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--brand),var(--accent));border-radius:999px;padding:5px 12px;letter-spacing:.02em;box-shadow:0 8px 22px -8px rgba(21,87,214,.65);transition:transform .45s var(--spring)}
+.bank[data-phys-open]:hover::after{transform:translateY(-2px)}
+.gm-phys-notes{display:grid;gap:9px}
+.gm-phys-notes li{position:relative;padding-inline-start:22px;font-size:13px;color:var(--muted);line-height:1.95}
+.gm-phys-notes li::before{content:"";position:absolute;inset-inline-start:2px;top:.78em;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.gm-file-btn.err{border-color:#d34040;color:#d34040;background:rgba(211,64,64,.07)}

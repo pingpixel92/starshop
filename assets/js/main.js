@@ -244,8 +244,22 @@ const renderGifts = () => {
 
 const renderBanks = () => {
   const g = $('#bankGrid'); if (!g) return;
-  g.innerHTML = D().bankCards.map((b, i) => `<div class="tilt-wrap" data-reveal data-reveal-delay="${i * 90}"><div class="bank tilt gc-${i === 0 ? 'visa' : i === 1 ? 'mc' : i === 2 ? 'phys' : 'travel'}" data-tilt><div class="bank-top"><span class="bank-chip" aria-hidden="true"></span><img class="bank-logo" src="assets/logos/${b.net}-w.svg" alt="${b.net === 'visa' ? 'Visa' : 'Mastercard'}"></div><div class="bank-num" dir="ltr">•••• •••• •••• ••••</div><div class="bank-foot"><span>STAR SHOP</span><span class="bank-wave" aria-hidden="true">)))</span></div><p class="bank-cap">${escapeHtml(b.cap)}</p></div></div>`).join('');
+  /* کارت‌های فیزیکی (ایندکس ۲ و ۳) قابل کلیک‌اند → مودال سفارش کارت فیزیکی (v37) */
+  g.innerHTML = D().bankCards.map((b, i) => `<div class="tilt-wrap" data-reveal data-reveal-delay="${i * 90}"><div class="bank tilt gc-${i === 0 ? 'visa' : i === 1 ? 'mc' : i === 2 ? 'phys' : 'travel'}" data-tilt${i >= 2 ? ' data-phys-open="phys-mc" role="button" tabindex="0" aria-label="' + escapeHtml(t('phys.cta')) + '"' : ''}><div class="bank-top"><span class="bank-chip" aria-hidden="true"></span><img class="bank-logo" src="assets/logos/${b.net}-w.svg" alt="${b.net === 'visa' ? 'Visa' : 'Mastercard'}"></div><div class="bank-num" dir="ltr">•••• •••• •••• ••••</div><div class="bank-foot"><span>STAR SHOP</span><span class="bank-wave" aria-hidden="true">)))</span></div><p class="bank-cap">${escapeHtml(b.cap)}</p></div></div>`).join('');
   initTilt();
+};
+/* کلیک روی کارت‌های فیزیکی → سفارش کارت فیزیکی (فرم ایرانیکارت + مدارک + قیمت زنده) */
+const initPhysOpen = () => {
+  document.addEventListener('click', e => {
+    const el = e.target.closest('[data-phys-open]'); if (!el) return;
+    if (window.SSGift) window.SSGift.open(el.dataset.physOpen);
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const el = e.target.closest && e.target.closest('[data-phys-open]'); if (!el) return;
+    e.preventDefault();
+    if (window.SSGift) window.SSGift.open(el.dataset.physOpen);
+  });
 };
 
 const renderPP = () => {
@@ -744,6 +758,8 @@ const initLangToggle = () => {
 
 /* ── service detail modal ── */
 const openService = id => {
+  /* کارت فیزیکی → مودال سفارش کامل (فرم + مدارک + قیمت زنده) */
+  if (id === 'card-phys' && window.SSGift && !(window.SS_CONFIG && window.SS_CONFIG.physCards && window.SS_CONFIG.physCards.enabled === false)) { window.SSGift.open('phys-mc'); return; }
   const s = getService(id), box = $('#serviceModalBody');
   if (!s || !box) return;
   box.innerHTML = `
@@ -1035,7 +1051,7 @@ const initDelegation = () => {
 const boot = async () => {
   renderAll();
   splitWords();
-  initScroll(); initAnchors(); initTheme(); initThemeSwitcher(); initProgress(); initHeaderState();
+  initScroll(); initAnchors(); initTheme(); initThemeSwitcher(); initProgress(); initHeaderState(); initPhysOpen();
   initCursor(); initMagnetic(); initTilt();
   initMenu(); initLangToggle(); initSearch(); initContactForm(); initCalcForm(); initAIShop();
   initProcess(); initHow(); initStats(); initDelegation();

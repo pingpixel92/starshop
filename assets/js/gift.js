@@ -30,7 +30,21 @@ let panel = null;
 /* ── lookups ── */
 const findGift = id => D().gifts.find(g => g.id === id) || window.SS_DATA.fa.gifts.find(g => g.id === id);
 /* آیتم‌های هوش مصنوعی (کاتالوگ ایرانیکارت) */
-const findAI = id => (window.SS_AI_TOOLS || []).find(a => a.id === id);
+const findAI = id => (window.SS_AI_TOOLS || []).find(a => a.id === id) || physProduct(id);
+/* ═ کارت فیزیکی مسترکارت (v37) — مطابق ایرانیکارت: ۳ نوع + مدارک + قیمت زنده
+   تعریف در config.js → SS_CONFIG.physCards (usd پایه هر نوع قابل تنظیم) */
+const physProduct = id => {
+  if (id !== 'phys-mc') return null;
+  const c = (window.SS_CONFIG && window.SS_CONFIG.physCards) || {};
+  if (c.enabled === false) return null;
+  const types = (c.types && c.types.length ? c.types : [{ n: 'Viva Debit', nf: 'دبیت کارت فیزیکی ویوا', usd: 35 }, { n: 'Viva Credit', nf: 'کردیت کارت فیزیکی ویوا', usd: 45 }, { n: 'PoA Credit', nf: 'کردیت کارت اعتباری وکالتی', usd: 55 }]);
+  return {
+    id: 'phys-mc', t: 'Physical MasterCard', cat: 'card', phys: true,
+    n: { fa: 'مستر کارت فیزیکی', en: 'Physical MasterCard', ar: 'ماستر كارد فيزيائية' },
+    plans: types.map(x => ({ n: x.n, nf: x.nf || x.n, usd: +x.usd || 0 })),
+    flds: ['fullname', 'phone', 'passport']
+  };
+};
 const IC = () => window.SS_AI_IC || { unitRial: 2334000, premiumToman: 500000 };
 /* ریجن‌های کارت + استخر کشورهای اضافی (بدون تکرار) — همه کشورها برای همه کارت‌ها */
 const regionsAll = g => g.noExtra ? g.regions : g.regions.concat(((window.SS_DATA[window.SS_LANG || 'fa'] || window.SS_DATA.fa).regionsExtra || []).filter(r => !g.regions.some(x => x.id === r.id)));
@@ -48,7 +62,10 @@ const FIELD_DEFS = {
   acc:   { ui: 'fld.acc',   req: true, d: 'ltr', t: 'email' },
   user:  { ui: 'fld.user',  req: true, d: 'ltr', t: 'text'  },
   pw:    { ui: 'fld.pw',    req: true, d: 'ltr', t: 'password' },
-  aid:   { ui: 'fld.aid',   req: true, d: 'ltr', t: 'email' }
+  aid:   { ui: 'fld.aid',   req: true, d: 'ltr', t: 'email'  },
+  fullname: { ui: 'fld.fullname', req: true, d: 'rtl', t: 'text' },
+  phone:    { ui: 'fld.phone',    req: true, d: 'ltr', t: 'tel'   },
+  passport: { ui: 'fld.passport', req: true, d: 'ltr', t: 'file'  }
 };
 const GIFT_FIELDS = {
   'gift-telegram': ['tg'],
@@ -79,6 +96,15 @@ const GIFT_FIELDS = {
 const fieldsFor = g => g ? (g.cat ? (g.flds || ['email']) : (GIFT_FIELDS[g.id] || [])).map(k => Object.assign({ k }, FIELD_DEFS[k])) : [];
 const fieldInput = f => {
   const isPw = f.t === 'password';
+  if (f.t === 'file') {
+    return `<div class="gm-filewrap">
+      <input type="file" accept="image/*" class="gm-file-input" data-gf-file="${f.k}" hidden>
+      <button type="button" class="gm-file-btn" data-gf-filebtn="${f.k}"><svg class="ic" viewBox="0 0 24 24"><use href="#i-plus"/></svg>${escapeHtml(t('fld.file.pick'))}</button>
+      <img class="gm-file-thumb" data-gf-thumb="${f.k}" alt="" hidden>
+      <span class="gm-file-name" data-gf-fname="${f.k}"></span>
+      <span class="gm-file-ok" data-gf-ok="${f.k}" hidden>✓ ${escapeHtml(t('fld.file.ok'))}</span>
+    </div>`;
+  }
   const inp = `<input type="${f.t || 'text'}" class="gm-field" data-gf="${f.k}" dir="${f.d || 'ltr'}" placeholder="${escapeHtml(t(f.ui + '.ph'))}" autocomplete="${isPw ? 'new-password' : 'off'}" spellcheck="false" value="${escapeHtml(cur.fvals[f.k] || '')}" aria-label="${escapeHtml(t(f.ui))}">`;
   return isPw ? `<div class="gm-fldwrap">${inp}<button type="button" class="gm-eye" data-gf-eye aria-label="${escapeHtml(t('fld.pw.eye'))}" title="${escapeHtml(t('fld.pw.eye'))}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3.2"/></svg></button></div>` : inp;
 };
@@ -86,6 +112,7 @@ const fieldsUI = g => {
   const defs = fieldsFor(g);
   if (!defs.length) return '';
   cur.fvals = cur.fvals || {};
+  cur.fdocs = cur.fdocs || {};
   return `<div class="gm-sec gm-flds-sec"><h4>${escapeHtml(t('gift.cfg.fields'))}</h4>
     ${defs.map(f => `<label class="gm-fld"><span>${escapeHtml(t(f.ui))}${f.req ? ' <i class="gm-req" aria-hidden="true">*</i>' : ''}</span>
       ${fieldInput(f)}</label>`).join('')}
@@ -96,15 +123,70 @@ const collectFields = g => {
   if (!defs.length) return [];
   cur.fvals = cur.fvals || {};
   $$('.gm-field', panel).forEach(inp => { cur.fvals[inp.dataset.gf] = (inp.value || '').trim(); });
-  const missing = defs.find(f => f.req && !(cur.fvals[f.k] || '').trim());
+  /* فیلدهای فایل (مدارک) — مقدارشان در cur.fdocs است */
+  const fdefs = defs.filter(f => f.t === 'file');
+  for (const f of fdefs) {
+    if (f.req && !(cur.fdocs && cur.fdocs[f.k] && cur.fdocs[f.k].dataUrl)) {
+      const btn = panel.querySelector(`[data-gf-filebtn="${f.k}"]`);
+      if (btn) { btn.classList.add('err'); btn.focus(); }
+      if (window.SSUI && window.SSUI.toast) window.SSUI.toast(t('fld.file.req'));
+      return null;
+    }
+  }
+  const textDefs = defs.filter(f => f.t !== 'file');
+  const missing = textDefs.find(f => f.req && !(cur.fvals[f.k] || '').trim());
   if (missing) {
     const inp = panel.querySelector('.gm-field[data-gf="' + missing.k + '"]');
     if (inp) { inp.classList.add('err'); inp.focus(); }
     if (window.SSUI && window.SSUI.toast) window.SSUI.toast(t('gift.cfg.fieldReq').replace('{f}', t(missing.ui)));
     return null;
   }
-  return defs.filter(f => (cur.fvals[f.k] || '').trim()).map(f => ({ l: t(f.ui), v: cur.fvals[f.k] }));
+  const out = textDefs.filter(f => (cur.fvals[f.k] || '').trim()).map(f => ({ l: t(f.ui), v: cur.fvals[f.k] }));
+  fdefs.forEach(f => { if (cur.fdocs && cur.fdocs[f.k]) out.push({ l: t(f.ui), v: cur.fdocs[f.k].name || t('fld.file.pick'), doc: true }); });
+  return out;
 };
+/* اسناد آپلودشده (dataURL) — برای ارسال به تلگرام در صفحه پرداخت */
+const collectDocs = g => {
+  const defs = fieldsFor(g).filter(f => f.t === 'file');
+  if (!defs.length || !cur.fdocs) return [];
+  return defs.filter(f => cur.fdocs[f.k]).map(f => ({ l: t(f.ui), name: cur.fdocs[f.k].name, dataUrl: cur.fdocs[f.k].dataUrl }));
+};
+
+/* ── کارت فیزیکی: نکات مهم (مطابق ایرانیکارت) ── */
+const physNotes = () => `<div class="gm-sec"><h4>${escapeHtml(t('phys.notes'))}</h4><ul class="gm-phys-notes">
+  <li>${escapeHtml(t('phys.note1'))}</li>
+  <li>${escapeHtml(t('phys.note2'))}</li>
+  <li>${escapeHtml(t('phys.note3'))}</li>
+  <li>${escapeHtml(t('phys.note4'))}</li>
+</ul></div>`;
+/* ── آپلود و فشرده‌سازی عکس مدارک (پاسپورت) ── */
+const fileToDoc = file => new Promise(res => {
+  try {
+    const fr = new FileReader();
+    fr.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const MAXD = 1500, MAXB = 480 * 1024;
+        const w = img.width || img.naturalWidth || 1000, h = img.height || img.naturalHeight || 1000;
+        const sc = Math.min(1, MAXD / Math.max(w, h));
+        const draw = (scale, q) => {
+          const c = document.createElement('canvas');
+          c.width = Math.max(1, Math.round(w * scale)); c.height = Math.max(1, Math.round(h * scale));
+          c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+          return c.toDataURL('image/jpeg', q);
+        };
+        let out = draw(sc, 0.75);
+        if (out.length > MAXB) out = draw(sc * 0.75, 0.6);
+        if (out.length > MAXB) out = draw(sc * 0.5, 0.55);
+        res({ dataUrl: out, name: file.name || 'passport.jpg' });
+      };
+      img.onerror = () => res(null);
+      img.src = fr.result;
+    };
+    fr.onerror = () => res(null);
+    fr.readAsDataURL(file);
+  } catch (e) { res(null); }
+});
 
 /* ── pricing ── */
 const baseUsd = () => {
@@ -121,7 +203,10 @@ const aiRial = () => {
   const st = window.SSRates ? window.SSRates.get() : null;
   const live = st && st.usdIrr ? st.usdIrr : 0;
   const rate = live || ic.unitRial;
-  return { rial: (baseUsd() + 1) * rate + (ic.premiumToman || 500000) * 10, live: !!live, rate };
+  const extraUsd = (cur.gift && cur.gift.phys) ? 0 : 1; /* کارت فیزیکی: فقط ۵۰۰ هزار تومان بیشتر از ایرانیکارت */
+  const pc = window.SS_CONFIG && window.SS_CONFIG.physCards;
+  const prem = (cur.gift && cur.gift.phys && pc && typeof pc.premiumToman === 'number') ? pc.premiumToman : (ic.premiumToman || 500000);
+  return { rial: (baseUsd() + extraUsd) * rate + prem * 10, live: !!live, rate };
 };
 const pricing = () => {
   const R = window.SSRates; const st = R ? R.get() : null;
@@ -153,7 +238,7 @@ const fmtToman = rial => (rial / 10).toLocaleString(loc(), { maximumFractionDigi
 const titleFor = (meta) => {
   const g = findGift(meta.giftId) || findAI(meta.giftId) || { t: meta.brand, n: { fa: meta.brand, en: meta.brand, ar: meta.brand } };
   const nm = g.n ? (g.n[window.SS_LANG || 'fa'] || g.t) : g.t;
-  if (meta.type === 'plans') return `${t('pay.ai')} ${nm} — ${meta.planName || ''}`;
+  if (meta.type === 'plans') return meta.phys ? `${t('pay.card')} ${nm} — ${meta.planName || ''}` : `${t('pay.ai')} ${nm} — ${meta.planName || ''}`;
   if (meta.type === 'aiusd') return `${t('pay.ai')} ${nm} — ${localDig(meta.value)}$`;
   return meta.type === 'months'
     ? `${t('pay.gift')} ${g.t} — ${localDig(meta.value)} ${t('cart.meta.month')}`
@@ -172,7 +257,8 @@ const metaLines = item => {
         `${t('cart.meta.pay')}: ~${fmtToman(m.tomanRial)} ${t('rates.toman')}`,
         `${t('cart.meta.icRate')}: 1$ = ${m.usdIrr ? fmtMoney(m.usdIrr, 0) : '—'} IRR`,
         `${t('gift.cfg.icNote')}`
-      ].concat((m.fields || []).map(f => `${f.l}: ${f.v}`));
+      ].concat((m.fields || []).map(f => `${f.l}: ${f.v}`))
+        .concat((m.docs && m.docs.length) ? [`📎 ${t('phys.docsNote')}`] : []);
     }
     return [];
   }
@@ -285,8 +371,8 @@ const renderAI = () => {
   const head = `
     <button class="modal-close" data-close-modal aria-label="${escapeHtml(t('cart.close'))}"><svg class="ic" viewBox="0 0 24 24"><use href="#i-close"/></svg></button>
     <div class="gm-head">
-      <span class="gm-logo ai-logo"><img src="assets/logos/ai/${g.id}.webp?v=20260932" alt="" width="48" height="48"></span>
-      <div><span class="chip">${t('pay.ai')}</span><h3 id="gmTitle">${escapeHtml(nm)}</h3><p dir="ltr">${escapeHtml(g.t)}</p></div>
+      <span class="gm-logo ai-logo"><img src="${g.phys ? 'assets/logos/mastercard-brand.svg' : `assets/logos/ai/${g.id}.webp?v=20260932`}" alt="" width="48" height="48"></span>
+      <div><span class="chip">${g.phys ? t('pay.card') : t('pay.ai')}</span><h3 id="gmTitle">${escapeHtml(nm)}</h3><p dir="ltr">${escapeHtml(g.t)}</p></div>
     </div>`;
 
   if (g.avail === false) {
@@ -324,7 +410,7 @@ const renderAI = () => {
       <span class="gm-rate" dir="ltr">${t('ai.icRate').replace('{rate}', fmtMoney(p.rate, 0))}</span>
     </div>`;
 
-  panel.innerHTML = `${head}
+  panel.innerHTML = `${head}${g.phys ? physNotes() : ''}
     <div class="gm-sec"><h4>${g.plans ? t('ai.plans') : t('gift.cfg.amount')}</h4>${chooseUI}</div>
     ${fieldsUI(g)}
     ${totalBox}
@@ -375,6 +461,24 @@ const bindPanel = () => {
     render();
   }));
   $$('[data-gm-cur]', panel).forEach(b => b.addEventListener('click', () => { cur.payCur = b.dataset.gmCur; render(); }));
+  /* آپلود عکس مدارک (کارت فیزیکی) */
+  $$('[data-gf-filebtn]', panel).forEach(b => b.addEventListener('click', () => {
+    const inp = panel.querySelector(`[data-gf-file="${b.dataset.gfFilebtn}"]`); if (inp) inp.click();
+  }));
+  $$('[data-gf-file]', panel).forEach(inp => inp.addEventListener('change', async () => {
+    const k = inp.dataset.gfFile, f = inp.files && inp.files[0];
+    const btn = panel.querySelector(`[data-gf-filebtn="${k}"]`); if (btn) btn.classList.remove('err');
+    if (!f) return;
+    if (!/^image\//.test(f.type)) { if (window.SSUI && window.SSUI.toast) window.SSUI.toast(t('fld.file.notimg')); inp.value = ''; return; }
+    if (f.size > 12 * 1024 * 1024) { if (window.SSUI && window.SSUI.toast) window.SSUI.toast(t('fld.file.big')); inp.value = ''; return; }
+    const doc = await fileToDoc(f);
+    if (!doc) { if (window.SSUI && window.SSUI.toast) window.SSUI.toast(t('fld.file.big')); return; }
+    cur.fdocs = cur.fdocs || {}; cur.fdocs[k] = doc;
+    const th = panel.querySelector(`[data-gf-thumb="${k}"]`); if (th) { th.src = doc.dataUrl; th.hidden = false; }
+    const nm = panel.querySelector(`[data-gf-fname="${k}"]`); if (nm) nm.textContent = doc.name;
+    const ok = panel.querySelector(`[data-gf-ok="${k}"]`); if (ok) ok.hidden = false;
+    if (btn) btn.innerHTML = `<svg class="ic" viewBox="0 0 24 24"><use href="#i-check"/></svg>${escapeHtml(t('fld.file.repick'))}`;
+  }));
   const add = $('[data-gm-add]', panel);
   if (add) add.addEventListener('click', () => {
     const g = cur.gift;
@@ -386,8 +490,10 @@ const bindPanel = () => {
       const pl = g.plans ? (g.plans[cur.planIdx] || g.plans[0]) : null;
       const meta = {
         kind: 'gift', giftId: g.id, brand: g.t, type: g.plans ? 'plans' : 'aiusd',
+        phys: !!g.phys,
         cur: 'IRR', value: g.plans ? cur.planIdx : cur.value, planName: pl ? pl.n : '',
-        usd: baseUsd(), pay: p.pay, tomanRial: p.tomanRial, usdIrr: p.usdIrr, rate: p.rate, fields: flds
+        usd: baseUsd(), pay: p.pay, tomanRial: p.tomanRial, usdIrr: p.usdIrr, rate: p.rate, fields: flds,
+        docs: collectDocs(g)
       };
       const id = `gift:${g.id}:${g.plans ? 'p' + cur.planIdx : 'usd' + cur.value}`;
       const title = titleFor(meta);
@@ -437,7 +543,7 @@ const open = giftId => {
   if (!panel) return;
   if (a) {
     const ai = Object.assign({}, a, a.custom ? { min: 5, max: 500, step: 1, presets: [10, 20, 50, 100] } : {});
-    cur = { gift: ai, planIdx: 0, value: a.custom ? 10 : 0, payCur: 'IRR', fvals: {} };
+    cur = { gift: ai, planIdx: 0, value: a.custom ? 10 : 0, payCur: 'IRR', fvals: {}, fdocs: {} };
   } else {
     cur = { gift: g, regionId: g.regions[0].id, value: g.type === 'months' ? (g.monthOpts ? g.monthOpts[0] : g.minM) : (g.presets ? g.presets[0] : g.min), payCur: g.regions[0].cur, fvals: {} };
   }

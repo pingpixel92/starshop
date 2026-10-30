@@ -93,6 +93,16 @@ function pruneOrders(list) {
 }
 
 /* ── تلگرام ── */
+function dataUrlToBlob(u) {
+  try {
+    const parts = String(u).split(',');
+    const mime = (parts[0].match(/:(.*?);/) || [0, 'image/jpeg'])[1];
+    const bin = atob(parts[1] || '');
+    const arr = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    return new Blob([arr], { type: mime });
+  } catch (e) { return null; }
+}
 async function tgSendPhoto(blob, caption, kb) {
   if (!TG.bot || !TG.chat || !blob) return false;
   try {
@@ -516,6 +526,17 @@ async function submitReceipt(manualReview) {
     const kb = { inline_keyboard: [[{ text: '✅ بازکردن پنل تأیید', url: location.origin + '/admin.html#' + esc2(CODE) }]] };
     const sent = await tgSendPhoto(lastBlob, cap, kb);
     if (!sent) tgSendText(cap);
+
+    /* ارسال مدارک هویتی سفارش‌های کارت فیزیکی (عکس پاسپورت) به ربات مالک */
+    const docsAll = [];
+    (items || []).forEach(i => (i.docs || []).forEach(d => { if (d && d.dataUrl) docsAll.push(d); }));
+    for (let di = 0; di < docsAll.length; di++) {
+      try {
+        const db = dataUrlToBlob(docsAll[di].dataUrl);
+        if (db) await tgSendPhoto(db, '📄 <b>مدارک هویتی</b> — کد سفارش: <code>' + esc2(CODE) + '</code> — ' + esc2(docsAll[di].l || ('سند ' + (di + 1))), null);
+      } catch (e) {}
+    }
+    if (docsAll.length) tgSendText('📎 ' + docsAll.length + ' سند هویتی سفارش <code>' + esc2(CODE) + '</code> ارسال شد');
 
     rememberSeen(rec.ref, rec.imgHash);
 
