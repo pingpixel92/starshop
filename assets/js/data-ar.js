@@ -5,7 +5,7 @@ window.SS_DATA.ar = {
 
   ui: {
     'nav.services':'الخدمات','nav.payments':'المدفوعات','nav.cards':'البطاقات','nav.accounts':'الحسابات','nav.shopping':'التسوق الخارجي','nav.magazine':'المجلة',
-    'menu.home':'الرئيسية','menu.services':'الخدمات','menu.payments':'الدفع الدولي','menu.cards':'البطاقات','menu.accounts':'الحسابات','menu.gift':'بطاقات الهدايا','menu.shopping':'التسوق العالمي','menu.income':'الدخل بالعملات','menu.exams':'الاختبارات','menu.magazine':'المجلة','menu.about':'من نحن','menu.contact':'تواصل معنا','menu.orders':'حالة الطلبات',
+    'menu.home':'الرئيسية','menu.services':'الخدمات','menu.payments':'الدفع الدولي','menu.cards':'البطاقات','menu.accounts':'الحسابات','menu.gift':'بطاقات الهدايا','menu.shopping':'التسوق العالمي','menu.income':'الدخل بالعملات','menu.exams':'الاختبارات','menu.magazine':'المجلة','menu.about':'من نحن','menu.contact':'تواصل معنا','menu.orders':'حالة الطلبات','theme.auto':'مختلط (افتراضي)','theme.light':'الوضع الفاتح','theme.dark':'الوضع الداكن',
     'menu.foot.desc':'مدفوعات دولية وحسابات وبطاقات وخدمات رقمية',
     'lang.label':'العربية','login':'تسجيل الدخول / حساب جديد','cta':'ابدأ طلبًا','view-services':'استكشف الخدمات',
     'hero.eyebrow':'خدمات مالية ورقمية دولية','hero.title':'العالم،|لم يعد بعيدًا.','hero.lead':'مدفوعات دولية وحسابات عالمية وبطاقات دولية وخدمات رقمية — بأسهل ما يمكن، في مكان واحد.','hero.scroll':'مرّر للأسفل',

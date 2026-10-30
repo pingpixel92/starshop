@@ -404,13 +404,73 @@ const initAnchors = () => {
   });
 };
 
-/* ── theme sections ── */
-const initTheme = () => {
+/* ── theme (v36): سه حالت انتخابی کاربر — auto (ترکیبی اسکرولی) / light / dark ── */
+const THEME_KEY = 'ss_theme';
+let themeIO = null;
+const getThemeMode = () => {
+  try {
+    const m = localStorage.getItem(THEME_KEY);
+    return (m === 'light' || m === 'dark') ? m : 'auto';
+  } catch (e) { return 'auto'; }
+};
+const setMetaThemeColor = () => {
+  const meta = $('meta[name="theme-color"]'); if (!meta) return;
+  meta.setAttribute('content', document.body.dataset.theme === 'light' ? '#f7f8fa' : '#05070b');
+};
+const markThemeSw = () => {
+  const sw = $('#themeSw'); if (!sw) return;
+  const m = getThemeMode();
+  sw.querySelectorAll('button[data-mode]').forEach(b => {
+    const on = b.dataset.mode === m;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+};
+const stopThemeIO = () => { if (themeIO) { themeIO.disconnect(); themeIO = null; } };
+const startThemeIO = () => {
   const secs = $$('[data-bg]'); if (!secs.length) return;
-  const io = new IntersectionObserver(ents => {
-    ents.forEach(en => { if (en.isIntersecting) document.body.dataset.theme = en.target.dataset.bg; });
+  stopThemeIO();
+  themeIO = new IntersectionObserver(ents => {
+    ents.forEach(en => { if (en.isIntersecting) { document.body.dataset.theme = en.target.dataset.bg; setMetaThemeColor(); } });
   }, { rootMargin: '-44% 0px -44% 0px' });
-  secs.forEach(s => io.observe(s));
+  secs.forEach(s => themeIO.observe(s));
+};
+const initTheme = () => {
+  const m = getThemeMode();
+  markThemeSw();
+  if (m === 'auto') {
+    /* تم اولیه بر اساس سکشن وسط دید، تا پرش رنگ نداشته باشیم */
+    const mid = document.elementFromPoint(innerWidth / 2, innerHeight * 0.5);
+    const sec = mid && mid.closest ? mid.closest('[data-bg]') : null;
+    document.body.dataset.theme = sec ? sec.dataset.bg : 'dark';
+    setMetaThemeColor();
+    startThemeIO();
+  } else {
+    stopThemeIO();
+    document.body.dataset.theme = m;
+    setMetaThemeColor();
+  }
+};
+const initThemeSwitcher = () => {
+  const sw = $('#themeSw'); if (!sw) return;
+  sw.addEventListener('click', e => {
+    const b = e.target.closest('button[data-mode]'); if (!b) return;
+    const m = b.dataset.mode;
+    try { localStorage.setItem(THEME_KEY, m); } catch (err) {}
+    if (m === 'auto') {
+      /* فوری‌سازی تم سکشن فعلی، بعد استارت مجدد observer */
+      const mid = document.elementFromPoint(innerWidth / 2, innerHeight * 0.5);
+      const sec = mid && mid.closest ? mid.closest('[data-bg]') : null;
+      document.body.dataset.theme = sec ? sec.dataset.bg : 'dark';
+      setMetaThemeColor();
+      startThemeIO();
+    } else {
+      stopThemeIO();
+      document.body.dataset.theme = m;
+      setMetaThemeColor();
+    }
+    markThemeSw();
+  });
 };
 
 /* ── progress ── */
@@ -975,7 +1035,7 @@ const initDelegation = () => {
 const boot = async () => {
   renderAll();
   splitWords();
-  initScroll(); initAnchors(); initTheme(); initProgress(); initHeaderState();
+  initScroll(); initAnchors(); initTheme(); initThemeSwitcher(); initProgress(); initHeaderState();
   initCursor(); initMagnetic(); initTilt();
   initMenu(); initLangToggle(); initSearch(); initContactForm(); initCalcForm(); initAIShop();
   initProcess(); initHow(); initStats(); initDelegation();

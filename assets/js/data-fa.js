@@ -5,7 +5,7 @@ window.SS_DATA.fa = {
 
   ui: {
     'nav.services':'خدمات','nav.payments':'پرداخت‌ها','nav.cards':'کارت‌ها','nav.accounts':'اکانت‌ها','nav.shopping':'خرید خارجی','nav.magazine':'مجله',
-    'menu.home':'خانه','menu.services':'خدمات','menu.payments':'پرداخت بین‌المللی','menu.cards':'کارت‌ها','menu.accounts':'اکانت‌ها','menu.gift':'گیفت کارت','menu.shopping':'خرید خارجی','menu.income':'درآمد ارزی','menu.exams':'آزمون‌ها','menu.magazine':'مجله','menu.about':'درباره ما','menu.contact':'تماس با ما','menu.orders':'وضعیت سفارش‌ها',
+    'menu.home':'خانه','menu.services':'خدمات','menu.payments':'پرداخت بین‌المللی','menu.cards':'کارت‌ها','menu.accounts':'اکانت‌ها','menu.gift':'گیفت کارت','menu.shopping':'خرید خارجی','menu.income':'درآمد ارزی','menu.exams':'آزمون‌ها','menu.magazine':'مجله','menu.about':'درباره ما','menu.contact':'تماس با ما','menu.orders':'وضعیت سفارش‌ها','theme.auto':'ترکیبی (پیش‌فرض)','theme.light':'حالت روشن','theme.dark':'حالت تیره',
     'menu.foot.desc':'پرداخت‌های بین‌المللی، اکانت‌ها، کارت‌ها و خدمات دیجیتال',
     'lang.label':'فارسی','login':'ورود / ثبت‌نام','cta':'شروع سفارش','view-services':'مشاهده خدمات',
     'hero.eyebrow':'خدمات مالی و دیجیتال بین‌المللی','hero.title':'دنیا،|دیگر دور نیست.','hero.lead':'پرداخت‌های بین‌المللی، اکانت‌های جهانی، کارت‌های بین‌المللی و خدمات دیجیتال را ساده‌تر از همیشه در اختیار داشته باشید.','hero.scroll':'اسکرول کنید',

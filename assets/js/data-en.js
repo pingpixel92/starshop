@@ -5,7 +5,7 @@ window.SS_DATA.en = {
 
   ui: {
     'nav.services':'Services','nav.payments':'Payments','nav.cards':'Cards','nav.accounts':'Accounts','nav.shopping':'Shopping','nav.magazine':'Magazine',
-    'menu.home':'Home','menu.services':'Services','menu.payments':'International Payments','menu.cards':'Cards','menu.accounts':'Accounts','menu.gift':'Gift Cards','menu.shopping':'Global Shopping','menu.income':'Foreign Income','menu.exams':'Exams','menu.magazine':'Magazine','menu.about':'About Us','menu.contact':'Contact','menu.orders':'Order Status',
+    'menu.home':'Home','menu.services':'Services','menu.payments':'International Payments','menu.cards':'Cards','menu.accounts':'Accounts','menu.gift':'Gift Cards','menu.shopping':'Global Shopping','menu.income':'Foreign Income','menu.exams':'Exams','menu.magazine':'Magazine','menu.about':'About Us','menu.contact':'Contact','menu.orders':'Order Status','theme.auto':'Combined (default)','theme.light':'Light mode','theme.dark':'Dark mode',
     'menu.foot.desc':'International payments, accounts, cards and digital services',
     'lang.label':'English','login':'Login / Sign up','cta':'Start an order','view-services':'Explore services',
     'hero.eyebrow':'International financial & digital services','hero.title':'The world,|is no longer far.','hero.lead':'International payments, global accounts, international cards and digital services — easier than ever, all in one place.','hero.scroll':'Scroll down',

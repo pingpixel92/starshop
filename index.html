@@ -32,7 +32,7 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://api.telegram.org">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vazirmatn@33.0.3/Vazirmatn-font-face.css">
-<link rel="stylesheet" href="assets/css/style.css?v=20260955">
+<link rel="stylesheet" href="assets/css/style.css?v=20260958">
 <script>document.documentElement.classList.add('js');</script>
 <script type="application/ld+json">
 {
@@ -150,6 +150,8 @@
 <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V4M4 20h16"/><path d="M8 15l3.5-4 3 2.5L19 8"/></symbol>
 <symbol id="i-tg" viewBox="0 0 24 24"><path d="M21.5 4.5 2.8 11.7c-.8.3-.8 1.4 0 1.7l4.6 1.5 1.7 5.2c.2.7 1.1.9 1.6.3l2.4-2.6 4.7 3.4c.6.4 1.5.1 1.6-.7l3-14.6c.2-.9-.7-1.6-1.5-1.2z"/></symbol>
 <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 6.8C4 5.2 5.2 4 6.8 4h10.4C18.8 4 20 5.2 20 6.8v7.4c0 1.6-1.2 2.8-2.8 2.8H10l-4.4 3.6V17H6.8C5.2 17 4 15.8 4 14.2z"/><path d="M8.4 10.5h7.2M8.4 13.2h4.4"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.4"/><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.2 5.2l1.7 1.7M17.1 17.1l1.7 1.7M18.8 5.2l-1.7 1.7M6.9 17.1l-1.7 1.7"/></symbol>
 <symbol id="i-out" viewBox="0 0 24 24"><path d="M15 4h5v5M20 4l-8 8M19 13.5V18a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h4.5"/></symbol>
 </svg>
 
@@ -199,6 +201,11 @@
           <button role="menuitem" data-lang="en">English</button>
           <button role="menuitem" data-lang="ar">العربية</button>
         </div>
+      </div>
+      <div class="theme-sw" id="themeSw" role="group" aria-label="انتخاب تم رنگی">
+        <button type="button" data-mode="auto" class="active" aria-pressed="true" data-i18n-aria="theme.auto" aria-label="ترکیبی (پیش‌فرض)" title="ترکیبی (پیش‌فرض)"><svg class="ic" viewBox="0 0 24 24"><use href="#i-spark"/></svg></button>
+        <button type="button" data-mode="light" aria-pressed="false" data-i18n-aria="theme.light" aria-label="حالت روشن" title="حالت روشن"><svg class="ic" viewBox="0 0 24 24"><use href="#i-sun"/></svg></button>
+        <button type="button" data-mode="dark" aria-pressed="false" data-i18n-aria="theme.dark" aria-label="حالت تیره" title="حالت تیره"><svg class="ic" viewBox="0 0 24 24"><use href="#i-moon"/></svg></button>
       </div>
       <button class="icon-btn m-account" id="accountBtnM" aria-label="حساب کاربری"><svg class="ic" viewBox="0 0 24 24"><use href="#i-user"/></svg></button>
       <button class="icon-btn" id="cartBtn" data-open-cart aria-label="سبد خرید">
@@ -966,9 +973,9 @@
 <script src="assets/js/config.js?v=20260951" defer></script>
 <script src="assets/js/notify.js?v=20260937" defer></script>
 <script src="assets/js/visitor-log.js?v=20260951" defer></script>
-<script src="assets/js/data-fa.js?v=20260955" defer></script>
-<script src="assets/js/data-en.js?v=20260955" defer></script>
-<script src="assets/js/data-ar.js?v=20260955" defer></script>
+<script src="assets/js/data-fa.js?v=20260958" defer></script>
+<script src="assets/js/data-en.js?v=20260958" defer></script>
+<script src="assets/js/data-ar.js?v=20260958" defer></script>
 <script src="assets/js/i18n.js?v=20260937" defer></script>
 <script src="assets/js/rates-world.js?v=20260937" defer></script>
 <script src="assets/js/rates.js?v=20260937" defer></script>
@@ -977,7 +984,7 @@
 <script src="assets/js/ai-catalog.js?v=20260954" defer></script>
 <script src="assets/js/gift.js?v=20260955" defer></script>
 <script src="assets/js/support.js?v=20260954" defer></script>
-<script src="assets/js/main.js?v=20260955" defer></script>
+<script src="assets/js/main.js?v=20260958" defer></script>
 <script type="module" src="assets/js/three-scene.js?v=20260937"></script>
 </body>
 </html>

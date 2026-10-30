@@ -1175,3 +1175,30 @@ body[data-theme="dark"] .art-item{background:rgba(255,255,255,.04)}
 .acc-track{margin-bottom:8px}
 .acc-track-link{display:inline-block;margin-top:9px;font-size:12px;font-weight:800;color:var(--brand);text-decoration:none}
 .acc-track-link:hover{text-decoration:underline}
+
+/* ═══ سوییچر تم (v36): سه حالت — ترکیبی / روشن / تیره ═══ */
+.theme-sw{display:flex;align-items:center;gap:3px;padding:4px;border-radius:999px;border:1px solid color-mix(in srgb,currentColor 20%,transparent);transition:border-color .3s}
+.theme-sw:hover{border-color:color-mix(in srgb,currentColor 38%,transparent)}
+.theme-sw button{width:33px;height:29px;border-radius:999px;display:grid;place-items:center;color:currentColor;opacity:.55;transition:opacity .3s,background .3s,transform .45s var(--spring)}
+.theme-sw button:hover{opacity:1}
+.theme-sw button:active{transform:scale(.92)}
+.theme-sw button.active{opacity:1;background:color-mix(in srgb,currentColor 14%,transparent)}
+.theme-sw .ic{width:16px;height:16px}
+@media (max-width:720px){.theme-sw{padding:3px}.theme-sw button{width:29px;height:27px}.theme-sw .ic{width:15px;height:15px}}
+
+/* ── حالت روشنِ ثابت: بخش‌های همیشه‌تیره هم روشن شوند ── */
+body[data-theme="light"] .hero-bg{background:linear-gradient(180deg,#e9f0fa 0%,#f8fafd 58%,#e9f0fa 100%)}
+body[data-theme="light"] .hero-bg::after{background:radial-gradient(120% 90% at 50% 50%,transparent 60%,rgba(21,44,94,.05) 100%)}
+body[data-theme="light"] .stats{background:linear-gradient(180deg,#e9f0fa,#e2eaf7)}
+body[data-theme="light"] .final-cta{background:radial-gradient(80% 90% at 50% 120%,rgba(21,87,214,.12),transparent 60%),#e9f0fa}
+body[data-theme="light"] .site-footer{background:#eef2f9;color:var(--ink);border-top:1px solid var(--line)}
+body[data-theme="light"] .foot-col h4{color:var(--ink)}
+body[data-theme="light"] .foot-brand p,body[data-theme="light"] .foot-col a,body[data-theme="light"] .foot-link,body[data-theme="light"] .foot-bottom p{color:var(--muted)}
+body[data-theme="light"] .foot-col a:hover,body[data-theme="light"] .foot-link:hover{color:var(--brand)}
+body[data-theme="light"] .foot-bottom{border-top-color:var(--line)}
+body[data-theme="light"] .hs-logos img{filter:grayscale(20%) invert(1) brightness(.45)}
+body[data-theme="light"] .hero-card{background:rgba(255,255,255,.85);border-color:var(--line)}
+body[data-theme="light"] .hero-card-head h2{color:var(--ink)}
+body[data-theme="light"] .hero-card-list button{color:var(--ink)}
+body[data-theme="light"] .hero-card-list button .ic{color:var(--brand)}
+body[data-theme="light"] .hero-card-list button:hover{background:color-mix(in srgb,var(--brand) 8%,transparent);color:var(--brand)}
