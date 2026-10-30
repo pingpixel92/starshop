@@ -86,8 +86,8 @@ const ppProduct = id => {
 };
 /* ═ خرید درون بازی (v40 — مطابق بخش «خرید درون بازی» ایرانیکارت) ═
    game-<id> → مودال سفارش کامل: انتخاب بسته (پایه دلاری) + ایمیل و رمز اکانت (الزامی)
-   قیمت زنده = (usd بسته × نرخ لحظه‌ای دلار) + ۵۰۰٬۰۰۰ تومان — تعریف در config.js → SS_CONFIG.gameTopups
-   GTA VI (game-gta6) هم در همین بخش: قیمت مرجع ایرانیکارت + ۵۰۰ هزار تومان با نرخ لحظه‌ای */
+   قیمت زنده = (usd بسته × نرخ لحظه‌ای دلار) + پرمیوم بخش بازی (۸۵۰٬۰۰۰ تومان از v42) — تعریف در config.js → SS_CONFIG.gameTopups
+   GTA VI (game-gta6) هم در همین بخش: قیمت مرجع ایرانیکارت + ۸۵۰ هزار تومان با نرخ لحظه‌ای */
 const gameProduct = id => {
   const c = (window.SS_CONFIG && window.SS_CONFIG.gameTopups) || {};
   if (c.enabled === false || !c.items || !c.items.length) return null;
@@ -300,7 +300,7 @@ const aiRial = () => {
   const st = window.SSRates ? window.SSRates.get() : null;
   const live = st && st.usdIrr ? st.usdIrr : 0;
   const rate = live || ic.unitRial;
-  /* کارت فیزیکی/بازی: فقط ۵۰۰ هزار تومان بیشتر از مرجع — هوش مصنوعی: +۱$ هزینه ثبت */
+  /* کارت فیزیکی: ۵۰۰ هزار تومان بیشتر از مرجع — بازی: ۸۵۰ هزار تومان (v42) — هوش مصنوعی: +۱$ هزینه ثبت */
   const extraUsd = (cur.gift && (cur.gift.phys || cur.gift.game)) ? 0 : 1;
   let prem;
   if (cur.gift && cur.gift.game) {
@@ -374,7 +374,7 @@ const metaLines = item => {
       ];
       const tailLines = m.type === 'ppplan'
         ? [`${t('pp.fixedPrice')}`]
-        : [`${t('cart.meta.icRate')}: 1$ = ${m.usdIrr ? fmtMoney(m.usdIrr, 0) : '—'} IRR`, `${t('gift.cfg.icNote')}`];
+        : [`${t('cart.meta.icRate')}: 1$ = ${m.usdIrr ? fmtMoney(m.usdIrr, 0) : '—'} IRR`, `${m.giftId && String(m.giftId).indexOf('game-') === 0 ? t('gift.cfg.icNoteGame') : t('gift.cfg.icNote')}`];
       return headLines.concat(tailLines)
         .concat((m.fields || []).map(f => `${f.l}: ${f.v}`))
         .concat((m.docs && m.docs.length) ? [`📎 ${t('phys.docsNote')}`] : []);
@@ -536,7 +536,7 @@ const renderAI = () => {
       <b class="gm-total-val">${fmtToman(p.pay)} <i>${t('rates.toman')}</i></b>
       ${g.ppToman
         ? `<span class="gm-total-base">${t('pp.priceNote')}</span>`
-        : `<span class="gm-total-base">${t('gift.cfg.icNote')}</span>
+        : `<span class="gm-total-base">${t(g.game ? 'gift.cfg.icNoteGame' : 'gift.cfg.icNote')}</span>
       <span class="gm-rate" dir="ltr">${t('ai.icRate').replace('{rate}', fmtMoney(p.rate, 0))}</span>`}
     </div>`;
 
