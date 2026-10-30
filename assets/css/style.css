@@ -1255,3 +1255,13 @@ body[data-theme="dark"] .eyebrow{color:var(--brand-light)}
 .gm-phys-notes li{position:relative;padding-inline-start:22px;font-size:13px;color:var(--muted);line-height:1.95}
 .gm-phys-notes li::before{content:"";position:absolute;inset-inline-start:2px;top:.78em;width:6px;height:6px;border-radius:50%;background:var(--accent)}
 .gm-file-btn.err{border-color:#d34040;color:#d34040;background:rgba(211,64,64,.07)}
+
+/* ═══ v39: فرم افتتاح حساب PayPal — رادیو بله/خیر + تاریخ تولد میلادی ═══ */
+.gm-radio{display:flex;gap:10px}
+.gm-radio .gm-chip{flex:1;justify-content:center;padding:11px 13px;font-size:13px}
+.gm-radio .gm-chip.on{border-color:var(--brand);background:color-mix(in srgb,var(--brand) 10%,transparent)}
+.gm-date{min-height:46px}
+.gm-date::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.75}
+body[data-theme="dark"] .gm-date{color-scheme:dark}
+body[data-theme="dark"] .gm-radio .gm-chip{color:var(--ink)}
+body[data-theme="dark"] .gm-radio .gm-chip.on{color:#8fbcff;border-color:var(--brand-light);background:color-mix(in srgb,var(--brand-light) 12%,transparent)}

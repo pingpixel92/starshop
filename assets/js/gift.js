@@ -29,8 +29,8 @@ let panel = null;
 
 /* ── lookups ── */
 const findGift = id => D().gifts.find(g => g.id === id) || window.SS_DATA.fa.gifts.find(g => g.id === id);
-/* آیتم‌های هوش مصنوعی (کاتالوگ ایرانیکارت) */
-const findAI = id => (window.SS_AI_TOOLS || []).find(a => a.id === id) || physProduct(id);
+/* آیتم‌های هوش مصنوعی (کاتالوگ ایرانیکارت) + PayPal (v39) */
+const findAI = id => (window.SS_AI_TOOLS || []).find(a => a.id === id) || physProduct(id) || ppProduct(id);
 /* ═ کارت‌های بین‌المللی (v37+v38) — مطابق ایرانیکارت: مدارک + قیمت زنده
    phys-mc: کارت فیزیکی مسترکارت (۳ نوع) — virt-visa / virt-mc / travel-mc: کارت‌های مجازی و سفر
    تعریف در config.js → SS_CONFIG.physCards / SS_CONFIG.virtCards (usd پایه قابل تنظیم) */
@@ -58,6 +58,32 @@ const physProduct = id => {
     flds: ['fullname', 'phone', 'passport'], notes: 'virt', logo: net + '-brand'
   };
 };
+/* ═ افتتاح حساب PayPal (v39 — مطابق فرم مرجع) ═
+   pp-person / pp-business → مودال سفارش کامل:
+   دو گزینه (شماره مجازی یک‌ساله / سیم‌کارت فیزیکی) با قیمت ثابت تومانی +
+   سؤال پاسخ‌گویی به تماس + مشخصات پاسپورت (انگلیسی) + تاریخ تولد میلادی +
+   ایمیل + رمز ایمیل + عکس پاسپورت الزامی — تعریف در config.js → SS_CONFIG.ppAcct */
+const ppProduct = id => {
+  const c = (window.SS_CONFIG && window.SS_CONFIG.ppAcct) || {};
+  if (c.enabled === false) return null;
+  const defs = {
+    'pp-person':   { t: 'PayPal Personal', n: { fa: 'افتتاح حساب PayPal Personal', en: 'PayPal Personal Account', ar: 'فتح حساب PayPal Personal' } },
+    'pp-business': { t: 'PayPal Business', n: { fa: 'افتتاح حساب PayPal Business', en: 'PayPal Business Account', ar: 'فتح حساب PayPal Business' } }
+  };
+  const d = defs[id];
+  if (!d) return null;
+  const plans = (c.plans && c.plans.length ? c.plans : [
+    { id: 'virt', n: 'Virtual number (1 year)', nf: 'با شماره مجازی یک‌ساله', toman: 285000 },
+    { id: 'sim',  n: 'Physical SIM card',       nf: 'با سیم‌کارت فیزیکی',     toman: 24312000 }
+  ]);
+  return {
+    id, t: d.t, cat: 'pp', pp: true, ppToman: true,
+    n: d.n,
+    plans: plans.map(x => ({ n: x.n, nf: x.nf || x.n, usd: 0, toman: +x.toman || 0 })),
+    flds: ['ppcall', 'pname', 'plname', 'dob', 'email', 'pw', 'passport'],
+    notes: 'pp', logo: 'paypal-brand'
+  };
+};
 const IC = () => window.SS_AI_IC || { unitRial: 2334000, premiumToman: 500000 };
 /* ریجن‌های کارت + استخر کشورهای اضافی (بدون تکرار) — همه کشورها برای همه کارت‌ها */
 const regionsAll = g => g.noExtra ? g.regions : g.regions.concat(((window.SS_DATA[window.SS_LANG || 'fa'] || window.SS_DATA.fa).regionsExtra || []).filter(r => !g.regions.some(x => x.id === r.id)));
@@ -78,7 +104,12 @@ const FIELD_DEFS = {
   aid:   { ui: 'fld.aid',   req: true, d: 'ltr', t: 'email'  },
   fullname: { ui: 'fld.fullname', req: true, d: 'rtl', t: 'text' },
   phone:    { ui: 'fld.phone',    req: true, d: 'ltr', t: 'tel'   },
-  passport: { ui: 'fld.passport', req: true, d: 'ltr', t: 'file'  }
+  passport: { ui: 'fld.passport', req: true, d: 'ltr', t: 'file'  },
+  /* v39 — فرم افتتاح حساب PayPal */
+  pname:  { ui: 'fld.pname',  req: true, d: 'ltr', t: 'text' },
+  plname: { ui: 'fld.plname', req: true, d: 'ltr', t: 'text' },
+  dob:    { ui: 'fld.dob',    req: true, d: 'ltr', t: 'date' },
+  ppcall: { ui: 'fld.ppcall', req: true, t: 'radio', def: 'no', opts: [['no', 'fld.ppcall.no'], ['yes', 'fld.ppcall.yes']] }
 };
 const GIFT_FIELDS = {
   'gift-telegram': ['tg'],
@@ -109,6 +140,15 @@ const GIFT_FIELDS = {
 const fieldsFor = g => g ? (g.cat ? (g.flds || ['email']) : (GIFT_FIELDS[g.id] || [])).map(k => Object.assign({ k }, FIELD_DEFS[k])) : [];
 const fieldInput = f => {
   const isPw = f.t === 'password';
+  /* v39 — رادیو بله/خیر (سؤال پاسخ‌گویی به تماس) */
+  if (f.t === 'radio') {
+    const v = (cur.fvals && cur.fvals[f.k]) || f.def || '';
+    return `<div class="gm-radio" role="radiogroup" data-gf-radio="${f.k}">${(f.opts || []).map(o => `<button type="button" class="gm-chip${v === o[0] ? ' on' : ''}" data-gf-rval="${o[0]}" aria-pressed="${v === o[0]}">${escapeHtml(t(o[1]))}</button>`).join('')}</div>`;
+  }
+  /* v39 — تاریخ میلادی (تاریخ تولد) */
+  if (f.t === 'date') {
+    return `<input type="date" class="gm-field gm-date" data-gf="${f.k}" dir="ltr" value="${escapeHtml((cur.fvals && cur.fvals[f.k]) || '')}" aria-label="${escapeHtml(t(f.ui))}">`;
+  }
   if (f.t === 'file') {
     return `<div class="gm-filewrap">
       <input type="file" accept="image/*" class="gm-file-input" data-gf-file="${f.k}" hidden>
@@ -126,6 +166,8 @@ const fieldsUI = g => {
   if (!defs.length) return '';
   cur.fvals = cur.fvals || {};
   cur.fdocs = cur.fdocs || {};
+  /* مقدار پیش‌فرض رادیو (مثل «خیر» در فرم مرجع) */
+  defs.forEach(f => { if (f.t === 'radio' && !cur.fvals[f.k]) cur.fvals[f.k] = f.def || ''; });
   return `<div class="gm-sec gm-flds-sec"><h4>${escapeHtml(t('gift.cfg.fields'))}</h4>
     ${defs.map(f => `<label class="gm-fld"><span>${escapeHtml(t(f.ui))}${f.req ? ' <i class="gm-req" aria-hidden="true">*</i>' : ''}</span>
       ${fieldInput(f)}</label>`).join('')}
@@ -154,7 +196,11 @@ const collectFields = g => {
     if (window.SSUI && window.SSUI.toast) window.SSUI.toast(t('gift.cfg.fieldReq').replace('{f}', t(missing.ui)));
     return null;
   }
-  const out = textDefs.filter(f => (cur.fvals[f.k] || '').trim()).map(f => ({ l: t(f.ui), v: cur.fvals[f.k] }));
+  const out = textDefs.filter(f => (cur.fvals[f.k] || '').trim()).map(f => {
+    let v = cur.fvals[f.k];
+    if (f.t === 'radio') { const o = (f.opts || []).find(x => x[0] === v); v = o ? t(o[1]) : v; }
+    return { l: t(f.ui), v };
+  });
   fdefs.forEach(f => { if (cur.fdocs && cur.fdocs[f.k]) out.push({ l: t(f.ui), v: cur.fdocs[f.k].name || t('fld.file.pick'), doc: true }); });
   return out;
 };
@@ -178,6 +224,13 @@ const virtNotes = () => `<div class="gm-sec"><h4>${escapeHtml(t('card.vnotes'))}
   <li>${escapeHtml(t('card.note2'))}</li>
   <li>${escapeHtml(t('card.note3'))}</li>
   <li>${escapeHtml(t('card.note4'))}</li>
+</ul></div>`;
+/* ── PayPal: نکات مهم افتتاح حساب (v39) ── */
+const ppNotes = () => `<div class="gm-sec"><h4>${escapeHtml(t('pp.notes'))}</h4><ul class="gm-phys-notes">
+  <li>${escapeHtml(t('pp.note1'))}</li>
+  <li>${escapeHtml(t('pp.note2'))}</li>
+  <li>${escapeHtml(t('pp.note3'))}</li>
+  <li>${escapeHtml(t('pp.note4'))}</li>
 </ul></div>`;
 /* ── آپلود و فشرده‌سازی عکس مدارک (پاسپورت) ── */
 const fileToDoc = file => new Promise(res => {
@@ -230,6 +283,13 @@ const aiRial = () => {
 };
 const pricing = () => {
   const R = window.SSRates; const st = R ? R.get() : null;
+  /* v39 — PayPal: قیمت ثابت تومانی گزینه انتخابی (مستقل از دلار) */
+  if (cur.gift.ppToman) {
+    const pls = cur.gift.plans || [];
+    const pl = pls[cur.planIdx] || pls[0] || {};
+    const rial = (+pl.toman || 0) * 10;
+    return { rate: 0, approx: false, pay: rial, tomanRial: rial, usdIrr: (st && st.usdIrr) || 0, markup: 0, ready: rial > 0, pp: true };
+  }
   const usdIrr = st && st.usdIrr ? st.usdIrr : 0;
   const curCode = cur.payCur;
   if (cur.gift.cat) {
@@ -258,6 +318,7 @@ const fmtToman = rial => (rial / 10).toLocaleString(loc(), { maximumFractionDigi
 const titleFor = (meta) => {
   const g = findGift(meta.giftId) || findAI(meta.giftId) || { t: meta.brand, n: { fa: meta.brand, en: meta.brand, ar: meta.brand } };
   const nm = g.n ? (g.n[window.SS_LANG || 'fa'] || g.t) : g.t;
+  if (meta.type === 'ppplan') return meta.planName ? `${nm} — ${meta.planName}` : nm;
   if (meta.type === 'plans') {
     const base = `${t('pay.card')} ${nm}`;
     return meta.planName ? `${base} — ${meta.planName}` : base;
@@ -276,12 +337,15 @@ const metaLines = item => {
   if (!g || g.cat) {
     if (g && g.cat) {
       const nmAll = g.n ? (g.n[window.SS_LANG || 'fa'] || g.t) : g.t;
-      return [
-        m.type === 'plans' ? `${t('cart.meta.plan')}: ${m.planName || nmAll}` : `${t('cart.meta.amount')}: ${localDig(m.value)} USD`,
-        `${t('cart.meta.pay')}: ~${fmtToman(m.tomanRial)} ${t('rates.toman')}`,
-        `${t('cart.meta.icRate')}: 1$ = ${m.usdIrr ? fmtMoney(m.usdIrr, 0) : '—'} IRR`,
-        `${t('gift.cfg.icNote')}`
-      ].concat((m.fields || []).map(f => `${f.l}: ${f.v}`))
+      const headLines = [
+        (m.type === 'plans' || m.type === 'ppplan') ? `${t('cart.meta.plan')}: ${m.planName || nmAll}` : `${t('cart.meta.amount')}: ${localDig(m.value)} USD`,
+        `${t('cart.meta.pay')}: ~${fmtToman(m.tomanRial)} ${t('rates.toman')}`
+      ];
+      const tailLines = m.type === 'ppplan'
+        ? [`${t('pp.fixedPrice')}`]
+        : [`${t('cart.meta.icRate')}: 1$ = ${m.usdIrr ? fmtMoney(m.usdIrr, 0) : '—'} IRR`, `${t('gift.cfg.icNote')}`];
+      return headLines.concat(tailLines)
+        .concat((m.fields || []).map(f => `${f.l}: ${f.v}`))
         .concat((m.docs && m.docs.length) ? [`📎 ${t('phys.docsNote')}`] : []);
     }
     return [];
@@ -396,7 +460,7 @@ const renderAI = () => {
     <button class="modal-close" data-close-modal aria-label="${escapeHtml(t('cart.close'))}"><svg class="ic" viewBox="0 0 24 24"><use href="#i-close"/></svg></button>
     <div class="gm-head">
       <span class="gm-logo ai-logo"><img src="${g.logo ? `assets/logos/${g.logo}.svg` : (g.phys ? 'assets/logos/mastercard-brand.svg' : `assets/logos/ai/${g.id}.webp?v=20260932`)}" alt="" width="48" height="48"></span>
-      <div><span class="chip">${g.phys ? t('pay.card') : t('pay.ai')}</span><h3 id="gmTitle">${escapeHtml(nm)}</h3><p dir="ltr">${escapeHtml(g.t)}</p></div>
+      <div><span class="chip">${g.pp ? t('pay.pp') : (g.phys ? t('pay.card') : t('pay.ai'))}</span><h3 id="gmTitle">${escapeHtml(nm)}</h3><p dir="ltr">${escapeHtml(g.t)}</p></div>
     </div>`;
 
   if (g.avail === false) {
@@ -408,11 +472,15 @@ const renderAI = () => {
 
   let chooseUI = '';
   if (g.plans && g.plans.length > 1) {
+    /* v39 — PayPal: قیمت گزینه‌ها تومانی ثابت / کارت‌ها: دلاری با نرخ لحظه‌ای */
+    const priceBit = pl => g.ppToman
+      ? `<b>${fmtToman((+pl.toman || 0) * 10)} <i>${escapeHtml(t('rates.toman'))}</i></b>`
+      : `<b dir="ltr">${localDig(pl.usd)}$</b>`;
     chooseUI = `
       <div class="gm-chips gm-months">${g.plans.map((pl, i) => `
-        <button type="button" class="gm-chip${i === cur.planIdx ? ' on' : ''}" data-gm-plan="${i}"><span>${escapeHtml(pl.nf && lang === 'fa' ? pl.nf : pl.n)}</span><b dir="ltr">${localDig(pl.usd)}$</b></button>`).join('')}
+        <button type="button" class="gm-chip${i === cur.planIdx ? ' on' : ''}" data-gm-plan="${i}"><span>${escapeHtml(pl.nf && lang === 'fa' ? pl.nf : pl.n)}</span>${priceBit(pl)}</button>`).join('')}
       </div>
-      <div class="gm-range-note">${t('ai.pickPlan')}</div>`;
+      <div class="gm-range-note">${t(g.ppToman ? 'pp.pickType' : 'ai.pickPlan')}</div>`;
   } else if (g.plans) {
     /* کارت تک‌نوعه (v38) — نمایش ثابت نوع کارت بدون چیپ انتخابی */
     const pl = g.plans[0];
@@ -435,12 +503,14 @@ const renderAI = () => {
     <div class="gm-total">
       <span class="gm-total-label">${t('gift.cfg.total')}</span>
       <b class="gm-total-val">${fmtToman(p.pay)} <i>${t('rates.toman')}</i></b>
-      <span class="gm-total-base">${t('gift.cfg.icNote')}</span>
-      <span class="gm-rate" dir="ltr">${t('ai.icRate').replace('{rate}', fmtMoney(p.rate, 0))}</span>
+      ${g.ppToman
+        ? `<span class="gm-total-base">${t('pp.priceNote')}</span>`
+        : `<span class="gm-total-base">${t('gift.cfg.icNote')}</span>
+      <span class="gm-rate" dir="ltr">${t('ai.icRate').replace('{rate}', fmtMoney(p.rate, 0))}</span>`}
     </div>`;
 
-  panel.innerHTML = `${head}${g.notes === 'virt' ? virtNotes() : (g.phys ? physNotes() : '')}
-    <div class="gm-sec"><h4>${g.plans ? t('ai.plans') : t('gift.cfg.amount')}</h4>${chooseUI}</div>
+  panel.innerHTML = `${head}${g.notes === 'virt' ? virtNotes() : (g.notes === 'pp' ? ppNotes() : (g.phys ? physNotes() : ''))}
+    <div class="gm-sec"><h4>${g.ppToman ? t('pp.type') : (g.plans ? t('ai.plans') : t('gift.cfg.amount'))}</h4>${chooseUI}</div>
     ${fieldsUI(g)}
     ${totalBox}
     <button class="btn btn-primary btn-lg w100" type="button" data-gm-add><svg class="ic" viewBox="0 0 24 24"><use href="#i-cart"/></svg>${t('gift.cfg.add')}</button>`;
@@ -490,6 +560,14 @@ const bindPanel = () => {
     render();
   }));
   $$('[data-gm-cur]', panel).forEach(b => b.addEventListener('click', () => { cur.payCur = b.dataset.gmCur; render(); }));
+  /* v39 — رادیو بله/خیر (سؤال پاسخ‌گویی به تماس) — بدون رندر مجدد */
+  $$('[data-gf-rval]', panel).forEach(b => b.addEventListener('click', () => {
+    const grp = b.closest('[data-gf-radio]');
+    if (!grp || !cur) return;
+    cur.fvals = cur.fvals || {};
+    cur.fvals[grp.dataset.gfRadio] = b.dataset.gfRval;
+    $$('[data-gf-rval]', grp).forEach(x => { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+  }));
   /* آپلود عکس مدارک (کارت فیزیکی) */
   $$('[data-gf-filebtn]', panel).forEach(b => b.addEventListener('click', () => {
     const inp = panel.querySelector(`[data-gf-file="${b.dataset.gfFilebtn}"]`); if (inp) inp.click();
@@ -518,9 +596,10 @@ const bindPanel = () => {
     if (g.cat) {
       const pl = g.plans ? (g.plans[cur.planIdx] || g.plans[0]) : null;
       const meta = {
-        kind: 'gift', giftId: g.id, brand: g.t, type: g.plans ? 'plans' : 'aiusd',
+        kind: 'gift', giftId: g.id, brand: g.t, type: g.ppToman ? 'ppplan' : (g.plans ? 'plans' : 'aiusd'),
         phys: !!g.phys,
-        cur: 'IRR', value: g.plans ? cur.planIdx : cur.value, planName: pl ? (pl.n || '') : '',
+        cur: 'IRR', value: g.plans ? cur.planIdx : cur.value,
+        planName: pl ? (g.ppToman ? ((window.SS_LANG || 'fa') === 'fa' && pl.nf ? pl.nf : pl.n) : (pl.n || '')) : '',
         usd: baseUsd(), pay: p.pay, tomanRial: p.tomanRial, usdIrr: p.usdIrr, rate: p.rate, fields: flds,
         docs: collectDocs(g)
       };

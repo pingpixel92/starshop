@@ -765,6 +765,8 @@ const initLangToggle = () => {
 const openService = id => {
   /* کارت فیزیکی → مودال سفارش کامل (فرم + مدارک + قیمت زنده) */
   if (id === 'card-phys' && window.SSGift && !(window.SS_CONFIG && window.SS_CONFIG.physCards && window.SS_CONFIG.physCards.enabled === false)) { window.SSGift.open('phys-mc'); return; }
+  /* PayPal (v39) → مودال سفارش کامل: نوع شماره + مشخصات پاسپورت + قیمت ثابت تومانی */
+  if ((id === 'pp-person' || id === 'pp-business') && window.SSGift && !(window.SS_CONFIG && window.SS_CONFIG.ppAcct && window.SS_CONFIG.ppAcct.enabled === false)) { window.SSGift.open(id); return; }
   const s = getService(id), box = $('#serviceModalBody');
   if (!s || !box) return;
   box.innerHTML = `
