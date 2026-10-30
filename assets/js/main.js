@@ -267,6 +267,31 @@ const initPhysOpen = () => {
   });
 };
 
+/* v40 — بخش «خرید درون بازی»: گرید بازی‌ها با لوگوی رسمی HD (مثل ایرانیکارت)
+   هر کارت: عکس + نام + «از X$» + دکمه ثبت سفارش → مودال سفارش همان بازی (بسته‌ها + ایمیل/رمز اکانت + نرخ لحظه‌ای) */
+const renderGames = () => {
+  const g = $('#gameGrid'); if (!g) return;
+  const cfg = (window.SS_CONFIG && window.SS_CONFIG.gameTopups) || {};
+  const items = (cfg.enabled === false) ? [] : (cfg.items || []);
+  if (!items.length) { g.innerHTML = ''; return; }
+  const lang = window.SS_LANG || 'fa';
+  g.innerHTML = items.map((x, i) => {
+    const gid = 'game-' + x.id;
+    const packs = x.packs || [];
+    const usds = packs.map(p => +p.usd || 0).filter(v => v > 0);
+    const minU = usds.length ? Math.min(...usds) : 0;
+    const nm = lang === 'fa' ? (x.nf || x.n) : (lang === 'ar' ? (x.na || x.n) : (x.n || x.nf));
+    const priceLbl = packs.length > 1 ? t('game.from') : t('game.price');
+    return `<div class="game-card" data-reveal data-reveal-delay="${(i % 7) * 60}" data-card-open="${gid}" role="button" tabindex="0" aria-label="${escapeHtml(t('card.order'))} — ${escapeHtml(nm)}">
+      <span class="game-img" aria-hidden="true"><img src="assets/img/games/${x.img || x.id}.webp" alt="" width="320" height="320" loading="lazy" decoding="async"></span>
+      ${x.id === 'gta6' ? `<span class="game-badge">${escapeHtml(t('game.new'))}</span>` : ''}
+      <h3>${escapeHtml(nm)}</h3>
+      <span class="game-from">${escapeHtml(priceLbl)} <b dir="ltr">${localDig(minU)}$</b></span>
+      <button type="button" class="game-order" data-card-open="${gid}"><svg class="ic" viewBox="0 0 24 24"><use href="#i-card"/></svg>${escapeHtml(t('card.order'))}</button>
+    </div>`;
+  }).join('');
+};
+
 const renderPP = () => {
   const g = $('#ppGrid'), pr = $('#ppProcess');
   if (g) g.innerHTML = D().ppCards.map((c, i) => `<article class="card pp-card" data-reveal data-reveal-delay="${i * 90}" data-service="${c.svc}" role="button" tabindex="0"><span class="pp-logo"><img src="assets/logos/paypal-brand.svg" alt="PayPal" width="72" height="72" loading="lazy"></span><h3>${escapeHtml(c.t)}</h3><p>${escapeHtml(c.d)}</p><span class="chip">${t('chip.detail')}</span></article>`).join('');
@@ -342,7 +367,7 @@ const renderFAQ = () => {
 
 const renderAll = () => {
   renderHeroCard(); renderQuick(); renderExplorer(); renderSelect();
-  renderPay(); renderAI(); renderAIShop(); renderGifts(); renderBanks(); renderPP();
+  renderPay(); renderAI(); renderAIShop(); renderGifts(); renderBanks(); renderPP(); renderGames();
   renderShop(); renderIncome(); renderExams(); renderHW(); renderHow();
   renderWhy(); renderStats(); renderTestimonials(); renderMag(); renderFAQ();
   wireDirect();

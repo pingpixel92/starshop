@@ -1265,3 +1265,25 @@ body[data-theme="dark"] .eyebrow{color:var(--brand-light)}
 body[data-theme="dark"] .gm-date{color-scheme:dark}
 body[data-theme="dark"] .gm-radio .gm-chip{color:var(--ink)}
 body[data-theme="dark"] .gm-radio .gm-chip.on{color:#8fbcff;border-color:var(--brand-light);background:color-mix(in srgb,var(--brand-light) 12%,transparent)}
+
+/* ═══ v40: بخش «خرید درون بازی» — گرید بازی‌ها با لوگوی رسمی HD (مطابق ایرانیکارت) ═══ */
+.game-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:14px}
+.game-card{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:9px;padding:20px 14px 16px;border-radius:22px;background:var(--surface);border:1px solid var(--line);cursor:pointer;transition:transform .3s var(--spring),box-shadow .3s,border-color .3s}
+.game-card:hover,.game-card:focus-visible{transform:translateY(-5px);border-color:var(--brand);box-shadow:0 18px 46px -18px rgba(2,10,30,.55);outline:none}
+.game-img{display:grid;place-items:center;width:92px;height:92px;border-radius:24px;overflow:hidden;background:linear-gradient(140deg,#0d1526,#1b2c50);box-shadow:0 12px 28px -12px rgba(2,10,30,.6);flex:none}
+.game-img img{width:100%;height:100%;object-fit:cover;display:block}
+.game-card h3{margin:2px 0 0;font-size:.95rem;font-weight:800;line-height:1.6}
+.game-from{font-size:.82rem;color:var(--muted)}
+.game-from b{color:var(--brand);font-weight:800}
+.game-order{display:inline-flex;align-items:center;gap:6px;font-family:var(--font);font-size:12px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--brand),var(--accent));border:0;border-radius:999px;padding:7px 14px;cursor:pointer;box-shadow:0 10px 24px -10px rgba(21,87,214,.65);transition:transform .45s var(--spring),box-shadow .3s,filter .2s;white-space:nowrap}
+.game-card:hover .game-order,.game-card:focus-visible .game-order{transform:translateY(-2px);box-shadow:0 14px 30px -10px rgba(21,87,214,.8)}
+.game-order:active{transform:scale(.96)}
+.game-order .ic{width:13px;height:13px}
+.game-badge{position:absolute;top:12px;inset-inline-start:12px;background:linear-gradient(135deg,#ff5f6d,#ffb46b);color:#fff;font-size:11px;font-weight:800;padding:4px 10px;border-radius:999px;box-shadow:0 6px 16px -6px rgba(255,95,109,.6);z-index:1}
+body[data-theme="dark"] .game-card{background:var(--dark-soft);border-color:rgba(255,255,255,.08)}
+body[data-theme="dark"] .game-card:hover{border-color:var(--brand-light);box-shadow:0 18px 46px -18px rgba(78,140,255,.35)}
+body[data-theme="dark"] .game-from{color:var(--muted-dark)}
+body[data-theme="dark"] .game-from b{color:var(--brand-light)}
+body[data-theme="dark"] .game-order{background:linear-gradient(135deg,var(--brand-light),var(--accent));color:#04101f}
+body[data-theme="dark"] .game-img{background:linear-gradient(140deg,#0a1220,#152543)}
+@media (max-width:560px){.game-grid{grid-template-columns:repeat(2,1fr);gap:11px}.game-img{width:78px;height:78px}.game-order{font-size:11px;padding:6px 12px}.game-badge{font-size:10px;padding:3px 8px}}

@@ -29,8 +29,8 @@ let panel = null;
 
 /* ── lookups ── */
 const findGift = id => D().gifts.find(g => g.id === id) || window.SS_DATA.fa.gifts.find(g => g.id === id);
-/* آیتم‌های هوش مصنوعی (کاتالوگ ایرانیکارت) + PayPal (v39) */
-const findAI = id => (window.SS_AI_TOOLS || []).find(a => a.id === id) || physProduct(id) || ppProduct(id);
+/* آیتم‌های هوش مصنوعی (کاتالوگ ایرانیکارت) + PayPal (v39) + خرید درون بازی (v40) */
+const findAI = id => (window.SS_AI_TOOLS || []).find(a => a.id === id) || physProduct(id) || ppProduct(id) || gameProduct(id);
 /* ═ کارت‌های بین‌المللی (v37+v38) — مطابق ایرانیکارت: مدارک + قیمت زنده
    phys-mc: کارت فیزیکی مسترکارت (۳ نوع) — virt-visa / virt-mc / travel-mc: کارت‌های مجازی و سفر
    تعریف در config.js → SS_CONFIG.physCards / SS_CONFIG.virtCards (usd پایه قابل تنظیم) */
@@ -82,6 +82,23 @@ const ppProduct = id => {
     plans: plans.map(x => ({ n: x.n, nf: x.nf || x.n, usd: 0, toman: +x.toman || 0 })),
     flds: ['ppcall', 'pname', 'plname', 'dob', 'email', 'pw', 'passport'],
     notes: 'pp', logo: 'paypal-brand'
+  };
+};
+/* ═ خرید درون بازی (v40 — مطابق بخش «خرید درون بازی» ایرانیکارت) ═
+   game-<id> → مودال سفارش کامل: انتخاب بسته (پایه دلاری) + ایمیل و رمز اکانت (الزامی)
+   قیمت زنده = (usd بسته × نرخ لحظه‌ای دلار) + ۵۰۰٬۰۰۰ تومان — تعریف در config.js → SS_CONFIG.gameTopups
+   GTA VI (game-gta6) هم در همین بخش: قیمت مرجع ایرانیکارت + ۵۰۰ هزار تومان با نرخ لحظه‌ای */
+const gameProduct = id => {
+  const c = (window.SS_CONFIG && window.SS_CONFIG.gameTopups) || {};
+  if (c.enabled === false || !c.items || !c.items.length) return null;
+  const it = c.items.find(x => 'game-' + x.id === id);
+  if (!it) return null;
+  return {
+    id: 'game-' + it.id, t: it.n || 'Game', cat: 'game', game: true,
+    n: { fa: it.nf || it.n, en: it.n, ar: it.na || it.n },
+    plans: (it.packs || []).map(p => ({ n: p.n || '', nf: p.nf || p.n || '', usd: +p.usd || 0 })),
+    flds: ['email', 'pw'], notes: 'game',
+    logoImg: 'assets/img/games/' + (it.img || it.id) + '.webp'
   };
 };
 const IC = () => window.SS_AI_IC || { unitRial: 2334000, premiumToman: 500000 };
@@ -225,6 +242,13 @@ const virtNotes = () => `<div class="gm-sec"><h4>${escapeHtml(t('card.vnotes'))}
   <li>${escapeHtml(t('card.note3'))}</li>
   <li>${escapeHtml(t('card.note4'))}</li>
 </ul></div>`;
+/* ── خرید درون بازی: نکات مهم شارژ (v40) ── */
+const gameNotes = () => `<div class="gm-sec"><h4>${escapeHtml(t('game.notes'))}</h4><ul class="gm-phys-notes">
+  <li>${escapeHtml(t('game.note1'))}</li>
+  <li>${escapeHtml(t('game.note2'))}</li>
+  <li>${escapeHtml(t('game.note3'))}</li>
+  <li>${escapeHtml(t('game.note4'))}</li>
+</ul></div>`;
 /* ── PayPal: نکات مهم افتتاح حساب (v39) ── */
 const ppNotes = () => `<div class="gm-sec"><h4>${escapeHtml(t('pp.notes'))}</h4><ul class="gm-phys-notes">
   <li>${escapeHtml(t('pp.note1'))}</li>
@@ -276,9 +300,16 @@ const aiRial = () => {
   const st = window.SSRates ? window.SSRates.get() : null;
   const live = st && st.usdIrr ? st.usdIrr : 0;
   const rate = live || ic.unitRial;
-  const extraUsd = (cur.gift && cur.gift.phys) ? 0 : 1; /* کارت فیزیکی: فقط ۵۰۰ هزار تومان بیشتر از ایرانیکارت */
-  const pc = window.SS_CONFIG && window.SS_CONFIG.physCards;
-  const prem = (cur.gift && cur.gift.phys && pc && typeof pc.premiumToman === 'number') ? pc.premiumToman : (ic.premiumToman || 500000);
+  /* کارت فیزیکی/بازی: فقط ۵۰۰ هزار تومان بیشتر از مرجع — هوش مصنوعی: +۱$ هزینه ثبت */
+  const extraUsd = (cur.gift && (cur.gift.phys || cur.gift.game)) ? 0 : 1;
+  let prem;
+  if (cur.gift && cur.gift.game) {
+    const gc = window.SS_CONFIG && window.SS_CONFIG.gameTopups;
+    prem = (gc && typeof gc.premiumToman === 'number') ? gc.premiumToman : (ic.premiumToman || 500000);
+  } else if (cur.gift && cur.gift.phys) {
+    const pc = window.SS_CONFIG && window.SS_CONFIG.physCards;
+    prem = (pc && typeof pc.premiumToman === 'number') ? pc.premiumToman : (ic.premiumToman || 500000);
+  } else prem = ic.premiumToman || 500000;
   return { rial: (baseUsd() + extraUsd) * rate + prem * 10, live: !!live, rate };
 };
 const pricing = () => {
@@ -320,7 +351,7 @@ const titleFor = (meta) => {
   const nm = g.n ? (g.n[window.SS_LANG || 'fa'] || g.t) : g.t;
   if (meta.type === 'ppplan') return meta.planName ? `${nm} — ${meta.planName}` : nm;
   if (meta.type === 'plans') {
-    const base = `${t('pay.card')} ${nm}`;
+    const base = g.game ? `${t('pay.game')} ${nm}` : `${t('pay.card')} ${nm}`;
     return meta.planName ? `${base} — ${meta.planName}` : base;
   }
   if (meta.type === 'aiusd') return `${t('pay.ai')} ${nm} — ${localDig(meta.value)}$`;
@@ -459,8 +490,8 @@ const renderAI = () => {
   const head = `
     <button class="modal-close" data-close-modal aria-label="${escapeHtml(t('cart.close'))}"><svg class="ic" viewBox="0 0 24 24"><use href="#i-close"/></svg></button>
     <div class="gm-head">
-      <span class="gm-logo ai-logo"><img src="${g.logo ? `assets/logos/${g.logo}.svg` : (g.phys ? 'assets/logos/mastercard-brand.svg' : `assets/logos/ai/${g.id}.webp?v=20260932`)}" alt="" width="48" height="48"></span>
-      <div><span class="chip">${g.pp ? t('pay.pp') : (g.phys ? t('pay.card') : t('pay.ai'))}</span><h3 id="gmTitle">${escapeHtml(nm)}</h3><p dir="ltr">${escapeHtml(g.t)}</p></div>
+      <span class="gm-logo ai-logo"><img src="${g.logoImg || (g.logo ? `assets/logos/${g.logo}.svg` : (g.phys ? 'assets/logos/mastercard-brand.svg' : `assets/logos/ai/${g.id}.webp?v=20260932`))}" alt="" width="48" height="48"></span>
+      <div><span class="chip">${g.game ? t('pay.game') : (g.pp ? t('pay.pp') : (g.phys ? t('pay.card') : t('pay.ai')))}</span><h3 id="gmTitle">${escapeHtml(nm)}</h3><p dir="ltr">${escapeHtml(g.t)}</p></div>
     </div>`;
 
   if (g.avail === false) {
@@ -509,8 +540,8 @@ const renderAI = () => {
       <span class="gm-rate" dir="ltr">${t('ai.icRate').replace('{rate}', fmtMoney(p.rate, 0))}</span>`}
     </div>`;
 
-  panel.innerHTML = `${head}${g.notes === 'virt' ? virtNotes() : (g.notes === 'pp' ? ppNotes() : (g.phys ? physNotes() : ''))}
-    <div class="gm-sec"><h4>${g.ppToman ? t('pp.type') : (g.plans ? t('ai.plans') : t('gift.cfg.amount'))}</h4>${chooseUI}</div>
+  panel.innerHTML = `${head}${g.notes === 'game' ? gameNotes() : (g.notes === 'virt' ? virtNotes() : (g.notes === 'pp' ? ppNotes() : (g.phys ? physNotes() : '')))}
+    <div class="gm-sec"><h4>${g.game ? t('game.pickPack') : (g.ppToman ? t('pp.type') : (g.plans ? t('ai.plans') : t('gift.cfg.amount')))}</h4>${chooseUI}</div>
     ${fieldsUI(g)}
     ${totalBox}
     <button class="btn btn-primary btn-lg w100" type="button" data-gm-add><svg class="ic" viewBox="0 0 24 24"><use href="#i-cart"/></svg>${t('gift.cfg.add')}</button>`;
