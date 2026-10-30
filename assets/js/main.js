@@ -283,7 +283,7 @@ const renderGames = () => {
     const nm = lang === 'fa' ? (x.nf || x.n) : (lang === 'ar' ? (x.na || x.n) : (x.n || x.nf));
     const priceLbl = packs.length > 1 ? t('game.from') : t('game.price');
     return `<div class="game-card" data-reveal data-reveal-delay="${(i % 7) * 60}" data-card-open="${gid}" role="button" tabindex="0" aria-label="${escapeHtml(t('card.order'))} — ${escapeHtml(nm)}">
-      <span class="game-img" aria-hidden="true"><img src="assets/img/games/${x.img || x.id}.webp" alt="" width="320" height="320" loading="lazy" decoding="async"></span>
+      <span class="game-img${x.fit === 'contain' ? ' fit-contain' : ''}" aria-hidden="true"><img src="assets/img/games/${x.img || x.id}.webp" alt="" width="320" height="320" loading="lazy" decoding="async"></span>
       ${x.id === 'gta6' ? `<span class="game-badge">${escapeHtml(t('game.new'))}</span>` : ''}
       <h3>${escapeHtml(nm)}</h3>
       <span class="game-from">${escapeHtml(priceLbl)} <b dir="ltr">${localDig(minU)}$</b></span>

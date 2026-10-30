@@ -1272,6 +1272,10 @@ body[data-theme="dark"] .gm-radio .gm-chip.on{color:#8fbcff;border-color:var(--b
 .game-card:hover,.game-card:focus-visible{transform:translateY(-5px);border-color:var(--brand);box-shadow:0 18px 46px -18px rgba(2,10,30,.55);outline:none}
 .game-img{display:grid;place-items:center;width:92px;height:92px;border-radius:24px;overflow:hidden;background:linear-gradient(140deg,#0d1526,#1b2c50);box-shadow:0 12px 28px -12px rgba(2,10,30,.6);flex:none}
 .game-img img{width:100%;height:100%;object-fit:cover;display:block}
+/* v41 — بازی‌هایی که فقط لوگوی رسمی دارند (GTA VI): کل لوگو داخل قاب، بدون کراپ */
+.game-img.fit-contain img{object-fit:contain;padding:10px}
+.game-img.fit-contain{background:linear-gradient(140deg,#101a30,#22355e)}
+body[data-theme="dark"] .game-img.fit-contain{background:linear-gradient(140deg,#0d1626,#1a2c50)}
 .game-card h3{margin:2px 0 0;font-size:.95rem;font-weight:800;line-height:1.6}
 .game-from{font-size:.82rem;color:var(--muted)}
 .game-from b{color:var(--brand);font-weight:800}

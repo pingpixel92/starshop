@@ -72,44 +72,55 @@ window.SS_CONFIG = {
     ]
   },
 
-  /* ── خرید درون بازی (v40 — مطابق بخش «خرید درون بازی» ایرانیکارت) ──
+  /* ── خرید درون بازی (v41 — دقیقاً مطابق فهرست «خرید درون بازی» ایرانیکارت + جی‌تی‌ای ۶) ──
      هر بازی: بسته‌های شارژ با قیمت پایه دلاری؛ قیمت زنده = (usd × نرخ لحظه‌ای دلار بازار) + premiumToman
      (یعنی «۵۰۰٬۰۰۰ تومان بیشتر از قیمت مرجع» — مثل کارت‌ها)
      فرم سفارش هر بازی: انتخاب بسته + ایمیل و رمز اکانت (الزامی — برای شارژ مستقیم روی اکانت)
-     GTA VI: همان قیمت اکانت پلی‌استیشن ایرانیکارت (۲۴۷٬۳۲۰٬۰۰۰ ریال ≈ ۸۸$) + ۵۰۰ هزار تومان، نرخ لحظه‌ای
-     ⚠️ usd بسته‌ها = قیمت جهانی هر بسته (میداس‌بای/کوداشاپ/استور رسمی) — در صورت نیاز همین‌جا تغییر دهید.
-     img: نام فایل در assets/img/games/ (اختیاری — پیش‌فرض همان id) */
+     GTA VI: فقط لوگوی رسمی (fit: contain) — مرجع ۸۸$ + ۵۰۰ هزار تومان، نرخ لحظه‌ای
+     ⚠️ usd بسته‌ها = قیمت جهانی هر بسته (میداس‌بای/کوداشاپ/lootbar/استور رسمی) — در صورت نیاز همین‌جا تغییر دهید.
+     img: نام فایل در assets/img/games/ (اختیاری — پیش‌فرض همان id) · fit:'contain' = نمایش فقط لوگو */
   gameTopups: {
     enabled: true,
     premiumToman: 500000,
+    /* ترتیب دقیق فهرست ایرانیکارت */
     items: [
-      { id: 'pubg', n: 'PUBG Mobile UC', nf: 'یوسی پابجی موبایل', na: 'شدات ببجي موبايل',
-        packs: [ { n: '60 UC', nf: '۶۰ یوسی', usd: 0.99 }, { n: '325 UC', nf: '۳۲۵ یوسی', usd: 4.99 }, { n: '660 UC', nf: '۶۶۰ یوسی', usd: 9.99 }, { n: '1800 UC', nf: '۱۸۰۰ یوسی', usd: 24.99 }, { n: '3850 UC', nf: '۳۸۵۰ یوسی', usd: 49.99 }, { n: '8100 UC', nf: '۸۱۰۰ یوسی', usd: 99.99 } ] },
       { id: 'freefire', n: 'Free Fire Diamonds', nf: 'جم فری فایر', na: 'جواهرات فري فاير',
         packs: [ { n: '100 Diamonds', nf: '۱۰۰ جم', usd: 0.99 }, { n: '310 Diamonds', nf: '۳۱۰ جم', usd: 2.99 }, { n: '520 Diamonds', nf: '۵۲۰ جم', usd: 4.99 }, { n: '1060 Diamonds', nf: '۱۰۶۰ جم', usd: 9.99 }, { n: '2180 Diamonds', nf: '۲۱۸۰ جم', usd: 19.99 }, { n: '5600 Diamonds', nf: '۵۶۰۰ جم', usd: 49.99 }, { n: '11200 Diamonds', nf: '۱۱۲۰۰ جم', usd: 99.99 } ] },
-      { id: 'codm', n: 'Call of Duty Mobile CP', nf: 'سی‌پی کالاف دیوتی', na: 'نقاط كول أوف ديوتي موبايل',
-        packs: [ { n: '80 CP', nf: '۸۰ سی‌پی', usd: 0.99 }, { n: '420 CP', nf: '۴۲۰ سی‌پی', usd: 4.99 }, { n: '880 CP', nf: '۸۸۰ سی‌پی', usd: 9.99 }, { n: '2400 CP', nf: '۲۴۰۰ سی‌پی', usd: 24.99 }, { n: '5000 CP', nf: '۵۰۰۰ سی‌پی', usd: 49.99 }, { n: '10800 CP', nf: '۱۰۸۰۰ سی‌پی', usd: 99.99 } ] },
       { id: 'mlbb', n: 'Mobile Legends Diamonds', nf: 'الماس موبایل لجندز', na: 'الماس موبايل ليجندز',
         packs: [ { n: '86 Diamonds', nf: '۸۶ الماس', usd: 0.99 }, { n: '172 Diamonds', nf: '۱۷۲ الماس', usd: 1.99 }, { n: '257 Diamonds', nf: '۲۵۷ الماس', usd: 2.99 }, { n: '514 Diamonds', nf: '۵۱۴ الماس', usd: 5.99 }, { n: '1050 Diamonds', nf: '۱۰۵۰ الماس', usd: 11.99 }, { n: '2195 Diamonds', nf: '۲۱۹۵ الماس', usd: 23.99 } ] },
-      { id: 'coc', n: 'Clash of Clans Gems', nf: 'جم کلش آف کلنز', na: 'جواهرات كلاش اوف كلانز',
-        packs: [ { n: '80 Gems', nf: '۸۰ جم', usd: 0.99 }, { n: '500 Gems', nf: '۵۰۰ جم', usd: 4.99 }, { n: '1200 Gems', nf: '۱۲۰۰ جم', usd: 9.99 }, { n: '2500 Gems', nf: '۲۵۰۰ جم', usd: 19.99 }, { n: '6500 Gems', nf: '۶۵۰۰ جم', usd: 49.99 }, { n: '14000 Gems', nf: '۱۴۰۰۰ جم', usd: 99.99 } ] },
+      { id: 'pubg', n: 'PUBG Mobile UC', nf: 'یوسی پابجی موبایل', na: 'شدات ببجي موبايل',
+        packs: [ { n: '60 UC', nf: '۶۰ یوسی', usd: 0.99 }, { n: '325 UC', nf: '۳۲۵ یوسی', usd: 4.99 }, { n: '660 UC', nf: '۶۶۰ یوسی', usd: 9.99 }, { n: '1800 UC', nf: '۱۸۰۰ یوسی', usd: 24.99 }, { n: '3850 UC', nf: '۳۸۵۰ یوسی', usd: 49.99 }, { n: '8100 UC', nf: '۸۱۰۰ یوسی', usd: 99.99 } ] },
+      { id: 'codm', n: 'Call of Duty Mobile CP', nf: 'سی‌پی کالاف دیوتی', na: 'نقاط كول أوف ديوتي موبايل',
+        packs: [ { n: '80 CP', nf: '۸۰ سی‌پی', usd: 0.99 }, { n: '420 CP', nf: '۴۲۰ سی‌پی', usd: 4.99 }, { n: '880 CP', nf: '۸۸۰ سی‌پی', usd: 9.99 }, { n: '2400 CP', nf: '۲۴۰۰ سی‌پی', usd: 24.99 }, { n: '5000 CP', nf: '۵۰۰۰ سی‌پی', usd: 49.99 }, { n: '10800 CP', nf: '۱۰۸۰۰ سی‌پی', usd: 99.99 } ] },
       { id: 'cr', n: 'Clash Royale Gems', nf: 'جم کلش رویال', na: 'جواهرات كلاش رويال',
         packs: [ { n: '80 Gems', nf: '۸۰ جم', usd: 0.99 }, { n: '500 Gems', nf: '۵۰۰ جم', usd: 4.99 }, { n: '1200 Gems', nf: '۱۲۰۰ جم', usd: 9.99 }, { n: '2500 Gems', nf: '۲۵۰۰ جم', usd: 19.99 }, { n: '6500 Gems', nf: '۶۵۰۰ جم', usd: 49.99 }, { n: '14000 Gems', nf: '۱۴۰۰۰ جم', usd: 99.99 } ] },
       { id: 'roblox', n: 'Roblox Robux', nf: 'روباکس روبلاکس', na: 'روبوكس روبلوكس',
         packs: [ { n: '400 Robux', nf: '۴۰۰ روباکس', usd: 4.99 }, { n: '800 Robux', nf: '۸۰۰ روباکس', usd: 9.99 }, { n: '1700 Robux', nf: '۱۷۰۰ روباکس', usd: 19.99 }, { n: '4500 Robux', nf: '۴۵۰۰ روباکس', usd: 49.99 }, { n: '10000 Robux', nf: '۱۰۰۰۰ روباکس', usd: 99.99 } ] },
+      { id: 'farmpass', n: 'Hay Day Farm Pass', nf: 'فارم پس هی دی', na: 'فارم باس هاي دي',
+        packs: [ { n: 'Farm Pass', nf: 'فارم پس (یک فصل)', usd: 4.99 }, { n: 'Party Pass', nf: 'پارتی پس', usd: 4.99 }, { n: 'Festival Pass', nf: 'فستیوال پس', usd: 3.99 } ] },
+      { id: 'coc', n: 'Clash of Clans Gems', nf: 'جم کلش آف کلنز', na: 'جواهرات كلاش اوف كلانز',
+        packs: [ { n: '80 Gems', nf: '۸۰ جم', usd: 0.99 }, { n: '500 Gems', nf: '۵۰۰ جم', usd: 4.99 }, { n: '1200 Gems', nf: '۱۲۰۰ جم', usd: 9.99 }, { n: '2500 Gems', nf: '۲۵۰۰ جم', usd: 19.99 }, { n: '6500 Gems', nf: '۶۵۰۰ جم', usd: 49.99 }, { n: '14000 Gems', nf: '۱۴۰۰۰ جم', usd: 99.99 } ] },
+      { id: 'brawlstars', n: 'Brawl Stars Gems', nf: 'جم برال استارز', na: 'جواهرات براول ستارز',
+        packs: [ { n: '30 Gems', nf: '۳۰ جم', usd: 1.99 }, { n: '80 Gems', nf: '۸۰ جم', usd: 4.99 }, { n: '170 Gems', nf: '۱۷۰ جم', usd: 9.99 }, { n: '360 Gems', nf: '۳۶۰ جم', usd: 19.99 }, { n: '950 Gems', nf: '۹۵۰ جم', usd: 49.99 }, { n: '2000 Gems', nf: '۲۰۰۰ جم', usd: 99.99 } ] },
+      { id: 'deltaforce', n: 'Delta Force Coins', nf: 'کوین دلتا فورس', na: 'عملات دلتا فورس',
+        packs: [ { n: '60 Coins', nf: '۶۰ کوین', usd: 0.99 }, { n: '320 Coins', nf: '۳۲۰ کوین', usd: 4.99 }, { n: '680 Coins', nf: '۶۸۰ کوین', usd: 9.99 }, { n: '1500 Coins', nf: '۱۵۰۰ کوین', usd: 19.99 }, { n: '3700 Coins', nf: '۳۷۰۰ کوین', usd: 49.99 }, { n: '7600 Coins', nf: '۷۶۰۰ کوین', usd: 99.99 } ] },
+      { id: 'royalmatch', n: 'Royal Match Coins', nf: 'کوین رویال مچ', na: 'عملات رويال ماتش',
+        packs: [ { n: '700 Coins', nf: '۷۰۰ کوین', usd: 0.99 }, { n: '3500 Coins', nf: '۳۵۰۰ کوین', usd: 4.99 }, { n: '7500 Coins', nf: '۷۵۰۰ کوین', usd: 9.99 }, { n: '16000 Coins', nf: '۱۶۰۰۰ کوین', usd: 19.99 }, { n: '42000 Coins', nf: '۴۲۰۰۰ کوین', usd: 49.99 }, { n: '90000 Coins', nf: '۹۰٬۰۰۰ کوین', usd: 99.99 } ] },
+      { id: 'arenabreakout', n: 'Arena Breakout Bonds', nf: 'باند آرنا بریک اوت', na: 'سندات أرينا بريك أوت',
+        packs: [ { n: '60 Bonds', nf: '۶۰ باند', usd: 0.99 }, { n: '300 + 30 Bonds', nf: '۳۰۰ + ۳۰ باند', usd: 4.99 }, { n: '980 + 110 Bonds', nf: '۹۸۰ + ۱۱۰ باند', usd: 9.99 }, { n: '1980 + 260 Bonds', nf: '۱۹۸۰ + ۲۶۰ باند', usd: 19.99 }, { n: '3280 + 600 Bonds', nf: '۳۲۸۰ + ۶۰۰ باند', usd: 49.99 }, { n: '6480 + 1600 Bonds', nf: '۶۴۸۰ + ۱۶۰۰ باند', usd: 99.99 } ] },
       { id: 'bloodstrike', n: 'Blood Strike Gold', nf: 'طلای بلاد استرایک', na: 'ذهب بلود سترايك',
         packs: [ { n: '100 Gold', nf: '۱۰۰ طلا', usd: 0.99 }, { n: '300 Gold', nf: '۳۰۰ طلا', usd: 2.99 }, { n: '500 Gold', nf: '۵۰۰ طلا', usd: 4.99 }, { n: '1000 Gold', nf: '۱۰۰۰ طلا', usd: 9.99 }, { n: '2000 Gold', nf: '۲۰۰۰ طلا', usd: 19.99 }, { n: '5000 Gold', nf: '۵۰۰۰ طلا', usd: 49.99 } ] },
       { id: 'genshin', n: 'Genshin Impact Crystals', nf: 'کریستال جنشین ایمپکت', na: 'بلورات جينشين إمباكت',
         packs: [ { n: '60 Crystals', nf: '۶۰ کریستال', usd: 0.99 }, { n: '330 Crystals', nf: '۳۳۰ کریستال', usd: 4.99 }, { n: '1090 Crystals', nf: '۱۰۹۰ کریستال', usd: 14.99 }, { n: '2240 Crystals', nf: '۲۲۴۰ کریستال', usd: 29.99 }, { n: '3880 Crystals', nf: '۳۸۸۰ کریستال', usd: 49.99 }, { n: '8080 Crystals', nf: '۸۰۸۰ کریستال', usd: 99.99 } ] },
       { id: 'valorant', n: 'Valorant Points', nf: 'وی‌پیکس والورانت', na: 'نقاط فالورانت',
         packs: [ { n: '475 VP', nf: '۴۷۵ امتیاز', usd: 4.99 }, { n: '1000 VP', nf: '۱۰۰۰ امتیاز', usd: 9.99 }, { n: '2050 VP', nf: '۲۰۵۰ امتیاز', usd: 19.99 }, { n: '5350 VP', nf: '۵۳۵۰ امتیاز', usd: 49.99 }, { n: '11000 VP', nf: '۱۱۰۰۰ امتیاز', usd: 99.99 } ] },
-      { id: 'deltaforce', n: 'Delta Force Coins', nf: 'کوین دلتا فورس', na: 'عملات دلتا فورس',
-        packs: [ { n: '60 Coins', nf: '۶۰ کوین', usd: 0.99 }, { n: '320 Coins', nf: '۳۲۰ کوین', usd: 4.99 }, { n: '680 Coins', nf: '۶۸۰ کوین', usd: 9.99 }, { n: '1500 Coins', nf: '۱۵۰۰ کوین', usd: 19.99 }, { n: '3700 Coins', nf: '۳۷۰۰ کوین', usd: 49.99 }, { n: '7600 Coins', nf: '۷۶۰۰ کوین', usd: 99.99 } ] },
-      { id: 'royalmatch', n: 'Royal Match Coins', nf: 'کوین رویال مچ', na: 'عملات رويال ماتش',
-        packs: [ { n: '700 Coins', nf: '۷۰۰ کوین', usd: 0.99 }, { n: '3500 Coins', nf: '۳۵۰۰ کوین', usd: 4.99 }, { n: '7500 Coins', nf: '۷۵۰۰ کوین', usd: 9.99 }, { n: '16000 Coins', nf: '۱۶۰۰۰ کوین', usd: 19.99 }, { n: '42000 Coins', nf: '۴۲۰۰۰ کوین', usd: 49.99 }, { n: '90000 Coins', nf: '۹۰۰۰۰ کوین', usd: 99.99 } ] },
+      { id: 'doomsday-gold', img: 'doomsday', n: 'Doomsday Gold', nf: 'گلد دومزدی', na: 'ذهب دوومزدي',
+        packs: [ { n: '99 Gold', nf: '۹۹ گلد', usd: 0.99 }, { n: '499 Gold', nf: '۴۹۹ گلد', usd: 4.99 }, { n: '999 Gold', nf: '۹۹۹ گلد', usd: 9.99 }, { n: '4,999 Gold', nf: '۴٬۹۹۹ گلد', usd: 49.99 }, { n: '9,999 Gold', nf: '۹٬۹۹۹ گلد', usd: 99.99 } ] },
+      { id: 'doomsday-gems', img: 'doomsday', n: 'Doomsday Gems', nf: 'جم دومزدی', na: 'جواهرات دوومزدي',
+        packs: [ { n: '250 Gems', nf: '۲۵۰ جم', usd: 0.99 }, { n: '1,300 Gems', nf: '۱٬۳۰۰ جم', usd: 4.99 }, { n: '2,800 Gems', nf: '۲٬۸۰۰ جم', usd: 9.99 }, { n: '5,800 Gems', nf: '۵٬۸۰۰ جم', usd: 19.99 }, { n: '15,000 Gems', nf: '۱۵٬۰۰۰ جم', usd: 49.99 }, { n: '31,000 Gems', nf: '۳۱٬۰۰۰ جم', usd: 99.99 } ] },
       { id: 'eafc', n: 'EA Sports FC Mobile', nf: 'فیفای موبایل (اکانت EA)', na: 'EA Sports FC موبايل',
         packs: [ { n: 'Monthly Supply Card', nf: 'بسته ماهانه (Monthly Supply)', usd: 1.99 }, { n: 'Elite Monthly Supply', nf: 'بسته ماهانه ویژه (Elite)', usd: 4.99 }, { n: '$0.99 Pack', nf: 'بسته ۰٫۹۹ دلاری', usd: 0.99 }, { n: '$1.99 Pack', nf: 'بسته ۱٫۹۹ دلاری', usd: 1.99 }, { n: '1070 Points', nf: '۱۰۷۰ امتیاز', usd: 9.99 }, { n: '2200 Points', nf: '۲۲۰۰ امتیاز', usd: 19.99 }, { n: '5750 Points', nf: '۵۷۵۰ امتیاز', usd: 49.99 }, { n: '12000 Points', nf: '۱۲۰۰۰ امتیاز', usd: 87.99 } ] },
-      { id: 'gta6', n: 'GTA VI', nf: 'جی‌تی‌ای ۶ (اکانت پلی‌استیشن)', na: 'GTA VI — حساب بلاي ستيشن',
+      { id: 'gta6', fit: 'contain', n: 'GTA VI', nf: 'جی‌تی‌ای ۶ (اکانت پلی‌استیشن)', na: 'GTA VI — حساب بلاي ستيشن',
         packs: [ { n: 'GTA VI (PlayStation)', nf: 'نسخه کامل — اکانت پلی‌استیشن', usd: 88 } ] }
     ]
   },
