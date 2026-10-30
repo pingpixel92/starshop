@@ -43,6 +43,20 @@ window.SS_CONFIG = {
     ]
   },
 
+  /* ── کارت‌های مجازی و کارت سفر (v38 — همان فرم سفارش کارت فیزیکی) ──
+     هر ۴ کارت بخش «کارت‌ها» فرم کامل دارند: مشخصات + عکس پاسپورت الزامی + پرداخت زنده.
+     فرمول قیمت: (usd هر کارت × نرخ لحظه‌ای دلار بازار) + premiumToman
+     ⚠️ usd = هزینه کل دلاری کارت (صدور + شارژ پایه) — این سه عدد را با تأمین‌کننده چک و در صورت نیاز تغییر دهید. */
+  virtCards: {
+    enabled: true,
+    premiumToman: 500000,
+    items: [
+      { id: 'virt-visa', n: 'Virtual Visa',        nf: 'کارت مجازی Visa',         usd: 15, net: 'visa' },
+      { id: 'virt-mc',   n: 'Virtual MasterCard',  nf: 'کارت مجازی MasterCard',   usd: 18, net: 'mastercard' },
+      { id: 'travel-mc', n: 'Travel MasterCard',   nf: 'کارت سفر مسترکارت',       usd: 25, net: 'mastercard' }
+    ]
+  },
+
   /* ── گیت‌وی پیامک (کد تأیید واقعی) ──
      برای ارسال واقعی SMS: یک سرویس پیامک (مثلاً Kavenegar یا SMS.ir) راه بیندازید
      و آدرس یک endpoint (یا پروکسی کوچک) را اینجا بگذارید:

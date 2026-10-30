@@ -31,18 +31,31 @@ let panel = null;
 const findGift = id => D().gifts.find(g => g.id === id) || window.SS_DATA.fa.gifts.find(g => g.id === id);
 /* آیتم‌های هوش مصنوعی (کاتالوگ ایرانیکارت) */
 const findAI = id => (window.SS_AI_TOOLS || []).find(a => a.id === id) || physProduct(id);
-/* ═ کارت فیزیکی مسترکارت (v37) — مطابق ایرانیکارت: ۳ نوع + مدارک + قیمت زنده
-   تعریف در config.js → SS_CONFIG.physCards (usd پایه هر نوع قابل تنظیم) */
+/* ═ کارت‌های بین‌المللی (v37+v38) — مطابق ایرانیکارت: مدارک + قیمت زنده
+   phys-mc: کارت فیزیکی مسترکارت (۳ نوع) — virt-visa / virt-mc / travel-mc: کارت‌های مجازی و سفر
+   تعریف در config.js → SS_CONFIG.physCards / SS_CONFIG.virtCards (usd پایه قابل تنظیم) */
 const physProduct = id => {
-  if (id !== 'phys-mc') return null;
-  const c = (window.SS_CONFIG && window.SS_CONFIG.physCards) || {};
-  if (c.enabled === false) return null;
-  const types = (c.types && c.types.length ? c.types : [{ n: 'Viva Debit', nf: 'دبیت کارت فیزیکی ویوا', usd: 35 }, { n: 'Viva Credit', nf: 'کردیت کارت فیزیکی ویوا', usd: 45 }, { n: 'PoA Credit', nf: 'کردیت کارت اعتباری وکالتی', usd: 55 }]);
+  if (id === 'phys-mc') {
+    const c = (window.SS_CONFIG && window.SS_CONFIG.physCards) || {};
+    if (c.enabled === false) return null;
+    const types = (c.types && c.types.length ? c.types : [{ n: 'Viva Debit', nf: 'دبیت کارت فیزیکی ویوا', usd: 35 }, { n: 'Viva Credit', nf: 'کردیت کارت فیزیکی ویوا', usd: 45 }, { n: 'PoA Credit', nf: 'کردیت کارت اعتباری وکالتی', usd: 55 }]);
+    return {
+      id: 'phys-mc', t: 'Physical MasterCard', cat: 'card', phys: true,
+      n: { fa: 'مستر کارت فیزیکی', en: 'Physical MasterCard', ar: 'ماستر كارد فيزيائية' },
+      plans: types.map(x => ({ n: x.n, nf: x.nf || x.n, usd: +x.usd || 0 })),
+      flds: ['fullname', 'phone', 'passport'], notes: 'phys', logo: 'mastercard-brand'
+    };
+  }
+  const v = (window.SS_CONFIG && window.SS_CONFIG.virtCards) || {};
+  if (v.enabled === false || !v.items || !v.items.length) return null;
+  const it = v.items.find(x => x.id === id);
+  if (!it) return null;
+  const net = it.net === 'visa' ? 'visa' : 'mastercard';
   return {
-    id: 'phys-mc', t: 'Physical MasterCard', cat: 'card', phys: true,
-    n: { fa: 'مستر کارت فیزیکی', en: 'Physical MasterCard', ar: 'ماستر كارد فيزيائية' },
-    plans: types.map(x => ({ n: x.n, nf: x.nf || x.n, usd: +x.usd || 0 })),
-    flds: ['fullname', 'phone', 'passport']
+    id: it.id, t: it.n || 'Virtual Card', cat: 'card', phys: true, virt: true,
+    n: { fa: it.nf || it.n, en: it.n || 'Virtual Card', ar: it.n || 'بطاقة افتراضية' },
+    plans: [{ n: '', nf: it.nf || it.n, usd: +it.usd || 0 }],
+    flds: ['fullname', 'phone', 'passport'], notes: 'virt', logo: net + '-brand'
   };
 };
 const IC = () => window.SS_AI_IC || { unitRial: 2334000, premiumToman: 500000 };
@@ -159,6 +172,13 @@ const physNotes = () => `<div class="gm-sec"><h4>${escapeHtml(t('phys.notes'))}<
   <li>${escapeHtml(t('phys.note3'))}</li>
   <li>${escapeHtml(t('phys.note4'))}</li>
 </ul></div>`;
+/* ── کارت مجازی / سفر: نکات مهم (v38) ── */
+const virtNotes = () => `<div class="gm-sec"><h4>${escapeHtml(t('card.vnotes'))}</h4><ul class="gm-phys-notes">
+  <li>${escapeHtml(t('card.note1'))}</li>
+  <li>${escapeHtml(t('card.note2'))}</li>
+  <li>${escapeHtml(t('card.note3'))}</li>
+  <li>${escapeHtml(t('card.note4'))}</li>
+</ul></div>`;
 /* ── آپلود و فشرده‌سازی عکس مدارک (پاسپورت) ── */
 const fileToDoc = file => new Promise(res => {
   try {
@@ -238,7 +258,10 @@ const fmtToman = rial => (rial / 10).toLocaleString(loc(), { maximumFractionDigi
 const titleFor = (meta) => {
   const g = findGift(meta.giftId) || findAI(meta.giftId) || { t: meta.brand, n: { fa: meta.brand, en: meta.brand, ar: meta.brand } };
   const nm = g.n ? (g.n[window.SS_LANG || 'fa'] || g.t) : g.t;
-  if (meta.type === 'plans') return meta.phys ? `${t('pay.card')} ${nm} — ${meta.planName || ''}` : `${t('pay.ai')} ${nm} — ${meta.planName || ''}`;
+  if (meta.type === 'plans') {
+    const base = `${t('pay.card')} ${nm}`;
+    return meta.planName ? `${base} — ${meta.planName}` : base;
+  }
   if (meta.type === 'aiusd') return `${t('pay.ai')} ${nm} — ${localDig(meta.value)}$`;
   return meta.type === 'months'
     ? `${t('pay.gift')} ${g.t} — ${localDig(meta.value)} ${t('cart.meta.month')}`
@@ -252,8 +275,9 @@ const metaLines = item => {
   const g = findGift(m.giftId) || findAI(m.giftId);
   if (!g || g.cat) {
     if (g && g.cat) {
+      const nmAll = g.n ? (g.n[window.SS_LANG || 'fa'] || g.t) : g.t;
       return [
-        m.type === 'plans' ? `${t('cart.meta.plan')}: ${m.planName || ''}` : `${t('cart.meta.amount')}: ${localDig(m.value)} USD`,
+        m.type === 'plans' ? `${t('cart.meta.plan')}: ${m.planName || nmAll}` : `${t('cart.meta.amount')}: ${localDig(m.value)} USD`,
         `${t('cart.meta.pay')}: ~${fmtToman(m.tomanRial)} ${t('rates.toman')}`,
         `${t('cart.meta.icRate')}: 1$ = ${m.usdIrr ? fmtMoney(m.usdIrr, 0) : '—'} IRR`,
         `${t('gift.cfg.icNote')}`
@@ -371,7 +395,7 @@ const renderAI = () => {
   const head = `
     <button class="modal-close" data-close-modal aria-label="${escapeHtml(t('cart.close'))}"><svg class="ic" viewBox="0 0 24 24"><use href="#i-close"/></svg></button>
     <div class="gm-head">
-      <span class="gm-logo ai-logo"><img src="${g.phys ? 'assets/logos/mastercard-brand.svg' : `assets/logos/ai/${g.id}.webp?v=20260932`}" alt="" width="48" height="48"></span>
+      <span class="gm-logo ai-logo"><img src="${g.logo ? `assets/logos/${g.logo}.svg` : (g.phys ? 'assets/logos/mastercard-brand.svg' : `assets/logos/ai/${g.id}.webp?v=20260932`)}" alt="" width="48" height="48"></span>
       <div><span class="chip">${g.phys ? t('pay.card') : t('pay.ai')}</span><h3 id="gmTitle">${escapeHtml(nm)}</h3><p dir="ltr">${escapeHtml(g.t)}</p></div>
     </div>`;
 
@@ -383,12 +407,17 @@ const renderAI = () => {
   }
 
   let chooseUI = '';
-  if (g.plans) {
+  if (g.plans && g.plans.length > 1) {
     chooseUI = `
       <div class="gm-chips gm-months">${g.plans.map((pl, i) => `
         <button type="button" class="gm-chip${i === cur.planIdx ? ' on' : ''}" data-gm-plan="${i}"><span>${escapeHtml(pl.nf && lang === 'fa' ? pl.nf : pl.n)}</span><b dir="ltr">${localDig(pl.usd)}$</b></button>`).join('')}
       </div>
       <div class="gm-range-note">${t('ai.pickPlan')}</div>`;
+  } else if (g.plans) {
+    /* کارت تک‌نوعه (v38) — نمایش ثابت نوع کارت بدون چیپ انتخابی */
+    const pl = g.plans[0];
+    chooseUI = `
+      <div class="gm-chips gm-months"><span class="gm-chip on gm-single"><span>${escapeHtml(lang === 'fa' && pl.nf ? pl.nf : (pl.n || nm))}</span><b dir="ltr">${localDig(pl.usd)}$</b></span></div>`;
   } else {
     const presets = (g.presets || []).map(v => `<button type="button" class="gm-chip gm-amount${v === cur.value ? ' on' : ''}" data-gm-amount="${v}">${localDig(v)}$</button>`).join('');
     chooseUI = `
@@ -410,7 +439,7 @@ const renderAI = () => {
       <span class="gm-rate" dir="ltr">${t('ai.icRate').replace('{rate}', fmtMoney(p.rate, 0))}</span>
     </div>`;
 
-  panel.innerHTML = `${head}${g.phys ? physNotes() : ''}
+  panel.innerHTML = `${head}${g.notes === 'virt' ? virtNotes() : (g.phys ? physNotes() : '')}
     <div class="gm-sec"><h4>${g.plans ? t('ai.plans') : t('gift.cfg.amount')}</h4>${chooseUI}</div>
     ${fieldsUI(g)}
     ${totalBox}
@@ -491,7 +520,7 @@ const bindPanel = () => {
       const meta = {
         kind: 'gift', giftId: g.id, brand: g.t, type: g.plans ? 'plans' : 'aiusd',
         phys: !!g.phys,
-        cur: 'IRR', value: g.plans ? cur.planIdx : cur.value, planName: pl ? pl.n : '',
+        cur: 'IRR', value: g.plans ? cur.planIdx : cur.value, planName: pl ? (pl.n || '') : '',
         usd: baseUsd(), pay: p.pay, tomanRial: p.tomanRial, usdIrr: p.usdIrr, rate: p.rate, fields: flds,
         docs: collectDocs(g)
       };

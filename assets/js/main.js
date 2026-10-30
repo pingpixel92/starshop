@@ -244,21 +244,26 @@ const renderGifts = () => {
 
 const renderBanks = () => {
   const g = $('#bankGrid'); if (!g) return;
-  /* کارت‌های فیزیکی (ایندکس ۲ و ۳) قابل کلیک‌اند → مودال سفارش کارت فیزیکی (v37) */
-  g.innerHTML = D().bankCards.map((b, i) => `<div class="tilt-wrap" data-reveal data-reveal-delay="${i * 90}"><div class="bank tilt gc-${i === 0 ? 'visa' : i === 1 ? 'mc' : i === 2 ? 'phys' : 'travel'}" data-tilt${i >= 2 ? ' data-phys-open="phys-mc" role="button" tabindex="0" aria-label="' + escapeHtml(t('phys.cta')) + '"' : ''}><div class="bank-top"><span class="bank-chip" aria-hidden="true"></span><img class="bank-logo" src="assets/logos/${b.net}-w.svg" alt="${b.net === 'visa' ? 'Visa' : 'Mastercard'}"></div><div class="bank-num" dir="ltr">•••• •••• •••• ••••</div><div class="bank-foot"><span>STAR SHOP</span><span class="bank-wave" aria-hidden="true">)))</span></div><p class="bank-cap">${escapeHtml(b.cap)}</p></div></div>`).join('');
+  /* v38 — هر ۴ کارت دکمه ثابت «ثبت سفارش» دارند و هر کدام مودال سفارش خودشان را باز می‌کنند
+     (مشخصات + عکس پاسپورت الزامی + قیمت زنده دلار) — مپ: مجازی ویزا/مسترکارت، فیزیکی، سفر */
+  const OPEN_IDS = ['virt-visa', 'virt-mc', 'phys-mc', 'travel-mc'];
+  g.innerHTML = D().bankCards.map((b, i) => {
+    const oid = OPEN_IDS[i] || 'phys-mc';
+    return `<div class="tilt-wrap" data-reveal data-reveal-delay="${i * 90}"><div class="bank tilt gc-${i === 0 ? 'visa' : i === 1 ? 'mc' : i === 2 ? 'phys' : 'travel'}" data-tilt data-card-open="${oid}" role="button" tabindex="0" aria-label="${escapeHtml(t('card.order'))} — ${escapeHtml(b.cap)}"><div class="bank-top"><span class="bank-chip" aria-hidden="true"></span><img class="bank-logo" src="assets/logos/${b.net}-w.svg" alt="${b.net === 'visa' ? 'Visa' : 'Mastercard'}"></div><div class="bank-num" dir="ltr">•••• •••• •••• ••••</div><div class="bank-foot"><span>STAR SHOP</span><span class="bank-wave" aria-hidden="true">)))</span><button type="button" class="bank-order" data-card-open="${oid}"><svg class="ic" viewBox="0 0 24 24"><use href="#i-card"/></svg>${escapeHtml(t('card.order'))}</button></div><p class="bank-cap">${escapeHtml(b.cap)}</p></div></div>`;
+  }).join('');
   initTilt();
 };
-/* کلیک روی کارت‌های فیزیکی → سفارش کارت فیزیکی (فرم ایرانیکارت + مدارک + قیمت زنده) */
+/* کلیک روی کارت‌ها → مودال سفارش همان کارت (فرم + مدارک + قیمت زنده) */
 const initPhysOpen = () => {
   document.addEventListener('click', e => {
-    const el = e.target.closest('[data-phys-open]'); if (!el) return;
-    if (window.SSGift) window.SSGift.open(el.dataset.physOpen);
+    const el = e.target.closest('[data-card-open],[data-phys-open]'); if (!el) return;
+    if (window.SSGift) window.SSGift.open(el.dataset.cardOpen || el.dataset.physOpen);
   });
   document.addEventListener('keydown', e => {
     if (e.key !== 'Enter' && e.key !== ' ') return;
-    const el = e.target.closest && e.target.closest('[data-phys-open]'); if (!el) return;
+    const el = e.target.closest && e.target.closest('[data-card-open],[data-phys-open]'); if (!el) return;
     e.preventDefault();
-    if (window.SSGift) window.SSGift.open(el.dataset.physOpen);
+    if (window.SSGift) window.SSGift.open(el.dataset.cardOpen || el.dataset.physOpen);
   });
 };
 

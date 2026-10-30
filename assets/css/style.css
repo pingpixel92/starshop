@@ -1203,11 +1203,29 @@ body[data-theme="light"] .hero-card-list button{color:var(--ink)}
 body[data-theme="light"] .hero-card-list button .ic{color:var(--brand)}
 body[data-theme="light"] .hero-card-list button:hover{background:color-mix(in srgb,var(--brand) 8%,transparent);color:var(--brand)}
 
-/* ═══ v37: فیکس کنتراست دارک + کارت فیزیکی (مدارک/آپلود) ═══ */
+/* ═══ v37: فیکس کنتراست دارک چیپ‌های پلن/مبلغ (gm-chip) ═══ */
 body[data-theme="dark"] .gm-chip b{color:var(--brand-light)}
 body[data-theme="dark"] .gm-chip.on b{color:var(--brand-light)}
 body[data-theme="dark"] .gm-chip.on span,body[data-theme="dark"] .gm-chip span{color:var(--muted-dark)}
 body[data-theme="dark"] .gm-chip:hover{border-color:var(--brand-light)}
+
+/* ═══ v38: فیکس کنتراست دارک — اعداد و قیمت‌ها (گزارش کاربر: «عدد و قیمت‌ها محو می‌شود») ═══ */
+/* مبلغ کل سفارش در مودال — brand-deep روی سطح تیره دیده نمی‌شد */
+body[data-theme="dark"] .gm-total-val{color:#8fbcff}
+body[data-theme="dark"] .gm-total-val i{color:var(--muted-dark)}
+body[data-theme="dark"] .gm-rate{color:var(--muted-dark)}
+body[data-theme="dark"] .gm-rate .badge{color:#34d399}
+body[data-theme="dark"] .gm-rate .badge.off{color:#fbbf24}
+body[data-theme="dark"] .ai-price{color:var(--muted-dark)}
+body[data-theme="dark"] .ai-price b{color:var(--brand-light)}
+body[data-theme="dark"] .ai-price.custom{color:#fbbf24}
+body[data-theme="dark"] .p-num{color:var(--brand-light)}
+body[data-theme="dark"] .dest b{color:var(--brand-light)}
+body[data-theme="dark"] .gm-step{color:var(--brand-light)}
+body[data-theme="dark"] .gm-file-btn{color:var(--brand-light);border-color:color-mix(in srgb,var(--brand-light) 45%,transparent)}
+body[data-theme="dark"] .gm-file-btn:hover{border-color:var(--brand-light)}
+body[data-theme="dark"] .ord-flds,body[data-theme="dark"] .td-flds{color:var(--brand-light)}
+body[data-theme="dark"] .eyebrow{color:var(--brand-light)}
 
 /* ── فیلد آپلود عکس (پاسپورت) ── */
 .gm-filewrap{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
@@ -1219,10 +1237,20 @@ body[data-theme="dark"] .gm-chip:hover{border-color:var(--brand-light)}
 .gm-file-name{font-size:12px;color:var(--muted);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .gm-file-ok{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;color:var(--accent)}
 
-/* ── کارت‌های بانکی قابل کلیک (کارت فیزیکی) ── */
-.bank[data-phys-open]{cursor:pointer}
-.bank[data-phys-open]::after{content:"ثبت سفارش +";position:absolute;bottom:14px;inset-inline-start:18px;z-index:2;font-size:11px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--brand),var(--accent));border-radius:999px;padding:5px 12px;letter-spacing:.02em;box-shadow:0 8px 22px -8px rgba(21,87,214,.65);transition:transform .45s var(--spring)}
-.bank[data-phys-open]:hover::after{transform:translateY(-2px)}
+/* ── کارت‌های بانکی قابل کلیک — دکمه ثابت «ثبت سفارش» (v38) ──
+   جای دکمه روی هر ۴ کارت یکسان است (پایین کارت) و همیشه دیده می‌شود؛
+   جای قرص شناور قبلی که فقط روی هاور و فقط روی ۲ کارت ظاهر می‌شد. */
+.bank[data-card-open]{cursor:pointer}
+/* لایه‌های نور تزئینی کارت نباید روی دکمه ثبت سفارش کلیک را بدزدند */
+.bank::before,.bank::after{pointer-events:none}
+.bank[data-card-open] .bank-foot{opacity:1}
+.bank[data-card-open] .bank-foot>span{opacity:.8}
+.bank-order{display:inline-flex;align-items:center;gap:6px;font-family:var(--font);font-size:11px;font-weight:800;letter-spacing:0;color:#fff;background:linear-gradient(135deg,var(--brand),var(--accent));border-radius:999px;padding:6px 13px;box-shadow:0 8px 22px -8px rgba(21,87,214,.65);transition:transform .45s var(--spring),box-shadow .3s;white-space:nowrap}
+.bank-order .ic{width:12px;height:12px}
+.bank:hover .bank-order,.bank:focus-visible .bank-order{transform:translateY(-2px);box-shadow:0 12px 26px -8px rgba(21,87,214,.8)}
+.bank-order:active{transform:scale(.96)}
+@media (max-width:480px){.bank[data-card-open] .bank-wave{display:none}.bank-order{padding:6px 11px}}
+.gm-chip.gm-single{cursor:default}
 .gm-phys-notes{display:grid;gap:9px}
 .gm-phys-notes li{position:relative;padding-inline-start:22px;font-size:13px;color:var(--muted);line-height:1.95}
 .gm-phys-notes li::before{content:"";position:absolute;inset-inline-start:2px;top:.78em;width:6px;height:6px;border-radius:50%;background:var(--accent)}
