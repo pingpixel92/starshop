@@ -11,7 +11,7 @@
 'use strict';
 
 const REPO = 'pingpixel92/starshop';       /* مخزن ۱ — دامنه قدیمی → starshop.kdns.fr (آینه) */
-const REPO2 = 'pingpixel92/starshop2';     /* مخزن ۲ — دامنه اصلی → starshop24.ir */
+const REPO2 = 'pingpixel92/STAR-SHOP2';    /* مخزن ۲ — دامنه اصلی → starshop24.ir */
 const BR = 'main';
 const OV_PATH = 'assets/js/site-overrides.js';
 const LIVE = 'https://starshop24.ir/';     /* دامنه اصلی */
