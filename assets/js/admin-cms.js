@@ -368,7 +368,7 @@ $('#geAddPack').addEventListener('click', () => {
   EFF.gameTopups.items[editGame].packs.push({ n: 'New Pack', nf: 'بسته جدید', usd: 0.99 });
   gameEditorRender();
 });
-$('#geSave').addEventListener('click', () => {
+$('#geSave').addEventListener('click', async () => {
   const g = EFF.gameTopups.items[editGame];
   const id = $('#geId').value.trim().replace(/[^a-z0-9\-]/gi, '').toLowerCase() || 'game';
   g.id = id; g.n = $('#geN').value.trim() || id; g.nf = $('#geNf').value.trim() || id;
@@ -381,7 +381,17 @@ $('#geSave').addEventListener('click', () => {
     if (inp.dataset.pnf != null) p.nf = inp.value.trim();
     if (inp.dataset.pusd != null) p.usd = parseFloat(String(inp.value).replace(/[^\d.]/g, '')) || 0;
   });
-  editGame = -1; gamesRender(); toast('بازی ذخیره شد (منتظر «انتشار تغییرات») ');
+  editGame = -1; gamesRender();
+  /* v51: انتشار فوری یک‌کلیکی — دیگر «ذخیره پیش‌نویس» نیست؛ مستقیم کامیت در هر دو مخزن می‌شود */
+  if (!TOK.get()) { tokenGate(true); toast('ابتدا توکن گیت‌هاب را وارد کنید، بعد ذخیره کنید'); return; }
+  try {
+    OV.config = OV.config || {};
+    OV.config.gameTopups = EFF.gameTopups;
+    OV.config.physCards = EFF.physCards;
+    OV.config.virtCards = EFF.virtCards;
+    OV.config.ppAcct = EFF.ppAcct;
+    await saveOv('به‌روزرسانی بازی «' + (g.nf || g.n || g.id) + '» و قیمت‌ها');
+  } catch (e) { toast('✗ ' + e.message); }
 });
 $('#geCancel').addEventListener('click', () => { editGame = -1; gamesRender(); });
 $('#prodPremium').addEventListener('input', e => { EFF.gameTopups.premiumToman = parseFloat(String(e.target.value).replace(/[^\d]/g, '')) || 0; });
