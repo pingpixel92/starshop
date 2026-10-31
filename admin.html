@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: https://cdn.jsdelivr.net https://raw.githubusercontent.com blob: https:; font-src https://cdn.jsdelivr.net data:; connect-src 'self' https://textdb.dev https://api.telegram.org https://api.github.com https://starshop24.ir; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: https://cdn.jsdelivr.net https://raw.githubusercontent.com blob: https:; font-src https://cdn.jsdelivr.net data:; connect-src 'self' https://textdb.dev https://api.telegram.org https://api.github.com https://starshop24.ir https://starshop.kdns.fr; base-uri 'self'; form-action 'self'; object-src 'none'">
 <title>پنل مدیریت استارشاپ | کنترل کامل سایت</title>
 <meta name="robots" content="noindex,nofollow">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
@@ -149,7 +149,7 @@ textarea#jsonArea{width:100%;min-height:340px;border:1.5px solid var(--line);bor
     <div class="dash-grid">
       <div class="dash-card"><h3>👥 کل بازدیدکننده‌ها</h3><div class="big" id="dVisTotal">—</div><small>امروز: <b id="dVisToday">—</b> · آخرین ورود: <span id="dVisLast">—</span></small></div>
       <div class="dash-card"><h3>🧾 سفارش‌ها</h3><div class="big" id="dOrdAll">—</div><small>در صف تأیید: <b id="dOrdPend">—</b> · انجام‌شده: <b id="dOrdOk">—</b></small></div>
-      <div class="dash-card"><h3>🚀 نسخه سایت</h3><div class="big" id="dVer">—</div><small>مخزن: <b id="dRepoVer">—</b> · وضعیت: <b id="dDeployChip">—</b></small></div>
+      <div class="dash-card"><h3>🚀 نسخه سایت</h3><div class="big" id="dVer">—</div><small>مخزن: <b id="dRepoVer">—</b> · وضعیت: <b id="dDeployChip">—</b><br><span id="dMirror" style="font-size:11px">🔁 آینه (starshop.kdns.fr): —</span></small></div>
       <div class="dash-card"><h3>⚡ اکشن‌های سریع</h3>
         <div style="display:grid;gap:8px;margin-top:6px">
           <button class="btn btn-o btn-sm" id="dashRefresh">↻ به‌روزرسانی آمار</button>
@@ -291,7 +291,7 @@ textarea#jsonArea{width:100%;min-height:340px;border:1.5px solid var(--line);bor
     <h2>🔑 توکن گیت‌هاب</h2>
     <p>برای ذخیره‌ی تغییرات (کامیت در مخزن)، یک توکن شخصی بسازید:<br>
     GitHub ← Settings ← Developer settings ← <b>Personal access tokens ← Fine-grained</b> ← Generate new ←
-    Repository access: <b>Only select repositories ← starshop</b> ←
+    Repository access: <b>Only select repositories ← starshop + starshop2</b> (هر دو) ←
     Permissions ← Contents: <b>Read and write</b> ← Generate.<br>
     توکن فقط در همین مرورگر ذخیره می‌شود و هرگز جایی ارسال/کامیت نمی‌شود.</p>
     <input type="password" id="tokIn" placeholder="github_pat_… یا ghp_…" autocomplete="off">
@@ -308,6 +308,6 @@ textarea#jsonArea{width:100%;min-height:340px;border:1.5px solid var(--line);bor
 <script src="assets/js/config.js" defer></script>
 <script src="assets/js/site-overrides.js?v=20260969" defer></script>
 <script src="assets/js/admin.js?v=20260951" defer></script>
-<script src="assets/js/admin-cms.js?v=20260969" defer></script>
+<script src="assets/js/admin-cms.js?v=20260970" defer></script>
 </body>
 </html>

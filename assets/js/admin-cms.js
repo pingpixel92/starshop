@@ -10,11 +10,24 @@
 (() => {
 'use strict';
 
-const REPO = 'pingpixel92/starshop';
+const REPO = 'pingpixel92/starshop';       /* مخزن ۱ — دامنه قدیمی → starshop.kdns.fr (آینه) */
+const REPO2 = 'pingpixel92/starshop2';     /* مخزن ۲ — دامنه اصلی → starshop24.ir */
 const BR = 'main';
 const OV_PATH = 'assets/js/site-overrides.js';
-const RAW = 'https://raw.githubusercontent.com/' + REPO + '/' + BR + '/';
-const LIVE = 'https://starshop24.ir/';
+const LIVE = 'https://starshop24.ir/';     /* دامنه اصلی */
+const LIVE2 = 'https://starshop.kdns.fr/'; /* دامنه قدیمی (آینه) */
+/* خواندن: از مخزن اصلی، اگر نبود از آینه — نوشتن: همیشه هر دو */
+let READ_REPO = REPO2;
+async function ghRead(suffix, opts = {}) {
+  const order = READ_REPO === REPO2 ? [REPO2, REPO] : [REPO, REPO2];
+  let lastErr = null;
+  for (const rp of order) {
+    try { const j = await gh('/repos/' + rp + suffix, opts); READ_REPO = rp; return j; }
+    catch (e) { lastErr = e; }
+  }
+  throw lastErr;
+}
+const rawBase = () => 'https://raw.githubusercontent.com/' + READ_REPO + '/' + BR + '/';
 
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
@@ -60,75 +73,85 @@ async function gh(path, opts = {}) {
   return r.json();
 }
 
-/* کامیت اتمی چندفایلی + bump خودکار sw.js — الگوی Git Data API */
+/* کامیت اتمی چندفایلی در یک مخزن + bump خودکار sw.js — الگوی Git Data API */
 let BUSY = false;
+async function commitToRepo(repo, list, msg) {
+  const ref = await gh('/repos/' + repo + '/git/ref/heads/' + BR);
+  const headSha = ref.object.sha;
+  const c0 = await gh('/repos/' + repo + '/git/commits/' + headSha);
+  const entries = [];
+  for (const f of list) {
+    if (f.del) { entries.push({ path: f.path, mode: '100644', type: 'blob', sha: null }); continue; }
+    const b = await gh('/repos/' + repo + '/git/blobs', { method: 'POST', body: JSON.stringify({ content: f.text != null ? u64(f.text) : f.b64, encoding: 'base64' }) });
+    entries.push({ path: f.path, mode: f.mode || '100644', type: 'blob', sha: b.sha });
+  }
+  let tree, commit;
+  try {
+    tree = await gh('/repos/' + repo + '/git/trees', { method: 'POST', body: JSON.stringify({ base_tree: c0.tree.sha, tree: entries }) });
+    commit = await gh('/repos/' + repo + '/git/commits', { method: 'POST', body: JSON.stringify({ message: msg, tree: tree.sha, parents: [headSha] }) });
+    await gh('/repos/' + repo + '/git/refs/heads/' + BR, { method: 'PATCH', body: JSON.stringify({ sha: commit.sha, force: false }) });
+  } catch (e) {
+    if (!/409|is at|Fast-forward/.test(String(e.message))) throw e;
+    toast('⚠ تداخل کامیت در ' + repo + ' — دوباره تلاش می‌کنم…');
+    const ref2 = await gh('/repos/' + repo + '/git/ref/heads/' + BR);
+    const c2 = await gh('/repos/' + repo + '/git/commits/' + ref2.object.sha);
+    tree = await gh('/repos/' + repo + '/git/trees', { method: 'POST', body: JSON.stringify({ base_tree: c2.tree.sha, tree: entries }) });
+    commit = await gh('/repos/' + repo + '/git/commits', { method: 'POST', body: JSON.stringify({ message: msg, tree: tree.sha, parents: [ref2.object.sha] }) });
+    await gh('/repos/' + repo + '/git/refs/heads/' + BR, { method: 'PATCH', body: JSON.stringify({ sha: commit.sha, force: false }) });
+  }
+  return commit.sha;
+}
+/* ذخیره = کامیت همزمان در هر دو مخزن (دامنه اصلی + آینه) */
 async function commitFiles(files, msg, opts = {}) {
   if (BUSY) throw new Error('یک ذخیره‌سازی در جریان است — کمی صبر کنید');
   BUSY = true;
   try {
-    /* ۱) نسخه‌ی جدید sw.js (bump) — مگر اینکه خود فایل در لیست باشد یا bump نخواهیم */
     const list = files.slice();
     if (!opts.noVerBump && !list.some(f => f.path === 'sw.js')) {
       try {
-        const swj = await gh('/repos/' + REPO + '/contents/sw.js?ref=' + BR);
+        const swj = await ghRead('/contents/sw.js?ref=' + BR);
         const swTxt = b64u(swj.content || '');
         const m = swTxt.match(/const VER = '(\d+)';/);
         if (m) list.push({ path: 'sw.js', text: swTxt.replace("const VER = '" + m[1] + "';", "const VER = '" + String(+m[1] + 1) + "';") });
       } catch (e) { /* بدون bump ادامه بده */ }
     }
-    /* ۲) ref → commit → tree پایه */
-    const ref = await gh('/repos/' + REPO + '/git/ref/heads/' + BR);
-    const headSha = ref.object.sha;
-    const c0 = await gh('/repos/' + REPO + '/git/commits/' + headSha);
-    /* ۳) ساخت blob ها */
-    const entries = [];
-    for (const f of list) {
-      if (f.del) { entries.push({ path: f.path, mode: '100644', type: 'blob', sha: null }); continue; }
-      const b = await gh('/repos/' + REPO + '/git/blobs', { method: 'POST', body: JSON.stringify({ content: f.text != null ? u64(f.text) : f.b64, encoding: 'base64' }) });
-      entries.push({ path: f.path, mode: f.mode || '100644', type: 'blob', sha: b.sha });
-    }
-    /* ۴) درخت جدید + کامیت + جابه‌جایی ref (با کنترل مسابقه) */
-    let tree, commit;
-    try {
-      tree = await gh('/repos/' + REPO + '/git/trees', { method: 'POST', body: JSON.stringify({ base_tree: c0.tree.sha, tree: entries }) });
-      commit = await gh('/repos/' + REPO + '/git/commits', { method: 'POST', body: JSON.stringify({ message: msg, tree: tree.sha, parents: [headSha] }) });
-      await gh('/repos/' + REPO + '/git/refs/heads/' + BR, { method: 'PATCH', body: JSON.stringify({ sha: commit.sha, force: false }) });
-    } catch (e) {
-      if (!/409|is at|Fast-forward/.test(String(e.message))) throw e;
-      toast('⚠ تداخل کامیت — دوباره تلاش می‌کنم…');
-      const ref2 = await gh('/repos/' + REPO + '/git/ref/heads/' + BR);
-      const c2 = await gh('/repos/' + REPO + '/git/commits/' + ref2.object.sha);
-      tree = await gh('/repos/' + REPO + '/git/trees', { method: 'POST', body: JSON.stringify({ base_tree: c2.tree.sha, tree: entries }) });
-      commit = await gh('/repos/' + REPO + '/git/commits', { method: 'POST', body: JSON.stringify({ message: msg, tree: tree.sha, parents: [ref2.object.sha] }) });
-      await gh('/repos/' + REPO + '/git/refs/heads/' + BR, { method: 'PATCH', body: JSON.stringify({ sha: commit.sha, force: false }) });
-    }
-    return { sha: commit.sha, ver: await targetVer() };
+    const rs = await Promise.allSettled([commitToRepo(REPO2, list, msg), commitToRepo(REPO, list, msg)]);
+    const okB = rs[0].status === 'fulfilled', okA = rs[1].status === 'fulfilled';
+    if (!okB && !okA) throw new Error('کامیت در هر دو مخزن شکست خورد: ' + ((rs[0].reason && rs[0].reason.message) || '') + ' / ' + ((rs[1].reason && rs[1].reason.message) || ''));
+    if (!okB) toast('⚠ مخزن اصلی (' + REPO2 + '): ' + ((rs[0].reason && rs[0].reason.message) || '') + ' — فقط آینه به‌روز شد');
+    if (!okA) toast('⚠ مخزن آینه (' + REPO + '): ' + ((rs[1].reason && rs[1].reason.message) || '') + ' — فقط دامنه اصلی به‌روز شد');
+    return { sha: okB ? rs[0].value : rs[1].value, ver: await targetVer(), bothOk: okB && okA };
   } finally { BUSY = false; }
 }
 
 /* نسخه‌ی هدف برای poll انتشار = VER فعلی ریپو + ۱ (بعد از bump) */
 async function targetVer() {
   try {
-    const swj = await gh('/repos/' + REPO + '/contents/sw.js?ref=' + BR);
+    const swj = await ghRead('/contents/sw.js?ref=' + BR);
     const m = (b64u(swj.content || '')).match(/const VER = '(\d+)';/);
     return m ? m[1] : null;
   } catch (e) { return null; }
 }
 
-/* انتظار برای انتشار Pages: poll نسخه‌ی زنده */
+/* انتظار برای انتشار Pages: poll نسخه‌ی زنده هر دو دامنه */
 async function waitDeploy(targetVer, ui) {
   const t0 = Date.now();
-  while (Date.now() - t0 < 6 * 60000) {
+  const probe = async live => {
     try {
-      const r = await fetch(LIVE + 'sw.js?_=' + Date.now(), { cache: 'no-store' });
-      const txt = await r.text();
-      const m = txt.match(/const VER = '(\d+)';/);
-      if (m && m[1] === String(targetVer)) return true;
-    } catch (e) {}
-    if (ui) ui(Math.min(95, Math.round((Date.now() - t0) / 3600)));
+      const r = await fetch(live + 'sw.js?_=' + Date.now(), { cache: 'no-store' });
+      const m = (await r.text()).match(/const VER = '(\d+)';/);
+      return !!(m && m[1] === String(targetVer));
+    } catch (e) { return false; }
+  };
+  const status = { main: false, mirror: false };
+  while (Date.now() - t0 < 6 * 60000) {
+    status.main = await probe(LIVE);
+    status.mirror = await probe(LIVE2);
+    if (ui) ui(Math.min(95, Math.round((Date.now() - t0) / 3600)), status);
+    if (status.main && status.mirror) return true;
     await new Promise(r => setTimeout(r, 15000));
   }
-  return false;
+  return status.main && status.mirror;
 }
 
 /* ══════════ ۲) لایه overrides ══════════ */
@@ -163,7 +186,7 @@ const buildOvFile = ov => OV_HEAD + '/* SS_OVERRIDES_JSON_START */' + JSON.strin
 
 async function loadOv() {
   try {
-    const j = await gh('/repos/' + REPO + '/contents/' + OV_PATH + '?ref=' + BR);
+    const j = await ghRead('/contents/' + OV_PATH + '?ref=' + BR);
     OVSHA = j.sha;
     OV = parseOv(b64u(j.content || ''));
   } catch (e) { OVSHA = null; OV = {}; }
@@ -186,9 +209,12 @@ function deployStart(res) {
   bar.hidden = false;
   msg.textContent = 'کامیت شد ✓ در حال انتشار روی سایت (۱ تا ۳ دقیقه)… نسخه‌ی هدف: ' + toFa(res.ver || '؟');
   if (!res.ver) { setTimeout(() => { bar.hidden = true; toast('کامیت شد ✓'); }, 3000); return; }
-  waitDeploy(res.ver, p => { msg.textContent = 'در حال انتشار… ' + toFa(p) + '٪ (نسخه ' + toFa(res.ver) + ')'; }).then(ok => {
+  waitDeploy(res.ver, (p, st) => {
+    let s = 'در حال انتشار… ' + toFa(p) + '٪ (نسخه ' + toFa(res.ver) + ') — اصلی: ' + (st && st.main ? '✓' : '…') + ' · آینه: ' + (st && st.mirror ? '✓' : '…');
+    msg.textContent = s;
+  }).then(ok => {
     bar.hidden = true;
-    toast(ok ? '✅ منتشر شد — سایت به‌روز است (نسخه ' + toFa(res.ver) + ')' : '⏳ انتشار کمی طول کشید — بعداً چک کنید');
+    toast(ok ? '✅ منتشر شد — هر دو دامنه به‌روز است (نسخه ' + toFa(res.ver) + ')' : '⏳ انتشار کمی طول کشید — بعداً چک کنید');
     if (ok && $('#pane-dash') && !$('#pane-dash').hidden) dashLoad();
   });
 }
@@ -198,8 +224,10 @@ async function tokenValidate(t) {
   TOK.set(t);
   try {
     const j = await gh('/repos/' + REPO);
-    try { localStorage.setItem('ss_gh_login', (j.full_name || REPO)); } catch (e) {}
-    return true;
+    let both = false;
+    try { await gh('/repos/' + REPO2); both = true; } catch (e) { both = false; }
+    try { localStorage.setItem('ss_gh_login', (j.full_name || REPO) + (both ? ' + آینه ✓' : ' (بدون آینه)')); localStorage.setItem('ss_gh_both', both ? '1' : '0'); } catch (e2) {}
+    return both;
   } catch (e) { TOK.clear(); throw e; }
 }
 function tokenChip() {
@@ -254,16 +282,18 @@ async function dashLoad() {
   if (el('dOrdPend')) el('dOrdPend').textContent = toFa(cnt('pending') + cnt('review'));
   if (el('dOrdOk')) el('dOrdOk').textContent = toFa(cnt('approved') + cnt('delivered'));
   /* نسخه زنده و ریپو */
-  let liveVer = '—';
+  let liveVer = '—', mirrorVer = '—';
   try { liveVer = ((await (await fetch(LIVE + 'sw.js?_=' + Date.now(), { cache: 'no-store' })).text()).match(/const VER = '(\d+)';/) || [])[1] || '—'; } catch (e) {}
+  try { mirrorVer = ((await (await fetch(LIVE2 + 'sw.js?_=' + Date.now(), { cache: 'no-store' })).text()).match(/const VER = '(\d+)';/) || [])[1] || '—'; } catch (e) {}
   if (el('dVer')) el('dVer').textContent = toFa(liveVer);
+  if (el('dMirror')) el('dMirror').textContent = '🔁 آینه (starshop.kdns.fr): ' + toFa(mirrorVer);
   if (TOK.get()) {
     try {
       const rv = await targetVer();
       const rep = el('dRepoVer'); if (rep) rep.textContent = toFa(rv || '—');
       const chip = el('dDeployChip');
       if (chip) { chip.textContent = (rv && liveVer && rv === liveVer) ? '✅ همگام' : '⏳ در حال انتشار'; chip.style.color = (rv && liveVer && rv === liveVer) ? 'var(--ok)' : 'var(--warn)'; }
-      const cs = await gh('/repos/' + REPO + '/commits?per_page=5');
+      const cs = await ghRead('/commits?per_page=5');
       const box = el('dCommits');
       if (box) box.innerHTML = cs.map(c => {
         const d = new Date(c.commit.author.date);
@@ -290,7 +320,7 @@ function gamesRender() {
   $('#prodPremium').value = gt.premiumToman != null ? gt.premiumToman : '';
   box.innerHTML = gt.items.map((g, i) =>
     '<div class="row">' +
-      '<span class="row-thumb"><img src="' + RAW + 'assets/img/games/' + esc(g.img || g.id) + '.webp" alt="" onerror="this.style.visibility=\'hidden\'"></span>' +
+      '<span class="row-thumb"><img src="' + rawBase() + 'assets/img/games/' + esc(g.img || g.id) + '.webp" alt="" onerror="this.style.visibility=\'hidden\'"></span>' +
       '<div class="row-main"><b>' + esc(g.nf || g.n || g.id) + '</b>' +
       '<small dir="ltr">' + esc(g.id) + ' · ' + toFa((g.packs || []).length) + ' بسته · ' + esc(g.img || g.id) + '.webp</small></div>' +
       '<span class="row-actions">' +
@@ -399,7 +429,7 @@ let TREE = null;
 const IMG_RE = /\.(webp|png|jpe?g|svg|gif|avif)$/i;
 async function getTree(force) {
   if (TREE && !force) return TREE;
-  TREE = await gh('/repos/' + REPO + '/git/trees/' + BR + '?recursive=1');
+  TREE = await ghRead('/git/trees/' + BR + '?recursive=1');
   return TREE;
 }
 const IMG_DIRS = ['assets/img/games', 'assets/logos/ai', 'assets/logos', 'assets/img'];
@@ -420,7 +450,7 @@ async function imgGrid() {
     grid.innerHTML = files.map(f => {
       const name = f.path.split('/').pop();
       return '<figure class="img-card" data-path="' + esc(f.path) + '">' +
-        '<img src="' + RAW + esc(f.path) + '?_=' + Date.now() + '" loading="lazy" alt="">' +
+        '<img src="' + rawBase() + esc(f.path) + '?_=' + Date.now() + '" loading="lazy" alt="">' +
         '<figcaption><span dir="ltr" title="' + esc(name) + '">' + esc(name) + '</span>' +
         '<span class="img-size">' + toFa(Math.max(1, Math.round((f.size || 0) / 1024))) + ' کیلوبایت</span></figcaption>' +
         '<button class="btn btn-r btn-sm img-del" data-delpath="' + esc(f.path) + '">حذف</button></figure>';
@@ -607,7 +637,7 @@ async function revList() {
   if (!TOK.get()) { box.innerHTML = '<div class="empty">برای تاریخچه، توکن گیت‌هاب بدهید.</div>'; return; }
   box.innerHTML = '<div class="empty">در حال خواندن تاریخچه…</div>';
   try {
-    const cs = await gh('/repos/' + REPO + '/commits?path=' + OV_PATH + '&per_page=12');
+    const cs = await ghRead('/commits?path=' + OV_PATH + '&per_page=12');
     box.innerHTML = cs.length ? cs.map(c => {
       const d = new Date(c.commit.author.date);
       return '<div class="row"><span class="row-main"><b dir="ltr">' + esc(String(c.sha).slice(0, 7)) + '</b> — ' + esc(c.commit.message.split('\n')[0].slice(0, 70)) + '<small>' + toFa(d.toLocaleDateString('fa-IR')) + ' ' + toFa(d.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })) + '</small></span>' +
@@ -620,7 +650,7 @@ $('#revList').addEventListener('click', async e => {
   if (!b) return;
   if (!confirm('محتوای overrides به نسخه‌ی انتخاب‌شده برگردد و منتشر شود؟')) return;
   try {
-    const j = await gh('/repos/' + REPO + '/contents/' + OV_PATH + '?ref=' + b.dataset.rev);
+    const j = await ghRead('/contents/' + OV_PATH + '?ref=' + b.dataset.rev);
     OV = parseOv(b64u(j.content || ''));
     await saveOv('بازگردانی نسخه‌ی قبلی (' + String(b.dataset.rev).slice(0, 7) + ')');
     toast('بازگردانی شد ✓');
@@ -630,7 +660,7 @@ $('#btnBackup').addEventListener('click', async () => {
   try {
     const files = {};
     for (const p of ['assets/js/config.js', 'assets/js/data-fa.js', 'assets/js/data-en.js', 'assets/js/data-ar.js', OV_PATH]) {
-      try { const j = await gh('/repos/' + REPO + '/contents/' + p + '?ref=' + BR); files[p] = b64u(j.content || ''); } catch (e) {}
+      try { const j = await ghRead('/contents/' + p + '?ref=' + BR); files[p] = b64u(j.content || ''); } catch (e) {}
     }
     const blob = new Blob([JSON.stringify({ madeAt: new Date().toISOString(), files }, null, 2)], { type: 'application/json' });
     const a = document.createElement('a');
