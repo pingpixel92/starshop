@@ -112,7 +112,7 @@ async function tgSendPhoto(blob, caption, kb) {
     fd.append('caption', caption.slice(0, 1000));
     fd.append('parse_mode', 'HTML');
     if (kb) fd.append('reply_markup', JSON.stringify(kb));
-    const r = await fetch('https://api.telegram.org/bot' + TG.bot + '/sendPhoto', { method: 'POST', body: fd });
+    const r = await fetch(CFG.tgUrl('sendPhoto', TG.bot), { method: 'POST', body: fd });
     if (r.ok) return true;
     throw new Error('cors/no-cors fallback');
   } catch (e) {
@@ -123,7 +123,7 @@ async function tgSendPhoto(blob, caption, kb) {
       fd2.append('caption', caption.slice(0, 1000));
       fd2.append('parse_mode', 'HTML');
       if (kb) fd2.append('reply_markup', JSON.stringify(kb));
-      fetch('https://api.telegram.org/bot' + TG.bot + '/sendPhoto', { method: 'POST', body: fd2, mode: 'no-cors', keepalive: true }).catch(() => {});
+      fetch(CFG.tgUrl('sendPhoto', TG.bot), { method: 'POST', body: fd2, mode: 'no-cors', keepalive: true }).catch(() => {});
       return true;
     } catch (e2) { return false; }
   }
@@ -131,12 +131,12 @@ async function tgSendPhoto(blob, caption, kb) {
 async function tgSendText(text) {
   if (!TG.bot || !TG.chat) return;
   try {
-    await fetch('https://api.telegram.org/bot' + TG.bot + '/sendMessage', {
+    await fetch(CFG.tgUrl('sendMessage', TG.bot), {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ chat_id: TG.chat, text: String(text).slice(0, 3800), disable_web_page_preview: true })
     });
   } catch (e) {
-    try { fetch('https://api.telegram.org/bot' + TG.bot + '/sendMessage', { method: 'POST', mode: 'no-cors', keepalive: true, body: new URLSearchParams({ chat_id: TG.chat, text: String(text).slice(0, 3800) }) }).catch(() => {}); } catch (e2) {}
+    try { fetch(CFG.tgUrl('sendMessage', TG.bot), { method: 'POST', mode: 'no-cors', keepalive: true, body: new URLSearchParams({ chat_id: TG.chat, text: String(text).slice(0, 3800) }) }).catch(() => {}); } catch (e2) {}
   }
 }
 

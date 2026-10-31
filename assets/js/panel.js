@@ -55,7 +55,7 @@ async function dbWrite(orders) {
 async function tgSendText(text) {
   if (!TG.bot || !TG.chat) return;
   try {
-    await fetch('https://api.telegram.org/bot' + TG.bot + '/sendMessage', {
+    await fetch(CFG.tgUrl('sendMessage', TG.bot), {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ chat_id: TG.chat, text: String(text).slice(0, 3500) })
     });
@@ -284,10 +284,10 @@ function renderCustomers() {
 async function tgPhotoUrl(fid) {
   if (!TG.bot) return null;
   try {
-    const r = await fetch('https://api.telegram.org/bot' + TG.bot + '/getFile?file_id=' + encodeURIComponent(fid));
+    const r = await fetch(CFG.tgUrl('getFile', TG.bot) + '?file_id=' + encodeURIComponent(fid));
     const j = await r.json();
     if (!j.ok || !j.result || !j.result.file_path) return null;
-    return 'https://api.telegram.org/file/bot' + TG.bot + '/' + j.result.file_path;
+    return CFG.tgFileBase() + '/file/bot' + TG.bot + '/' + j.result.file_path;
   } catch (e) { return null; }
 }
 async function renderPhotos() {
@@ -310,7 +310,7 @@ async function renderConn() {
   rows.push(['دیتابیس سفارش‌ها (textdb.dev)', lastOk ? '<span class="st-ok">✓ متصل</span>' : '<span class="st-bad">✗ قطع</span>', '<b>' + esc((STORE || '').replace('https://textdb.dev/api/data/', '')) + '</b>']);
   if (TG.bot && TG.chat) {
     let me = null;
-    try { const r = await fetch('https://api.telegram.org/bot' + TG.bot + '/getMe'); const j = await r.json(); me = j.ok ? j.result : null; } catch (e) {}
+    try { const r = await fetch(CFG.tgUrl('getMe', TG.bot)); const j = await r.json(); me = j.ok ? j.result : null; } catch (e) {}
     rows.push(['ربات تلگرام', me ? '<span class="st-ok">✓ متصل — @' + esc(me.username) + '</span>' : '<span class="st-bad">✗ پاسخ نداد</span>', 'اطلاع‌رسانی سفارش + گوش‌دهی دستورات']);
   } else rows.push(['ربات تلگرام', '<span class="st-bad">✗ تنظیم نشده</span>', 'config.js → orderNotify']);
   rows.push(['درگاه کارت به کارت', C2C.enabled ? '<span class="st-ok">✓ فعال</span>' : '<span class="st-bad">✗ غیرفعال</span>', esc(C2C.bank || '') + ' — ' + esc(C2C.holder || '')]);
@@ -384,7 +384,7 @@ async function stashTgPhoto(fileId, cap) {
 async function botTick() {
   if (!TG.bot || !TG.chat) return;
   try {
-    const u = 'https://api.telegram.org/bot' + TG.bot + '/getUpdates?timeout=0&limit=20' + (OFFSET ? '&offset=' + OFFSET : '') + '&allowed_updates=' + encodeURIComponent(JSON.stringify(['message']));
+    const u = CFG.tgUrl('getUpdates', TG.bot) + '?timeout=0&limit=20' + (OFFSET ? '&offset=' + OFFSET : '') + '&allowed_updates=' + encodeURIComponent(JSON.stringify(['message']));
     const r = await fetch(u);
     const j = await r.json();
     for (const up of (j.result || [])) {

@@ -47,11 +47,11 @@ async function dbWrite(orders) {
 async function tgSendText(text) {
   if (!TG.bot || !TG.chat) return;
   try {
-    await fetch('https://api.telegram.org/bot' + TG.bot + '/sendMessage', {
+    await fetch(CFG.tgUrl('sendMessage', TG.bot), {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ chat_id: TG.chat, text: String(text).slice(0, 3500) })
     });
-  } catch (e) { try { fetch('https://api.telegram.org/bot' + TG.bot + '/sendMessage', { method: 'POST', mode: 'no-cors', body: new URLSearchParams({ chat_id: TG.chat, text: String(text).slice(0, 3500) }) }).catch(() => {}); } catch (e2) {} }
+  } catch (e) { try { fetch(CFG.tgUrl('sendMessage', TG.bot), { method: 'POST', mode: 'no-cors', body: new URLSearchParams({ chat_id: TG.chat, text: String(text).slice(0, 3500) }) }).catch(() => {}); } catch (e2) {} }
 }
 
 /* ── گیت رمز ── */
@@ -197,7 +197,7 @@ async function stashTgPhoto(fileId, cap) {
 async function botTick() {
   if (!TG.bot || !TG.chat) return;
   try {
-    const u = 'https://api.telegram.org/bot' + TG.bot + '/getUpdates?timeout=0&limit=20' + (OFFSET ? '&offset=' + OFFSET : '') + '&allowed_updates=' + encodeURIComponent(JSON.stringify(['message']));
+    const u = CFG.tgUrl('getUpdates', TG.bot) + '?timeout=0&limit=20' + (OFFSET ? '&offset=' + OFFSET : '') + '&allowed_updates=' + encodeURIComponent(JSON.stringify(['message']));
     const r = await fetch(u);
     const j = await r.json();
     for (const up of (j.result || [])) {

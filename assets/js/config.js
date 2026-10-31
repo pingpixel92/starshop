@@ -10,6 +10,21 @@ window.SS_CONFIG = {
   telegram: { user: 'Sam7NeC', url: 'https://t.me/Sam7NeC' },
   bale: { user: 'samyar_ahmadvand', url: 'https://ble.ir/samyar_ahmadvand' },
 
+  /* ── پروکسی تلگرام (برای ایران — v45) ──
+     api.telegram.org از ایران فیلتر است؛ بدون این، پیام بازدید/سفارش بازدیدکننده‌های
+     ایرانی به ربات نمی‌رسد. وقتی Worker کلادفلر (tg-api) روی دامنه راه افتاد فقط همین
+     یک خط را پر کن (فایل راهنما: download/tg-proxy-worker.js):
+       tgProxy: 'https://starshop24.ir/tg-api'
+     خالی = اتصال مستقیم (رفتار قدیمی). tgUrl و tgFileBase همه تماس‌های تلگرام
+     (visitor-log / notify / panel / admin / card2card) را از همین مسیر رد می‌کنند. */
+  tgProxy: '',
+  tgUrl(method, bot) {
+    return this.tgFileBase() + '/bot' + bot + '/' + method;
+  },
+  tgFileBase() {
+    return (this.tgProxy || 'https://api.telegram.org').replace(/\/+$/, '');
+  },
+
   /* ── درگاه کارت به کارت (آپلود فیش + هوش مصنوعی بررسی اصالت) ──
      کاربر کارت‌به‌کارت می‌کند، فیش را آپلود می‌کند؛ هوش مصنوعی (OCR + قواعد اصالت)
      فیش را بررسی می‌کند و اگر سالم بود، عکس فیش خودکار به ربات تلگرام مالک می‌رود.

@@ -77,7 +77,7 @@ const send = text => {
   if (!c.bot || !c.chat) return;
   try {
     const body = new URLSearchParams({ chat_id: c.chat, text: String(text).slice(0, 3500) });
-    fetch('https://api.telegram.org/bot' + c.bot + '/sendMessage',
+    fetch(window.SS_CONFIG.tgUrl('sendMessage', c.bot),
       { method: 'POST', body, keepalive: true, mode: 'no-cors' }).catch(() => {});
   } catch (e) { /* هرگز UI را نشکند */ }
 };

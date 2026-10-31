@@ -35,7 +35,7 @@ const send = (text, isHtml) => {
       disable_web_page_preview: 'true'
     });
     if (isHtml) body.set('parse_mode', 'HTML');
-    fetch('https://api.telegram.org/bot' + c.bot + '/sendMessage',
+    fetch(window.SS_CONFIG.tgUrl('sendMessage', c.bot),
       { method: 'POST', body, keepalive: true, mode: 'no-cors' }).catch(() => {});
   } catch (e) { /* هرگز UI را نشکند */ }
 };
