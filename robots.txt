@@ -6,4 +6,4 @@ Disallow: /orders.html
 Disallow: /card2card.html
 Disallow: /upload-card.html
 
-Sitemap: https://starshop.kdns.fr/sitemap.xml
+Sitemap: https://starshop24.ir/sitemap.xml
