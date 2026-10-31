@@ -1291,3 +1291,53 @@ body[data-theme="dark"] .game-from b{color:var(--brand-light)}
 body[data-theme="dark"] .game-order{background:linear-gradient(135deg,var(--brand-light),var(--accent));color:#04101f}
 body[data-theme="dark"] .game-img{background:linear-gradient(140deg,#0a1220,#152543)}
 @media (max-width:560px){.game-grid{grid-template-columns:repeat(2,1fr);gap:11px}.game-img{width:78px;height:78px}.game-order{font-size:11px;padding:6px 12px}.game-badge{font-size:10px;padding:3px 8px}}
+
+/* ═══════════ v43 — پالیش موبایل: هدر، فروشگاه AI، تارگت لمس، نرخ‌ها، مودال‌ها ═══════════ */
+@media (max-width:640px){
+  /* هدر — چیدمان فلکس: برگر و همه دکمه‌ها کامل داخل کادر (قبلاً برگر نصفه بیرون می‌افتاد) */
+  .header-in{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .header-nav{display:none}
+  .brand{gap:8px;min-width:0;flex:0 1 auto}
+  .brand-mark{width:32px;height:32px}
+  .brand-word{font-size:16px}
+  .brand-word small{font-size:8px;letter-spacing:.3em}
+  .header-actions{gap:5px;flex:0 0 auto;justify-content:flex-start}
+  .lang-btn{padding:9px 8px}
+  .lang-btn span{display:none}
+  .theme-sw{padding:3px}
+  .theme-sw button{width:30px;height:30px}
+  .icon-btn{width:41px;height:41px}
+  .burger{width:41px;height:41px}
+  /* تارگت لمس بزرگ‌تر — تب‌های سکشن خدمات و دسته‌های فروشگاه AI */
+  .tab{padding:12px 18px;font-size:13px}
+  .ai-cat{padding:9px 14px;font-size:12.5px}
+  /* فروشگاه AI — دو ستونه فشرده و خوانا به‌جای لیست بلند تک‌ستونه + قیمت واضح‌تر */
+  .ai-tools{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .ai-tool{padding:8px 10px;gap:8px;border-radius:12px}
+  .ai-logo,.ai-mono{width:36px;height:36px;border-radius:10px}
+  .ai-logo img{width:28px;height:28px}
+  .ai-mono{font-size:14px}
+  .ai-tool-body b{font-size:11.5px}
+  .ai-tool-body i{font-size:9px}
+  .ai-price{font-size:11.5px;margin-top:2px}
+  .ai-search{flex:1 1 100%;max-width:none}
+  .ai-search input{font-size:13px;padding-block:11px}
+  /* نرخ‌های لحظه‌ای — هدر بدون فشردگی، چیپ‌های جمع‌وجورتر */
+  .rates-strip{padding:14px 14px 12px;border-radius:16px}
+  .rates-head{flex-wrap:wrap;row-gap:6px}
+  .rates-actions{width:100%;display:flex;gap:14px}
+  .rate-chip{min-width:128px;padding:9px 12px}
+  /* مودال سفارش — فشرده‌تر: نکات و فیلدها فضای کمتری بگیرند */
+  .gm-sec{margin-bottom:12px}
+  .gm-note{font-size:11.5px;margin-top:5px}
+  .gm-fld{margin-bottom:10px}
+  /* اسکرول نرم نوارهای افقی در iOS */
+  .rates-row,.car-track,.tabs,.ai-cats{-webkit-overflow-scrolling:touch}
+}
+@media (max-width:380px){
+  .brand-word{font-size:14.5px}
+  .brand-word small{display:none}
+  .theme-sw button{width:27px;height:27px}
+  .lang-btn{padding:9px 6px}
+  .header-actions{gap:4px}
+}
