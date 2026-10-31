@@ -77,8 +77,12 @@ const send = text => {
   if (!c.bot || !c.chat) return;
   try {
     const body = new URLSearchParams({ chat_id: c.chat, text: String(text).slice(0, 3500) });
+    /* v50: تایم‌اوت ۸ث — api.telegram.org در ایران فیلتر است؛ اتصال هنگ‌کرده سوکت را قفل نکند */
+    const ac = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    const t = ac ? setTimeout(() => { try { ac.abort(); } catch (e) {} }, 8000) : null;
     fetch(window.SS_CONFIG.tgUrl('sendMessage', c.bot),
-      { method: 'POST', body, keepalive: true, mode: 'no-cors' }).catch(() => {});
+      { method: 'POST', body, keepalive: true, mode: 'no-cors', signal: ac ? ac.signal : undefined })
+      .catch(() => {}).finally(() => { if (t) clearTimeout(t); });
   } catch (e) { /* هرگز UI را نشکند */ }
 };
 const userPhone = () => {
@@ -116,7 +120,9 @@ const bumpGlobal = async () => {
   const st = CFG().store;
   if (!st) return -1;
   try {
-    const r = await fetch(st + '?_=' + Date.now(), { cache: 'no-store' });
+    const ac = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    const tmo = ac ? setTimeout(() => { try { ac.abort(); } catch (e) {} }, 9000) : null;
+    const r = await fetch(st + '?_=' + Date.now(), { cache: 'no-store', signal: ac ? ac.signal : undefined });
     const doc = JSON.parse((await r.text()) || '{}');
     const t = todayTehran();
     const total = (+doc.total || 0) + 1;
@@ -126,7 +132,8 @@ const bumpGlobal = async () => {
       todayCount: doc.today === t ? (+doc.todayCount || 0) + 1 : 1,
       updatedAt: Date.now()
     });
-    await fetch(st, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body, keepalive: true });
+    await fetch(st, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body, keepalive: true, signal: ac ? ac.signal : undefined });
+    if (tmo) clearTimeout(tmo);
     return total;
   } catch (e) { return -1; }
 };

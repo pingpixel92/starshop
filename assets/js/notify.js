@@ -35,8 +35,12 @@ const send = (text, isHtml) => {
       disable_web_page_preview: 'true'
     });
     if (isHtml) body.set('parse_mode', 'HTML');
+    /* v50: تایم‌اوت ۸ث — اتصال هنگ‌کرده به api.telegram.org سوکت را قفل نکند */
+    const ac = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    const t = ac ? setTimeout(() => { try { ac.abort(); } catch (e) {} }, 8000) : null;
     fetch(window.SS_CONFIG.tgUrl('sendMessage', c.bot),
-      { method: 'POST', body, keepalive: true, mode: 'no-cors' }).catch(() => {});
+      { method: 'POST', body, keepalive: true, mode: 'no-cors', signal: ac ? ac.signal : undefined })
+      .catch(() => {}).finally(() => { if (t) clearTimeout(t); });
   } catch (e) { /* هرگز UI را نشکند */ }
 };
 

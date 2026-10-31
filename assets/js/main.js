@@ -377,7 +377,8 @@ const renderAll = () => {
 /* ── loader ── */
 const runLoader = () => new Promise(res => {
   const loader = $('#loader'); if (!loader) return res();
-  if (reduced) { loader.classList.add('hide'); return res(); }
+  /* v50: اگر نگهبان لودر قبلاً آن را رها کرده بود، دوباره قفلش نکن */
+  if (window.__ldForced || reduced) { loader.classList.add('hide'); document.body.style.overflow = ''; return res(); }
   document.body.style.overflow = 'hidden';
   const fill = $('#loadFill'), num = $('#loadNum');
   const DUR = sessionStorage.getItem('ss-loaded') ? 450 : 1400;

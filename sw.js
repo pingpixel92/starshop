@@ -8,7 +8,7 @@
    ═══════════════════════════════════════════════════ */
 'use strict';
 
-const VER = '20260971';
+const VER = '20260972';
 const CACHE = 'starshop-' + VER;
 
 /* میزبان‌هایی که هرگز نباید کش شوند (داده زنده) */
@@ -39,11 +39,15 @@ self.addEventListener('activate', e => {
   })());
 });
 
-/* تلاش شبکه با یک retry — روی شبکه پرلاست اغلب بار دوم جواب می‌دهد */
-async function netGet(req, retries) {
+/* تلاش شبکه با retry + تایم‌اوت سخت (v50): درخواست‌هایی که روی مسیر ناپایدار
+   ایران هنگ می‌کنند را می‌کُشد تا صف اجرای اسکریپت‌های defer قفل نشود */
+async function netGet(req, retries, ms) {
   for (let i = 0; ; i++) {
-    try { return await fetch(req); }
+    const ac = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    const t = ac ? setTimeout(() => { try { ac.abort(); } catch (e) {} }, ms) : null;
+    try { return await fetch(req, ac ? { signal: ac.signal } : {}); }
     catch (err) { if (i >= retries) throw err; await new Promise(r => setTimeout(r, 450)); }
+    finally { if (t) clearTimeout(t); }
   }
 }
 
@@ -60,7 +64,7 @@ self.addEventListener('fetch', e => {
   if (req.mode === 'navigate') {
     e.respondWith((async () => {
       try {
-        const fresh = await fetch(req);
+        const fresh = await netGet(req, 0, 9000); /* تایم‌اوت ناوبری: بعد از ۹ث فال‌بک کش */
         try {
           const c = await caches.open(CACHE);
           c.put('./', fresh.clone());
@@ -82,7 +86,7 @@ self.addEventListener('fetch', e => {
       const c = await caches.open(CACHE);
       const hit = await c.match(req);
       if (hit) return hit;
-      const fresh = await netGet(req, 1);
+      const fresh = await netGet(req, 1, 8000); /* تایم‌اوت ۸ث + یک retry */
       const cacheable = (fresh && fresh.ok) || (fresh && fresh.type === 'opaque');
       if (cacheable && (url.origin === self.location.origin || CACHABLE_CDN.test(url.hostname))) {
         try { c.put(req, fresh.clone()); } catch (err) {}

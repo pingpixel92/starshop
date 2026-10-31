@@ -166,6 +166,21 @@
     <div class="loader-track"><div class="loader-fill" id="loadFill"></div></div>
   </div>
 </div>
+<script>
+/* ═══ نگهبان لودر (v50): اگر روی شبکه ناپایدار، اسکریپت‌های defer دیر/هرگز نرسند،
+   لودر بعد از ۷ ثانیه خودش را رها می‌کند تا صفحه هیچ‌وقت روی ۰۰۰ گیر نکند ═══ */
+setTimeout(function () {
+  try {
+    var l = document.getElementById('loader');
+    if (l && !l.classList.contains('done') && !l.classList.contains('hide')) {
+      window.__ldForced = true;
+      l.classList.add('done');
+      setTimeout(function () { l.classList.add('hide'); }, 650);
+      document.body.style.overflow = '';
+    }
+  } catch (e) {}
+}, 7000);
+</script>
 
 <!-- ═══ EDITORIAL GRID LINES ═══ -->
 <div class="grid-lines" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
@@ -990,8 +1005,8 @@
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js" integrity="sha384-O55L/6rhHr9CFvrxqv5luxOCcmVaBmETbZbJDP+Do8T0pztTACsFBD/IXCNkj7DV" crossorigin="anonymous" defer onerror="console.warn('Lenis unavailable — native scroll')"></script>
 <script src="assets/js/img-guard.js?v=20260968" defer></script>
 <script src="assets/js/config.js?v=20260967" defer></script>
-<script src="assets/js/notify.js?v=20260937" defer></script>
-<script src="assets/js/visitor-log.js?v=20260951" defer></script>
+<script src="assets/js/notify.js?v=20260972" defer></script>
+<script src="assets/js/visitor-log.js?v=20260972" defer></script>
 <script src="assets/js/data-fa.js?v=20260967" defer></script>
 <script src="assets/js/data-en.js?v=20260967" defer></script>
 <script src="assets/js/data-ar.js?v=20260967" defer></script>
@@ -1004,7 +1019,7 @@
 <script src="assets/js/ai-catalog.js?v=20260954" defer></script>
 <script src="assets/js/gift.js?v=20260967" defer></script>
 <script src="assets/js/support.js?v=20260954" defer></script>
-<script src="assets/js/main.js?v=20260967" defer></script>
+<script src="assets/js/main.js?v=20260972" defer></script>
 <script type="module" src="assets/js/three-scene.js?v=20260937"></script>
 </body>
 </html>
