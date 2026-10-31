@@ -4,6 +4,7 @@
    ═══════════════════════════════════════════ */
 (() => {
 const canvas = document.getElementById('webgl');
+if (window.SS_OVERRIDES && window.SS_OVERRIDES.flags && window.SS_OVERRIDES.flags.scene3d === false) { return; }
 if (!canvas || !window.WebGLRenderingContext) { fail(); return; }
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const mobile  = matchMedia('(max-width: 760px), (pointer: coarse)').matches;

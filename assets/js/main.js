@@ -421,7 +421,7 @@ const splitWords = () => {
 /* ── smooth scroll (Lenis optional) ── */
 let lenis = null;
 const initScroll = () => {
-  if (!reduced && typeof Lenis !== 'undefined') {
+  if (!reduced && typeof Lenis !== 'undefined' && !(window.SS_OVERRIDES && window.SS_OVERRIDES.flags && window.SS_OVERRIDES.flags.smoothScroll === false)) {
     try { lenis = new Lenis({ duration: 1.15, smoothWheel: true }); } catch (e) { lenis = null; }
   }
   const raf = x => { if (lenis) lenis.raf(x); requestAnimationFrame(raf); };

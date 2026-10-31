@@ -15,6 +15,9 @@
 (() => {
 'use strict';
 
+/* افزونه‌ها: اگر از پنل مدیریت خاموش شده باشد، ویجت اصلاً ساخته نمی‌شود */
+try { if (window.SS_OVERRIDES && window.SS_OVERRIDES.flags && window.SS_OVERRIDES.flags.supportBubble === false) return; } catch (e) {}
+
 /* ── ابزارها ── */
 const T = k => { try { return window.SSI18N.t(k); } catch (e) { return k; } };
 const siteLang = () => window.SS_LANG || 'fa';

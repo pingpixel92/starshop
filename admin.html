@@ -3,17 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: https://cdn.jsdelivr.net blob: https:; font-src https://cdn.jsdelivr.net data:; connect-src 'self' https://textdb.dev https://api.telegram.org; base-uri 'self'; form-action 'self'; object-src 'none'">
-<title>پنل تأیید سفارش‌ها | استار شاپ</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: https://cdn.jsdelivr.net https://raw.githubusercontent.com blob: https:; font-src https://cdn.jsdelivr.net data:; connect-src 'self' https://textdb.dev https://api.telegram.org https://api.github.com https://starshop24.ir; base-uri 'self'; form-action 'self'; object-src 'none'">
+<title>پنل مدیریت استارشاپ | کنترل کامل سایت</title>
 <meta name="robots" content="noindex,nofollow">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vazirmatn@33.0.3/Vazirmatn-font-face.css">
 <style>
 :root{--bg:#0b111c;--surface:#101827;--line:rgba(255,255,255,.1);--ink:#f2f5fb;--muted:#8b93a7;--brand:#4e8cff;--ok:#12ad63;--bad:#e05252;--warn:#e0a12f;--radius:16px;--font:"Vazirmatn",Tahoma,Arial,sans-serif}
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--ink);font-family:var(--font);margin:0;padding:26px 16px 80px;line-height:1.9}
-.wrap{max-width:860px;margin:0 auto}
-header.adm{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);margin:0;padding:22px 14px 90px;line-height:1.9}
+.wrap{max-width:1080px;margin:0 auto}
+header.adm{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px}
 header.adm h1{font-size:20px;margin:0;display:flex;gap:8px;align-items:center}
 .adm-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px}
 .btn{border:0;border-radius:999px;padding:9px 18px;font-family:var(--font);font-size:13.5px;font-weight:800;cursor:pointer;transition:.2s}
@@ -21,20 +21,63 @@ header.adm h1{font-size:20px;margin:0;display:flex;gap:8px;align-items:center}
 .btn-g{background:var(--ok);color:#fff}
 .btn-r{background:var(--bad);color:#fff}
 .btn-o{background:transparent;border:1.5px solid var(--line);color:var(--ink)}
+.btn-sm{padding:5px 12px;font-size:12px}
 .btn:hover{filter:brightness(1.12)}
 .btn:disabled{opacity:.5;cursor:wait}
-.stats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;font-size:12.5px}
-.chip{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 14px}
+.chip{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 14px;font-size:12.5px}
 .chip b{color:var(--brand)}
-/* gate */
-#gate{position:fixed;inset:0;background:rgba(5,7,11,.92);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:50}
-#gate .g-box{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:30px 26px;width:min(92vw,380px);text-align:center}
-#gate h2{margin:0 0 6px;font-size:19px}
-#gate p{margin:0 0 16px;color:var(--muted);font-size:13px}
-#gate input{width:100%;border:1.5px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);padding:12px 14px;font-family:var(--font);font-size:15px;text-align:center;margin-bottom:12px}
-#gate input:focus{outline:none;border-color:var(--brand)}
-#gErr{color:var(--bad);font-size:12.5px;min-height:20px}
-/* order cards */
+/* tabs */
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0 18px;border-bottom:1px solid var(--line);padding-bottom:12px}
+.tab{background:var(--surface);border:1.5px solid var(--line);color:var(--muted);border-radius:12px;padding:8px 14px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer}
+.tab.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.pane{animation:fade .25s}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+/* dashboard */
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:16px}
+.dash-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+.dash-card h3{margin:0 0 8px;font-size:13.5px;color:var(--muted);font-weight:700}
+.dash-card .big{font-size:26px;font-weight:800;color:var(--brand)}
+.dash-card small{color:var(--muted);font-size:12px}
+#dCommits{list-style:none;margin:0;padding:0;font-size:12.5px;display:grid;gap:6px}
+#dCommits li{border-bottom:1px dashed var(--line);padding-bottom:6px}
+/* rows & forms */
+.row{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin-bottom:8px}
+.row-main{flex:1;min-width:0}
+.row-main b{display:block;font-size:14px}
+.row-main small{color:var(--muted);font-size:11.5px;direction:ltr;display:inline-block}
+.row-thumb{width:44px;height:44px;border-radius:10px;background:#0a0f18;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0}
+.row-thumb img{max-width:100%;max-height:100%}
+.row-actions{display:flex;gap:6px;flex-wrap:wrap}
+.card-block{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px}
+.card-block h3{margin:0 0 10px;font-size:14.5px}
+.card-block .row{background:rgba(255,255,255,.02)}
+.fld{display:block;margin-bottom:12px}
+.fld span{display:block;font-size:12.5px;color:var(--muted);margin-bottom:4px}
+.fld input,.fld select{width:100%;border:1.5px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);padding:10px 14px;font-family:var(--font);font-size:14px}
+.fld input:focus{outline:none;border-color:var(--brand)}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+@media(max-width:640px){.f2{grid-template-columns:1fr}}
+.plug-row{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:11px 14px;margin-bottom:8px;cursor:pointer;font-size:14px}
+.plug-row small{color:var(--muted)}
+.plug-row input{accent-color:var(--brand);width:18px;height:18px}
+#plugForm h3,#pane-products h2,#pane-images h2,#pane-settings h2{font-size:15px;margin:18px 0 10px}
+/* game editor */
+#gameEditor{background:rgba(78,140,255,.06);border:1.5px solid rgba(78,140,255,.4);border-radius:var(--radius);padding:16px;margin:12px 0}
+.pack-row{display:grid;grid-template-columns:1.2fr 1.2fr 90px 40px;gap:8px;margin-bottom:8px}
+.pack-row input{border:1.5px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);padding:8px 10px;font-family:var(--font);font-size:13px}
+@media(max-width:560px){.pack-row{grid-template-columns:1fr 1fr;}}
+/* images */
+.img-tools{display:flex;gap:10px;align-items:end;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:14px}
+.img-tools .fld{margin:0;flex:1;min-width:180px}
+#imgGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.img-card{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px;text-align:center}
+.img-card img{width:100%;height:110px;object-fit:contain;background:#0a0f18;border-radius:10px}
+.img-card figcaption{display:grid;gap:2px;font-size:11.5px;margin:8px 0;word-break:break-all}
+.img-size{color:var(--muted)}
+/* deploy bar */
+#deployBar{position:sticky;top:10px;z-index:40;background:linear-gradient(90deg,rgba(78,140,255,.25),rgba(18,173,99,.25));border:1.5px solid var(--brand);border-radius:14px;padding:12px 16px;margin-bottom:14px;font-size:13.5px;font-weight:700}
+/* stats & orders (legacy) */
+.stats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;font-size:12.5px}
 .order{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px}
 .order.flagged{border-color:rgba(224,161,47,.5)}
 .o-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
@@ -43,6 +86,7 @@ header.adm h1{font-size:20px;margin:0;display:flex;gap:8px;align-items:center}
 .badge.pending{background:rgba(224,161,47,.15);color:var(--warn);border:1px solid rgba(224,161,47,.45)}
 .badge.review{background:rgba(78,140,255,.14);color:var(--brand);border:1px solid rgba(78,140,255,.45)}
 .badge.approved{background:rgba(18,173,99,.14);color:var(--ok);border:1px solid rgba(18,173,99,.45)}
+.badge.delivered{background:rgba(18,173,99,.14);color:var(--ok);border:1px solid rgba(18,173,99,.45)}
 .badge.rejected{background:rgba(224,82,82,.13);color:var(--bad);border:1px solid rgba(224,82,82,.4)}
 .o-meta{font-size:13px;color:var(--muted);display:grid;gap:3px}
 .o-meta b{color:var(--ink)}
@@ -51,41 +95,219 @@ header.adm h1{font-size:20px;margin:0;display:flex;gap:8px;align-items:center}
 .o-ai span{border:1px solid var(--line);border-radius:999px;padding:2px 10px}
 .o-img{max-width:230px;max-height:230px;border-radius:12px;border:1px solid var(--line);cursor:zoom-in;display:block}
 .o-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
-.empty{text-align:center;color:var(--muted);padding:50px 0;font-size:14.5px}
+.empty{text-align:center;color:var(--muted);padding:40px 0;font-size:14.5px}
 label.tgl{display:inline-flex;align-items:center;gap:6px;cursor:pointer;color:var(--muted)}
 label.tgl input{accent-color:var(--brand)}
+textarea#jsonArea{width:100%;min-height:340px;border:1.5px solid var(--line);border-radius:14px;background:var(--bg);color:var(--ink);font-family:monospace;font-size:13px;padding:14px;direction:ltr;text-align:left}
+/* gates */
+#gate,#tokGate{position:fixed;inset:0;background:rgba(5,7,11,.92);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:50}
+#tokGate[hidden]{display:none}
+#gate .g-box,#tokGate .g-box{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:30px 26px;width:min(92vw,420px);text-align:center}
+#gate h2,#tokGate h2{margin:0 0 6px;font-size:19px}
+#gate p,#tokGate p{margin:0 0 16px;color:var(--muted);font-size:12.5px;text-align:right;line-height:2}
+#gate input,#tokGate input{width:100%;border:1.5px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);padding:12px 14px;font-family:var(--font);font-size:15px;text-align:center;margin-bottom:12px}
+#gate input:focus,#tokGate input:focus{outline:none;border-color:var(--brand)}
+#gErr,#tokErr{color:var(--bad);font-size:12.5px;min-height:20px}
+.g-btns{display:flex;gap:8px}
+.g-btns .btn{flex:1}
 #admToast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(70px);background:var(--ink);color:var(--bg);padding:9px 20px;border-radius:999px;font-size:13px;font-weight:800;opacity:0;transition:.3s;z-index:60}
 #admToast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.hint{background:rgba(224,161,47,.08);border:1px solid rgba(224,161,47,.35);border-radius:12px;padding:10px 14px;font-size:12.5px;margin-bottom:14px;color:var(--muted)}
+.hint b{color:var(--warn)}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="adm">
-    <h1>🛡️ پنل تأیید سفارش‌های کارت به کارت</h1>
+    <h1>🛠️ پنل مدیریت استارشاپ</h1>
     <div class="adm-actions">
-      <label class="tgl"><input type="checkbox" id="botListen" checked> گوش‌دهی به دستورات ربات</label>
-      <button class="btn btn-o" id="btnPw">تغییر رمز</button>
-      <button class="btn btn-b" id="btnRefresh">↻ به‌روزرسانی</button>
-      <a href="panel.html" style="text-decoration:none"><button class="btn btn-b">🎛 کنترل پنل کامل</button></a>
+      <span class="chip" id="ghChip">🔒 توکن: —</span>
+      <button class="btn btn-o btn-sm" id="btnToken">توکن گیت‌هاب</button>
+      <button class="btn btn-o btn-sm" id="btnPw">تغییر رمز</button>
+      <a href="panel.html" style="text-decoration:none"><button class="btn btn-o btn-sm">🎛 پنل ربات</button></a>
+      <a href="/" target="_blank" rel="noopener" style="text-decoration:none"><button class="btn btn-o btn-sm">🌐 سایت</button></a>
+      <label class="tgl"><input type="checkbox" id="botListen" checked> گوش‌دهی ربات</label>
+      <button class="btn btn-b btn-sm" id="btnRefresh">↻</button>
     </div>
   </header>
 
-  <div class="stats" id="stats"></div>
-  <div id="list"><div class="empty">در حال بارگذاری…</div></div>
+  <div id="deployBar" hidden><span id="deployMsg"></span></div>
+
+  <nav class="tabs">
+    <button class="tab on" data-pane="dash">📊 داشبورد</button>
+    <button class="tab" data-pane="orders">🧾 سفارش‌ها</button>
+    <button class="tab" data-pane="products">🎮 محصولات و قیمت‌ها</button>
+    <button class="tab" data-pane="images">🖼️ تصاویر</button>
+    <button class="tab" data-pane="plugins">🧩 افزونه‌ها</button>
+    <button class="tab" data-pane="settings">⚙️ تنظیمات</button>
+    <button class="tab" data-pane="json">{ } پیشرفته</button>
+    <button class="tab" data-pane="rev">🕘 نسخه‌ها</button>
+  </nav>
+
+  <!-- داشبورد -->
+  <section class="pane" id="pane-dash">
+    <div class="dash-grid">
+      <div class="dash-card"><h3>👥 کل بازدیدکننده‌ها</h3><div class="big" id="dVisTotal">—</div><small>امروز: <b id="dVisToday">—</b> · آخرین ورود: <span id="dVisLast">—</span></small></div>
+      <div class="dash-card"><h3>🧾 سفارش‌ها</h3><div class="big" id="dOrdAll">—</div><small>در صف تأیید: <b id="dOrdPend">—</b> · انجام‌شده: <b id="dOrdOk">—</b></small></div>
+      <div class="dash-card"><h3>🚀 نسخه سایت</h3><div class="big" id="dVer">—</div><small>مخزن: <b id="dRepoVer">—</b> · وضعیت: <b id="dDeployChip">—</b></small></div>
+      <div class="dash-card"><h3>⚡ اکشن‌های سریع</h3>
+        <div style="display:grid;gap:8px;margin-top:6px">
+          <button class="btn btn-o btn-sm" id="dashRefresh">↻ به‌روزرسانی آمار</button>
+          <button class="btn btn-o btn-sm" id="btnHardReload">🧹 پاک‌کردن کش این مرورگر</button>
+        </div>
+      </div>
+    </div>
+    <div class="card-block"><h3>📌 آخرین تغییرات مخزن (تاریخچه کامل در تب «نسخه‌ها»)</h3><ul id="dCommits"><li>در حال بارگذاری…</li></ul></div>
+    <div class="hint">💡 لاگ کامل ورود و خروج کاربران (هر بازدید + لاگین با شماره) در <b>چت ربات تلگرام</b> شما می‌آید؛ اینجا فقط آمار کلی است. برای حذف/اضافه‌کردن هر بخش سایت، تب «افزونه‌ها» را ببینید.</div>
+  </section>
+
+  <!-- سفارش‌ها (پنل قبلی — بدون تغییر عملکرد) -->
+  <section class="pane" id="pane-orders" hidden>
+    <div class="stats" id="stats"></div>
+    <div id="list"><div class="empty">در حال بارگذاری…</div></div>
+  </section>
+
+  <!-- محصولات -->
+  <section class="pane" id="pane-products" hidden>
+    <div class="hint">💾 هر تغییر اینجا تا وقتی «انتشار تغییرات» را نزنید اعمال نمی‌شود. انتشار = کامیت در گیت‌هاب + ری‌بیلد خودکار سایت (۱ تا ۳ دقیقه).</div>
+    <h2>🎮 بازی‌ها (خرید درون‌بازی)</h2>
+    <div class="img-tools">
+      <label class="fld">کارمزد ثابت بخش بازی (تومان — به قیمت هر بسته اضافه می‌شود)
+        <input id="prodPremium" inputmode="numeric" dir="ltr" placeholder="850000">
+      </label>
+      <button class="btn btn-g" id="btnGameAdd">➕ افزودن بازی</button>
+      <button class="btn btn-b" id="btnProdSave">🚀 انتشار تغییرات</button>
+    </div>
+    <div id="gamesList"></div>
+    <div id="gameEditor" hidden>
+      <h3 style="margin-top:0">ویرایش بازی</h3>
+      <div class="f2">
+        <label class="fld"><span>نام فارسی (nf)</span><input id="geNf" placeholder="جم فری فایر"></label>
+        <label class="fld"><span>نام انگلیسی (n)</span><input id="geN" dir="ltr" placeholder="Free Fire Diamonds"></label>
+        <label class="fld"><span>نام عربی (na)</span><input id="geNa" placeholder="جواهرات فري فاير"></label>
+        <label class="fld"><span>شناسه (id — برای فایل تصویر هم استفاده می‌شود)</span><input id="geId" dir="ltr" placeholder="freefire"></label>
+        <label class="fld"><span>نام فایل تصویر (بدون پسوند — خالی = همان id)</span><input id="geImg" dir="ltr" placeholder="freefire"></label>
+        <label class="fld"><span>نمایش فقط لوگو (fit-contain — مثل GTA VI)</span><label style="display:flex;gap:8px;align-items:center;font-size:14px;color:var(--ink)"><input type="checkbox" id="geFit" style="width:18px;height:18px"> فعال</label></label>
+      </div>
+      <h3>بسته‌ها و قیمت پایه دلاری</h3>
+      <div id="gePacks"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-o btn-sm" id="geAddPack">➕ بسته جدید</button>
+        <button class="btn btn-b btn-sm" id="geSave">✓ ذخیره این بازی</button>
+        <button class="btn btn-o btn-sm" id="geCancel">انصراف</button>
+      </div>
+    </div>
+    <h2>💳 کارت‌ها و پی‌پال</h2>
+    <div id="cardsList"></div>
+  </section>
+
+  <!-- تصاویر -->
+  <section class="pane" id="pane-images" hidden>
+    <div class="hint">🖼 عکس‌ها مستقیم در مخزن گیت‌هاب ذخیره می‌شوند. jpg/png خودکار به <b>webp فشرده</b> تبدیل می‌شود (لوگو حداکثر ۵۱۲px، تصویر بازی ۶۴۰px). نام فایل = همان id محصول (مثلاً <b dir="ltr">freefire.webp</b>).</div>
+    <div class="img-tools">
+      <label class="fld"><span>پوشه</span>
+        <select id="imgDir"></select>
+      </label>
+      <label class="fld"><span>نام فایل جدید (اختیاری — برای تک‌فایل)</span>
+        <input id="imgName" dir="ltr" placeholder="freefire">
+      </label>
+      <label class="fld"><span>انتخاب عکس (چندتایی مجاز) یا بکشید و رها کنید</span>
+        <input type="file" id="imgFile" accept="image/*" multiple>
+      </label>
+      <button class="btn btn-b" id="btnImgUpload">🚀 آپلود و انتشار</button>
+      <button class="btn btn-o" id="imgRefresh">↻</button>
+    </div>
+    <div id="imgGrid"><div class="empty">برای مدیریت تصاویر، توکن گیت‌هاب بدهید.</div></div>
+  </section>
+
+  <!-- افزونه‌ها -->
+  <section class="pane" id="pane-plugins" hidden>
+    <div class="hint">🧩 مثل افزونه‌های وردپرس — هر بخش را می‌توانید روشن/خاموش کنید. خاموش‌کردن = حذف کامل از سایت بدون دست‌زدن به داده‌ها (هر وقت خواستید دوباره روشن کنید).</div>
+    <div id="plugForm"></div>
+    <button class="btn btn-b" id="btnPlugSave">🚀 انتشار تغییرات</button>
+  </section>
+
+  <!-- تنظیمات -->
+  <section class="pane" id="pane-settings" hidden>
+    <h2>📞 راه‌های ارتباطی</h2>
+    <div class="f2">
+      <label class="fld"><span>ایمیل</span><input id="setEmail" dir="ltr"></label>
+      <label class="fld"><span>تلفن نمایشی</span><input id="setPhone" dir="ltr"></label>
+      <label class="fld"><span>لینک تلفن</span><input id="setPhoneLink" dir="ltr" placeholder="tel:+98..."></label>
+      <label class="fld"><span>تلگرام (آیدی بدون @)</span><input id="setTgUser" dir="ltr"></label>
+      <label class="fld"><span>بله (آیدی بدون @)</span><input id="setBaleUser" dir="ltr"></label>
+    </div>
+    <h2>💳 کارت‌به‌کارت</h2>
+    <div class="f2">
+      <label class="fld"><span>شماره کارت</span><input id="setCardNum" dir="ltr" inputmode="numeric"></label>
+      <label class="fld"><span>نام صاحب کارت</span><input id="setCardHolder"></label>
+      <label class="fld"><span>بانک</span><input id="setCardBank"></label>
+      <label class="fld"><span>رمز جدید پنل سفارش‌ها (خالی = بدون تغییر — حداقل ۶ کاراکتر)</span><input id="setAdminPw" type="password" autocomplete="new-password"></label>
+    </div>
+    <h2>💱 نرخ و پروکسی</h2>
+    <div class="f2">
+      <label class="fld"><span>کارمزد خدمات (درصد — الان ۲۰)</span><input id="setMarkup" dir="ltr" inputmode="numeric"></label>
+      <label class="fld"><span>پروکسی تلگرام (Worker — خالی = مستقیم)</span><input id="setTgProxy" dir="ltr" placeholder="https://starshop24.ir/tg-api"></label>
+    </div>
+    <button class="btn btn-b" id="btnSetSave">🚀 انتشار تغییرات</button>
+  </section>
+
+  <!-- JSON پیشرفته -->
+  <section class="pane" id="pane-json" hidden>
+    <div class="hint">⚠️ برای کاربران حرفه‌ای — کل تنظیمات روی‌نویسی‌شده به‌صورت JSON. ساختار را خراب نکنید؛ «مرتب‌سازی» اعتبارسنجی می‌کند.</div>
+    <textarea id="jsonArea" spellcheck="false"></textarea>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+      <button class="btn btn-o" id="btnJsonFmt">مرتب‌سازی/اعتبارسنجی</button>
+      <button class="btn btn-b" id="btnJsonSave">🚀 انتشار JSON</button>
+    </div>
+  </section>
+
+  <!-- نسخه‌ها -->
+  <section class="pane" id="pane-rev" hidden>
+    <div class="hint">🕘 تاریخچه‌ی همه‌ی تغییرات محتوایی. «بازگردانی» = برگشت سایت به آن نسخه و انتشار خودکار.</div>
+    <div id="revList"><div class="empty">برای تاریخچه، توکن گیت‌هاب بدهید.</div></div>
+    <h2>📦 پشتیبان‌گیری کامل محتوا</h2>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <button class="btn btn-g" id="btnBackup">⬇️ دانلود پشتیبان (config + داده‌ها + overrides)</button>
+      <label class="btn btn-o" style="cursor:pointer">⬆️ بازگردانی از پشتیبان <input type="file" id="restoreFile" accept="application/json" hidden></label>
+    </div>
+  </section>
 </div>
 
+<!-- گیت رمز (پنل سفارش‌ها — مشترک) -->
 <div id="gate">
   <div class="g-box">
     <h2>🔐 ورود مدیر</h2>
-    <p>رمز پنل تأیید سفارش‌ها را وارد کنید</p>
+    <p>رمز پنل مدیریت را وارد کنید</p>
     <input type="password" id="gPass" placeholder="رمز مدیر" autocomplete="current-password">
     <div id="gErr"></div>
     <button class="btn btn-b w100" id="gBtn" style="width:100%">ورود</button>
   </div>
 </div>
+
+<!-- گیت توکن گیت‌هاب -->
+<div id="tokGate" hidden>
+  <div class="g-box">
+    <h2>🔑 توکن گیت‌هاب</h2>
+    <p>برای ذخیره‌ی تغییرات (کامیت در مخزن)، یک توکن شخصی بسازید:<br>
+    GitHub ← Settings ← Developer settings ← <b>Personal access tokens ← Fine-grained</b> ← Generate new ←
+    Repository access: <b>Only select repositories ← starshop</b> ←
+    Permissions ← Contents: <b>Read and write</b> ← Generate.<br>
+    توکن فقط در همین مرورگر ذخیره می‌شود و هرگز جایی ارسال/کامیت نمی‌شود.</p>
+    <input type="password" id="tokIn" placeholder="github_pat_… یا ghp_…" autocomplete="off">
+    <div id="tokErr"></div>
+    <div class="g-btns">
+      <button class="btn btn-o" id="tokLogout">حذف توکن ذخیره‌شده</button>
+      <button class="btn btn-o" id="tokCancel">بستن</button>
+      <button class="btn btn-b" id="tokSave">تأیید و ذخیره</button>
+    </div>
+  </div>
+</div>
 <div id="admToast" role="status"></div>
 
 <script src="assets/js/config.js" defer></script>
+<script src="assets/js/site-overrides.js?v=20260969" defer></script>
 <script src="assets/js/admin.js?v=20260951" defer></script>
+<script src="assets/js/admin-cms.js?v=20260969" defer></script>
 </body>
 </html>
