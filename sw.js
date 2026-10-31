@@ -8,7 +8,7 @@
    ═══════════════════════════════════════════════════ */
 'use strict';
 
-const VER = '20260967';
+const VER = '20260968';
 const CACHE = 'starshop-' + VER;
 
 /* میزبان‌هایی که هرگز نباید کش شوند (داده زنده) */
@@ -38,6 +38,14 @@ self.addEventListener('activate', e => {
     await self.clients.claim();
   })());
 });
+
+/* تلاش شبکه با یک retry — روی شبکه پرلاست اغلب بار دوم جواب می‌دهد */
+async function netGet(req, retries) {
+  for (let i = 0; ; i++) {
+    try { return await fetch(req); }
+    catch (err) { if (i >= retries) throw err; await new Promise(r => setTimeout(r, 450)); }
+  }
+}
 
 self.addEventListener('fetch', e => {
   const req = e.request;
@@ -74,7 +82,7 @@ self.addEventListener('fetch', e => {
       const c = await caches.open(CACHE);
       const hit = await c.match(req);
       if (hit) return hit;
-      const fresh = await fetch(req);
+      const fresh = await netGet(req, 1);
       const cacheable = (fresh && fresh.ok) || (fresh && fresh.type === 'opaque');
       if (cacheable && (url.origin === self.location.origin || CACHABLE_CDN.test(url.hostname))) {
         try { c.put(req, fresh.clone()); } catch (err) {}
