@@ -5,6 +5,8 @@
    • محتوا در site-overrides.js ذخیره می‌شود (روی‌نویسی امن بدون دست‌زدن به فایل‌های اصلی)
    • هر ذخیره = bump خودکار نسخه‌ی sw.js → همه‌ی بازدیدکننده‌ها بلافاصله محتوای تازه می‌گیرند
    • مدیریت تصاویر: آپلود با تبدیل خودکار به webp + حذف — کامیت مستقیم در assets
+   • v52 دسترسی کامل: بازی‌ها + کارت‌ها + خدمات فروشگاه + کاتالوگ هوش مصنوعی
+     + گیفت کارت‌ها + همه‌ی متن‌های سه‌زبانه (سوالات متداول/نظرات/بخش‌های JSON)
    توکن گیت‌هاب فقط در localStorage همین مرورگر ذخیره می‌شود و هرگز کامیت نمی‌شود.
    ═══════════════════════════════════════════════════ */
 (() => {
@@ -168,6 +170,8 @@ const OV_TAIL = ";\n\n;(() => {\n'use strict';\nconst O = window.SS_OVERRIDES ||
 "const deep = (t, s) => {\n  for (const k in s) {\n    if (!Object.prototype.hasOwnProperty.call(s, k)) continue;\n    const v = s[k];\n    if (v && typeof v === 'object' && !Array.isArray(v) && t[k] && typeof t[k] === 'object' && !Array.isArray(t[k])) deep(t[k], v);\n    else t[k] = v;\n  }\n  return t;\n};\n" +
 "if (O.config && window.SS_CONFIG) deep(window.SS_CONFIG, O.config);\n" +
 "if (O.data && window.SS_DATA) {\n  for (const lang in O.data) {\n    if (window.SS_DATA[lang]) deep(window.SS_DATA[lang], O.data[lang]);\n    else window.SS_DATA[lang] = O.data[lang];\n  }\n}\n" +
+"if (O.aiCfg && window.SS_AI_IC) deep(window.SS_AI_IC, O.aiCfg);\n" +
+"if (Array.isArray(O.aiTools) && O.aiTools.length) window.SS_AI_TOOLS = O.aiTools;\n" +
 "window.SS_FLAGS = O.flags || {};\n" +
 "const hide = (O.flags && O.flags.hideSections) || [];\n" +
 "const kill = id => {\n  const el = document.getElementById(id);\n  if (el) { el.style.display = 'none'; el.setAttribute('data-flag-hidden', '1'); }\n  document.querySelectorAll('a[href=\"#' + id + '\"]').forEach(a => {\n    const box = a.closest('li') || a.closest('div') || a;\n    box.style.display = 'none';\n  });\n};\n" +
@@ -694,12 +698,581 @@ $('#restoreFile').addEventListener('change', async e => {
   } catch (e) { toast('✗ ' + e.message); }
 });
 
-/* ══════════ ۱۲) تب‌ها و شروع ══════════ */
+/* ══════════ ۱۳) خدمات فروشگاه — گرید اصلی سایت (v52) ══════════ */
+const LG3 = ['fa', 'en', 'ar'];
+const LG_NAME = { fa: 'فارسی', en: 'English', ar: 'العربية' };
+let SVC = null, SVC_EDIT = -1, SVC_LANG = 'fa';
+
+function svcLoad() {
+  SVC = {};
+  for (const lg of LG3) {
+    const base = (window.SS_DATA[lg] && window.SS_DATA[lg].services) || [];
+    const ov = (OV.data && OV.data[lg] && OV.data[lg].services) || null;
+    SVC[lg] = clone(ov && ov.length ? ov : base);
+  }
+}
+function svcRender() {
+  const box = $('#svcList');
+  if (!box) return;
+  const cats = (window.SS_DATA.fa && window.SS_DATA.fa.cats) || [];
+  $('#svcEditor').hidden = SVC_EDIT < 0;
+  box.innerHTML = (SVC.fa || []).map((s, i) => {
+    const item = SVC[SVC_LANG][i] || s;
+    const cat = cats.find(c => c.id === s.cat);
+    return '<div class="row"' + (s.off ? ' style="opacity:.5"' : '') + '>' +
+      '<span class="row-thumb" aria-hidden="true"><svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8"><use href="#i-' + esc(s.icon || 'spark') + '"/></svg></span>' +
+      '<div class="row-main"><b>' + esc(item.title || s.id) + '</b><small dir="ltr">' + esc(s.id) + ' · ' + esc(cat ? cat.label : (s.cat || '')) + (s.off ? ' · مخفی' : '') + '</small></div>' +
+      '<span class="row-actions">' +
+        '<button class="btn btn-o btn-sm" data-sedit="' + i + '">ویرایش</button>' +
+        '<button class="btn btn-o btn-sm" data-sup="' + i + '">↑</button>' +
+        '<button class="btn btn-o btn-sm" data-sdn="' + i + '">↓</button>' +
+        '<button class="btn btn-o btn-sm" data-soff="' + i + '">' + (s.off ? 'نمایش' : 'مخفی') + '</button>' +
+        '<button class="btn btn-r btn-sm" data-sdel="' + i + '">حذف</button>' +
+      '</span></div>';
+  }).join('') || '<div class="empty">خدمتی نیست</div>';
+  if (SVC_EDIT >= 0) svcEditorRender();
+}
+function svcEditorRender() {
+  const s = SVC.fa[SVC_EDIT], t = SVC[SVC_LANG][SVC_EDIT];
+  if (!s || !t) { SVC_EDIT = -1; $('#svcEditor').hidden = true; return; }
+  $('#seLangLbl').textContent = LG_NAME[SVC_LANG] || SVC_LANG;
+  $('#seId').value = s.id || '';
+  $('#seCat').innerHTML = ((window.SS_DATA.fa && window.SS_DATA.fa.cats) || []).map(c =>
+    '<option value="' + esc(c.id) + '"' + (c.id === s.cat ? ' selected' : '') + '>' + esc(c.label) + '</option>').join('');
+  $('#seIcon').value = s.icon || '';
+  $('#seTitle').value = t.title || '';
+  $('#seDesc').value = t.desc || '';
+  $('#seWho').value = t.who || '';
+  $('#seSteps').value = (t.steps || []).join('\n');
+  $('#seReq').value = (t.req || []).join('\n');
+}
+$('#svcLang').addEventListener('change', e => {
+  if (SVC_EDIT >= 0 && !confirm('تغییر زبان، ویرایشگرِ باز را می‌بندد و تغییرات ذخیره‌نشده‌اش پاک می‌شود. ادامه؟')) { e.target.value = SVC_LANG; return; }
+  SVC_LANG = e.target.value; SVC_EDIT = -1; svcRender();
+});
+$('#btnSvcAdd').addEventListener('click', () => {
+  const id = 'svc-' + Date.now().toString(36);
+  const seed = { fa: 'خدمت جدید', en: 'New service', ar: 'خدمة جديدة' };
+  for (const lg of LG3) SVC[lg].push({ id, cat: 'payments', icon: 'spark', title: seed[lg], desc: '', who: '', steps: [], req: [] });
+  SVC_EDIT = SVC.fa.length - 1;
+  svcRender();
+});
+$('#svcList').addEventListener('click', e => {
+  const ed = e.target.closest('[data-sedit]'), up = e.target.closest('[data-sup]'), dn = e.target.closest('[data-sdn]'), of = e.target.closest('[data-soff]'), de = e.target.closest('[data-sdel]');
+  if (ed) { SVC_EDIT = +ed.dataset.sedit; svcRender(); return; }
+  const swap = (i, j) => { for (const lg of LG3) { const a = SVC[lg]; if (a[i] && a[j]) { const tmp = a[i]; a[i] = a[j]; a[j] = tmp; } } };
+  if (up) { const i = +up.dataset.sup; if (i > 0) { swap(i, i - 1); if (SVC_EDIT === i) SVC_EDIT = i - 1; else if (SVC_EDIT === i - 1) SVC_EDIT = i; svcRender(); } }
+  if (dn) { const i = +dn.dataset.sdn; if (i < SVC.fa.length - 1) { swap(i, i + 1); if (SVC_EDIT === i) SVC_EDIT = i + 1; else if (SVC_EDIT === i + 1) SVC_EDIT = i; svcRender(); } }
+  if (of) {
+    const i = +of.dataset.soff;
+    const hideIt = SVC.fa[i] && SVC.fa[i].off !== true;
+    for (const lg of LG3) { const s = SVC[lg][i]; if (!s) continue; if (hideIt) s.off = true; else delete s.off; }
+    svcRender();
+  }
+  if (de) {
+    const i = +de.dataset.sdel;
+    if (confirm('خدمت «' + ((SVC.fa[i] || {}).id || '') + '» از هر سه زبان حذف شود؟')) {
+      if (SVC_EDIT === i) SVC_EDIT = -1; else if (SVC_EDIT > i) SVC_EDIT--;
+      for (const lg of LG3) SVC[lg].splice(i, 1);
+      svcRender();
+    }
+  }
+});
+$('#seSave').addEventListener('click', () => {
+  const i = SVC_EDIT; if (i < 0) return;
+  const icon = $('#seIcon').value.trim() || 'spark', cat = $('#seCat').value;
+  const title = $('#seTitle').value.trim(), desc = $('#seDesc').value.trim(), who = $('#seWho').value.trim();
+  const steps = $('#seSteps').value.split('\n').map(x => x.trim()).filter(Boolean);
+  const req = $('#seReq').value.split('\n').map(x => x.trim()).filter(Boolean);
+  for (const lg of LG3) {
+    const s = SVC[lg][i]; if (!s) continue;
+    s.icon = icon; s.cat = cat;
+    if (lg === SVC_LANG) {
+      if (title) s.title = title;
+      s.desc = desc; s.who = who; s.steps = steps; s.req = req;
+    }
+  }
+  SVC_EDIT = -1; svcRender();
+  toast('خدمت ذخیره شد — برای اعمال روی سایت، «انتشار تغییرات» را بزنید');
+});
+$('#seCancel').addEventListener('click', () => { SVC_EDIT = -1; svcRender(); });
+$('#btnSvcSave').addEventListener('click', async () => {
+  if (!TOK.get()) { tokenGate(true); return; }
+  try {
+    OV.data = OV.data || {};
+    for (const lg of LG3) { OV.data[lg] = OV.data[lg] || {}; OV.data[lg].services = SVC[lg]; }
+    $('#btnSvcSave').disabled = true;
+    await saveOv('خدمات فروشگاه به‌روزرسانی شد');
+    svcLoad(); svcRender();
+  } catch (e) { toast('✗ ' + e.message); }
+  finally { $('#btnSvcSave').disabled = false; }
+});
+
+/* ══════════ ۱۴) فروشگاه هوش مصنوعی — کاتالوگ کامل (v52) ══════════ */
+let AI = null, AI_EDIT = -1, AI_NEW = false;
+function aiLoad() {
+  AI = clone(Array.isArray(OV.aiTools) && OV.aiTools.length ? OV.aiTools : (window.SS_AI_TOOLS || []));
+  const ic = Object.assign({}, window.SS_AI_IC || {}, OV.aiCfg || {});
+  $('#aiPremium').value = ic.premiumToman != null ? ic.premiumToman : '';
+  $('#aiUnit').value = ic.unitRial != null ? ic.unitRial : '';
+}
+function aiRender() {
+  const box = $('#aiList');
+  if (!box) return;
+  const HEAD = { text: '📝 تولید محتوای متنی', av: '🎨 تولید محتوای صوتی و تصویری', code: '💻 برنامه‌نویسی و API' };
+  let html = '';
+  for (const ck of ['text', 'av', 'code']) {
+    const rows = AI.map((x, i) => ({ x, i })).filter(o => (o.x.cat || 'text') === ck).map(o => {
+      const x = o.x, i = o.i;
+      return '<div class="row"' + (x.avail === false ? ' style="opacity:.5"' : '') + '>' +
+        '<span class="row-thumb"><img src="' + rawBase() + 'assets/logos/ai/' + esc(x.id) + '.webp" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'"></span>' +
+        '<div class="row-main"><b>' + esc((x.n && (x.n.fa || x.n.en)) || x.t) + '</b><small dir="ltr">' + esc(x.id) + ' · ' + (x.custom ? 'custom' : ((x.plans || []).length) + ' plan') + (x.avail === false ? ' · ناموجود' : '') + '</small></div>' +
+        '<span class="row-actions">' +
+          '<button class="btn btn-o btn-sm" data-aedit="' + i + '">ویرایش</button>' +
+          '<button class="btn btn-o btn-sm" data-aup="' + i + '">↑</button>' +
+          '<button class="btn btn-o btn-sm" data-adn="' + i + '">↓</button>' +
+          '<button class="btn btn-r btn-sm" data-adel="' + i + '">حذف</button>' +
+        '</span></div>';
+    }).join('');
+    html += '<div class="grp-h">' + (HEAD[ck] || ck) + ' <small>' + toFa(AI.filter(x => (x.cat || 'text') === ck).length) + ' سرویس</small></div>' + (rows || '<div class="empty">—</div>');
+  }
+  box.innerHTML = html;
+  $('#aiEditor').hidden = AI_EDIT < 0;
+  if (AI_EDIT >= 0) aiEditorRender();
+}
+function aiEditorRender() {
+  const x = AI[AI_EDIT];
+  if (!x) { AI_EDIT = -1; $('#aiEditor').hidden = true; return; }
+  $('#aeId').value = x.id || '';
+  $('#aeId').disabled = !AI_NEW;
+  $('#aeT').value = x.t || '';
+  $('#aeNfa').value = (x.n && x.n.fa) || '';
+  $('#aeNen').value = (x.n && x.n.en) || '';
+  $('#aeNar').value = (x.n && x.n.ar) || '';
+  $('#aeCat').value = x.cat || 'text';
+  $('#aeCustom').checked = x.custom === true;
+  $('#aeTopup').checked = x.topup === true;
+  $('#aeUser').checked = !!(x.flds && x.flds.indexOf('user') >= 0);
+  $('#aePw').checked = !!(x.flds && x.flds.indexOf('pw') >= 0);
+  $('#aeOff').checked = x.avail === false;
+  $('#aePlans').innerHTML = (x.plans || []).map((p, j) =>
+    '<div class="pack-row" style="grid-template-columns:1.2fr 1.2fr 110px 40px">' +
+      '<input data-apn="' + j + '" value="' + esc(p.n) + '" placeholder="Plan name" dir="ltr">' +
+      '<input data-apnf="' + j + '" value="' + esc(p.nf || '') + '" placeholder="نام فارسی">' +
+      '<input data-ausd="' + j + '" value="' + esc(p.usd) + '" placeholder="دلار" dir="ltr" inputmode="decimal">' +
+      '<button type="button" class="btn btn-r btn-sm" data-apdel="' + j + '">✕</button></div>'
+  ).join('') || '<div class="empty" style="padding:10px">پلنی ثبت نشده — سفارش «مبلغ دلخواه (custom)» می‌شود</div>';
+}
+$('#btnAIAdd').addEventListener('click', () => {
+  AI.push({ id: 'new-ai', t: 'New AI', n: { fa: 'سرویس جدید', en: 'New AI', ar: 'سرویس جدید' }, cat: 'text', custom: true });
+  AI_EDIT = AI.length - 1; AI_NEW = true;
+  aiRender();
+});
+$('#aiList').addEventListener('click', e => {
+  const ed = e.target.closest('[data-aedit]'), up = e.target.closest('[data-aup]'), dn = e.target.closest('[data-adn]'), de = e.target.closest('[data-adel]');
+  if (ed) { AI_EDIT = +ed.dataset.aedit; AI_NEW = false; aiRender(); return; }
+  if (up) { const i = +up.dataset.aup; if (i > 0) { const t = AI[i]; AI[i] = AI[i - 1]; AI[i - 1] = t; if (AI_EDIT === i) AI_EDIT = i - 1; else if (AI_EDIT === i - 1) AI_EDIT = i; aiRender(); } }
+  if (dn) { const i = +dn.dataset.adn; if (i < AI.length - 1) { const t = AI[i]; AI[i] = AI[i + 1]; AI[i + 1] = t; if (AI_EDIT === i) AI_EDIT = i + 1; else if (AI_EDIT === i + 1) AI_EDIT = i; aiRender(); } }
+  if (de) {
+    const i = +de.dataset.adel;
+    if (confirm('سرویس «' + (AI[i].t || AI[i].id) + '» حذف شود؟')) {
+      if (AI_EDIT === i) AI_EDIT = -1; else if (AI_EDIT > i) AI_EDIT--;
+      AI.splice(i, 1);
+      aiRender();
+    }
+  }
+});
+$('#aeAddPlan').addEventListener('click', () => {
+  const x = AI[AI_EDIT]; if (!x) return;
+  x.plans = x.plans || [];
+  x.plans.push({ n: 'New Plan', nf: 'پلن جدید', usd: 9.99 });
+  aiEditorRender();
+});
+$('#aePlans').addEventListener('click', e => {
+  const de = e.target.closest('[data-apdel]');
+  if (!de) return;
+  const x = AI[AI_EDIT]; if (!x) return;
+  x.plans.splice(+de.dataset.apdel, 1);
+  aiEditorRender();
+});
+$('#aeSave').addEventListener('click', () => {
+  const x = AI[AI_EDIT]; if (!x) return;
+  if (AI_NEW) {
+    const nid = $('#aeId').value.trim().replace(/[^a-z0-9\-]/gi, '-').toLowerCase() || 'new-ai';
+    if (AI.some((o, i) => i !== AI_EDIT && o.id === nid)) { toast('این شناسه قبلاً استفاده شده — دیگری انتخاب کنید'); return; }
+    x.id = nid; AI_NEW = false;
+  }
+  x.t = $('#aeT').value.trim() || x.t;
+  x.n = { fa: $('#aeNfa').value.trim() || x.t, en: $('#aeNen').value.trim() || x.t, ar: $('#aeNar').value.trim() || x.t };
+  x.cat = $('#aeCat').value;
+  if ($('#aeCustom').checked) x.custom = true; else delete x.custom;
+  if ($('#aeTopup').checked) x.topup = true; else delete x.topup;
+  const f = [];
+  if ($('#aeUser').checked) f.push('user');
+  if ($('#aePw').checked) f.push('pw');
+  if (f.length) x.flds = f; else delete x.flds;
+  if ($('#aeOff').checked) x.avail = false; else delete x.avail;
+  const plans = [];
+  $$('#aePlans input').forEach(inp => {
+    if (inp.dataset.apn != null) { const j = +inp.dataset.apn; plans[j] = plans[j] || {}; plans[j].n = inp.value.trim(); }
+    else if (inp.dataset.apnf != null) { const j = +inp.dataset.apnf; plans[j] = plans[j] || {}; plans[j].nf = inp.value.trim(); }
+    else if (inp.dataset.ausd != null) { const j = +inp.dataset.ausd; plans[j] = plans[j] || {}; plans[j].usd = parseFloat(String(inp.value).replace(/[^\d.]/g, '')) || 0; }
+  });
+  const pl = plans.filter(Boolean).map(p => { const q = { n: p.n || 'Plan' }; if (p.nf) q.nf = p.nf; q.usd = p.usd || 0; return q; });
+  if (pl.length) x.plans = pl; else { delete x.plans; if (!x.custom) { x.custom = true; $('#aeCustom').checked = true; toast('بدون پلن = حالت «سفارشی» فعال شد'); } }
+  AI_EDIT = -1; aiRender();
+  toast('سرویس ذخیره شد — برای اعمال روی سایت، «انتشار تغییرات» را بزنید');
+});
+$('#aeCancel').addEventListener('click', () => { AI_EDIT = -1; AI_NEW = false; aiRender(); });
+$('#btnAISave').addEventListener('click', async () => {
+  if (!TOK.get()) { tokenGate(true); return; }
+  try {
+    const seen = {};
+    for (const x of AI) { if (seen[x.id]) { toast('شناسه تکراری: ' + x.id); return; } seen[x.id] = 1; }
+    OV.aiTools = AI;
+    const ic = Object.assign({}, window.SS_AI_IC || {}, OV.aiCfg || {});
+    ic.premiumToman = parseFloat(String($('#aiPremium').value).replace(/[^\d]/g, '')) || 0;
+    ic.unitRial = parseFloat(String($('#aiUnit').value).replace(/[^\d]/g, '')) || ic.unitRial || 2334000;
+    OV.aiCfg = ic;
+    $('#btnAISave').disabled = true;
+    await saveOv('فروشگاه هوش مصنوعی به‌روزرسانی شد');
+    aiLoad(); aiRender();
+  } catch (e) { toast('✗ ' + e.message); }
+  finally { $('#btnAISave').disabled = false; }
+});
+
+/* ══════════ ۱۵) گیفت کارت‌ها — مدیریت کامل (v52) ══════════ */
+let GIFT = null, GIFT_EDIT = -1, GIFT_LANG = 'fa';
+function giftLoad() {
+  GIFT = {};
+  for (const lg of LG3) {
+    const base = (window.SS_DATA[lg] && window.SS_DATA[lg].gifts) || [];
+    const ov = (OV.data && OV.data[lg] && OV.data[lg].gifts) || null;
+    GIFT[lg] = clone(ov && ov.length ? ov : base);
+  }
+}
+function giftRender() {
+  const box = $('#giftsList');
+  if (!box) return;
+  $('#giftEditor').hidden = GIFT_EDIT < 0;
+  box.innerHTML = (GIFT.fa || []).map((g, i) => {
+    const item = GIFT[GIFT_LANG][i] || g;
+    const range = g.type === 'months'
+      ? (g.monthOpts && g.monthOpts.length ? g.monthOpts.join('/') + ' ماه' : ((g.minM || 1) + '–' + (g.maxM || 12) + ' ماه'))
+      : ('$' + g.min + ' تا $' + g.max);
+    return '<div class="row"' + (g.off ? ' style="opacity:.5"' : '') + '>' +
+      '<span class="row-thumb"><img src="assets/logos/' + esc(g.logo || 'steam-w') + '.svg" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'"></span>' +
+      '<div class="row-main"><b>' + esc(item.t || g.id) + '</b><small dir="ltr">' + esc(g.id) + ' · ' + esc(range) + ' · ' + toFa((g.regions || []).length) + ' ریجن' + (g.off ? ' · مخفی' : '') + '</small></div>' +
+      '<span class="row-actions">' +
+        '<button class="btn btn-o btn-sm" data-gfedit="' + i + '">ویرایش</button>' +
+        '<button class="btn btn-o btn-sm" data-gfup="' + i + '">↑</button>' +
+        '<button class="btn btn-o btn-sm" data-gfdn="' + i + '">↓</button>' +
+        '<button class="btn btn-o btn-sm" data-gfoff="' + i + '">' + (g.off ? 'نمایش' : 'مخفی') + '</button>' +
+        '<button class="btn btn-r btn-sm" data-gfdel="' + i + '">حذف</button>' +
+      '</span></div>';
+  }).join('') || '<div class="empty">گیفت کارتی نیست</div>';
+  if (GIFT_EDIT >= 0) giftEditorRender();
+}
+function giftEditorRender() {
+  const gf = GIFT.fa[GIFT_EDIT], g = GIFT[GIFT_LANG][GIFT_EDIT];
+  if (!gf || !g) { GIFT_EDIT = -1; $('#giftEditor').hidden = true; return; }
+  $('#gfeLangLbl').textContent = LG_NAME[GIFT_LANG] || GIFT_LANG;
+  $('#gfeId').value = gf.id || '';
+  $('#gfeT').value = g.t || gf.t || '';
+  $('#gfeLogo').value = gf.logo || '';
+  $('#gfeD').value = g.d || '';
+  $('#gfeType').value = gf.type === 'months' ? 'months' : 'amount';
+  $('#gfeAmountBox').hidden = gf.type === 'months';
+  $('#gfeMonthsBox').hidden = gf.type !== 'months';
+  $('#gfeMin').value = gf.min != null ? gf.min : '';
+  $('#gfeMax').value = gf.max != null ? gf.max : '';
+  $('#gfeStep').value = gf.step != null ? gf.step : '';
+  $('#gfePresets').value = (gf.presets || []).join(', ');
+  $('#gfeMinM').value = gf.minM != null ? gf.minM : '';
+  $('#gfeMaxM').value = gf.maxM != null ? gf.maxM : '';
+  $('#gfeMonthOpts').value = (gf.monthOpts || []).join(', ');
+  $('#gfeRegions').innerHTML = (g.regions || []).map((r, ri) =>
+    '<div class="pack-row" style="grid-template-columns:64px 76px 1fr 40px">' +
+      '<input data-rf="flag" data-ri="' + ri + '" value="' + esc(r.flag) + '" placeholder="🇺🇸" title="پرچم (ایموجی)">' +
+      '<input data-rf="cur" data-ri="' + ri + '" value="' + esc(r.cur) + '" dir="ltr" placeholder="USD" title="ارز ریجن">' +
+      '<input data-rf="label" data-ri="' + ri + '" value="' + esc(r.label) + '" placeholder="نام کشور — زبان ' + GIFT_LANG + '">' +
+      '<input type="hidden" data-rf="id" data-ri="' + ri + '" value="' + esc(r.id) + '">' +
+      '<button type="button" class="btn btn-r btn-sm" data-regdel="' + ri + '">✕</button></div>'
+  ).join('');
+}
+function gfeTypeToggle() {
+  const m = $('#gfeType').value === 'months';
+  $('#gfeAmountBox').hidden = m;
+  $('#gfeMonthsBox').hidden = !m;
+}
+$('#gfeType').addEventListener('change', gfeTypeToggle);
+$('#giftLang').addEventListener('change', e => {
+  if (GIFT_EDIT >= 0 && !confirm('تغییر زبان، ویرایشگرِ باز را می‌بندد و تغییرات ذخیره‌نشده‌اش پاک می‌شود. ادامه؟')) { e.target.value = GIFT_LANG; return; }
+  GIFT_LANG = e.target.value; GIFT_EDIT = -1; giftRender();
+});
+$('#btnGiftAdd').addEventListener('click', () => {
+  const id = 'gift-' + Date.now().toString(36);
+  const seed = {
+    fa: { t: 'گیفت کارت جدید', d: 'توضیح کوتاه', regions: [{ id: 'us', flag: '🇺🇸', label: 'آمریکا', cur: 'USD' }] },
+    en: { t: 'New Gift Card', d: 'Short description', regions: [{ id: 'us', flag: '🇺🇸', label: 'United States', cur: 'USD' }] },
+    ar: { t: 'بطاقة هدية جديدة', d: 'وصف قصير', regions: [{ id: 'us', flag: '🇺🇸', label: 'الولايات المتحدة', cur: 'USD' }] }
+  };
+  for (const lg of LG3) GIFT[lg].push(Object.assign({ id, logo: 'steam-w', type: 'amount', min: 5, max: 100, step: 5, presets: [5, 10, 25, 50, 100] }, seed[lg]));
+  GIFT_EDIT = GIFT.fa.length - 1;
+  giftRender();
+});
+$('#giftsList').addEventListener('click', e => {
+  const ed = e.target.closest('[data-gfedit]'), up = e.target.closest('[data-gfup]'), dn = e.target.closest('[data-gfdn]'), of = e.target.closest('[data-gfoff]'), de = e.target.closest('[data-gfdel]');
+  if (ed) { GIFT_EDIT = +ed.dataset.gfedit; giftRender(); return; }
+  const swap = (i, j) => { for (const lg of LG3) { const a = GIFT[lg]; if (a[i] && a[j]) { const tmp = a[i]; a[i] = a[j]; a[j] = tmp; } } };
+  if (up) { const i = +up.dataset.gfup; if (i > 0) { swap(i, i - 1); if (GIFT_EDIT === i) GIFT_EDIT = i - 1; else if (GIFT_EDIT === i - 1) GIFT_EDIT = i; giftRender(); } }
+  if (dn) { const i = +dn.dataset.gfdn; if (i < GIFT.fa.length - 1) { swap(i, i + 1); if (GIFT_EDIT === i) GIFT_EDIT = i + 1; else if (GIFT_EDIT === i + 1) GIFT_EDIT = i; giftRender(); } }
+  if (of) {
+    const i = +of.dataset.gfoff;
+    const hideIt = GIFT.fa[i] && GIFT.fa[i].off !== true;
+    for (const lg of LG3) { const g = GIFT[lg][i]; if (!g) continue; if (hideIt) g.off = true; else delete g.off; }
+    giftRender();
+  }
+  if (de) {
+    const i = +de.dataset.gfdel;
+    if (confirm('گیفت کارت «' + ((GIFT.fa[i] || {}).id || '') + '» از هر سه زبان حذف شود؟')) {
+      if (GIFT_EDIT === i) GIFT_EDIT = -1; else if (GIFT_EDIT > i) GIFT_EDIT--;
+      for (const lg of LG3) GIFT[lg].splice(i, 1);
+      giftRender();
+    }
+  }
+});
+$('#gfeAddReg').addEventListener('click', () => {
+  const box = $('#gfeRegions');
+  const ri = box.querySelectorAll('.pack-row').length;
+  const div = document.createElement('div');
+  div.className = 'pack-row';
+  div.style.gridTemplateColumns = '64px 76px 1fr 40px';
+  div.innerHTML =
+    '<input data-rf="flag" data-ri="' + ri + '" value="🏳️" title="پرچم (ایموجی)">' +
+    '<input data-rf="cur" data-ri="' + ri + '" value="USD" dir="ltr" title="ارز ریجن">' +
+    '<input data-rf="label" data-ri="' + ri + '" value="" placeholder="نام کشور — زبان ' + GIFT_LANG + '">' +
+    '<input type="hidden" data-rf="id" data-ri="' + ri + '" value="">' +
+    '<button type="button" class="btn btn-r btn-sm" data-regdel="' + ri + '">✕</button>';
+  box.appendChild(div);
+});
+$('#gfeRegions').addEventListener('click', e => {
+  const de = e.target.closest('[data-regdel]');
+  if (de) de.closest('.pack-row').remove();
+});
+$('#gfeSave').addEventListener('click', () => {
+  const gi = GIFT_EDIT; if (gi < 0) return;
+  const type = $('#gfeType').value === 'months' ? 'months' : 'amount';
+  const logo = $('#gfeLogo').value.trim() || 'steam-w';
+  const t = $('#gfeT').value.trim();
+  const d = $('#gfeD').value.trim();
+  const rows = $$('#gfeRegions .pack-row').map((row, ri) => {
+    const get = f => { const el = row.querySelector('[data-rf="' + f + '"]'); return el ? el.value.trim() : ''; };
+    return { id: get('id') || get('cur').toLowerCase() || ('r' + (ri + 1)), flag: get('flag') || '🏳️', cur: (get('cur') || 'USD').toUpperCase(), label: get('label') };
+  });
+  const ids = {};
+  for (const r of rows) { if (ids[r.id]) { toast('شناسه ریجن تکراری: ' + r.id); return; } ids[r.id] = 1; }
+  const num = (sel, fb) => { const v = parseFloat(String($(sel).value).replace(/[^\d.]/g, '')); return isNaN(v) ? fb : v; };
+  for (const lg of LG3) {
+    const g = GIFT[lg][gi]; if (!g) continue;
+    g.type = type; g.logo = logo;
+    if (t) g.t = t;
+    if (type === 'amount') {
+      g.min = num('#gfeMin', 1); g.max = num('#gfeMax', 100); g.step = num('#gfeStep', 1);
+      const pr = $('#gfePresets').value.split(/[,\s،]+/).map(x => parseFloat(String(x).replace(/[^\d.]/g, ''))).filter(v => v > 0);
+      if (pr.length) g.presets = pr; else delete g.presets;
+      delete g.minM; delete g.maxM; delete g.monthOpts;
+    } else {
+      const mm = $('#gfeMinM').value.trim(), mx = $('#gfeMaxM').value.trim();
+      if (mm) g.minM = parseInt(mm, 10); else delete g.minM;
+      if (mx) g.maxM = parseInt(mx, 10); else delete g.maxM;
+      const mo = $('#gfeMonthOpts').value.split(/[,\s،]+/).map(x => parseInt(x, 10)).filter(v => v > 0);
+      if (mo.length) g.monthOpts = mo; else { delete g.monthOpts; if (g.minM == null) g.minM = 1; if (g.maxM == null) g.maxM = 12; }
+      delete g.min; delete g.max; delete g.step; delete g.presets;
+    }
+    /* ریجن: ساختار از زبان جاری؛ لیبل زبان‌های دیگر حفظ می‌شود (هم‌اندیس) */
+    g.regions = rows.map((r, ri) => {
+      const old = (g.regions || [])[ri];
+      const label = (lg === GIFT_LANG) ? (r.label || (old && old.label) || r.id) : ((old && old.label) || r.id);
+      return { id: r.id, flag: r.flag, cur: r.cur, label };
+    });
+  }
+  GIFT_EDIT = -1; giftRender();
+  toast('کارت ذخیره شد — برای اعمال روی سایت، «انتشار تغییرات» را بزنید');
+});
+$('#gfeCancel').addEventListener('click', () => { GIFT_EDIT = -1; giftRender(); });
+$('#btnGiftSave').addEventListener('click', async () => {
+  if (!TOK.get()) { tokenGate(true); return; }
+  try {
+    OV.data = OV.data || {};
+    for (const lg of LG3) { OV.data[lg] = OV.data[lg] || {}; OV.data[lg].gifts = GIFT[lg]; }
+    $('#btnGiftSave').disabled = true;
+    await saveOv('گیفت کارت‌ها به‌روزرسانی شد');
+    giftLoad(); giftRender();
+  } catch (e) { toast('✗ ' + e.message); }
+  finally { $('#btnGiftSave').disabled = false; }
+});
+
+/* ══════════ ۱۶) متن‌های سایت — همه‌ی متن‌ها + سوالات متداول + نظرات + بخش‌های JSON (v52) ══════════ */
+let TXT_LANG = 'fa', TXT_SECTION = 'ui';
+const TXT_DIRTY = { fa: new Set(), en: new Set(), ar: new Set() };
+const TXT_VALS = { fa: {}, en: {}, ar: {} };
+let TXT_WORK = { faq: null, tst: null };
+const txtBaseUI = lg => (window.SS_DATA[lg] && window.SS_DATA[lg].ui) || {};
+const txtOvUI = lg => (OV.data && OV.data[lg] && OV.data[lg].ui) || {};
+const txtEffUI = lg => Object.assign({}, txtBaseUI(lg), txtOvUI(lg));
+const txtEffArr = (lg, key) => {
+  const ov = OV.data && OV.data[lg] && OV.data[lg][key];
+  if (Array.isArray(ov)) return ov;
+  return (window.SS_DATA[lg] && window.SS_DATA[lg][key]) || [];
+};
+function txtDirtyCount() { return TXT_DIRTY[TXT_LANG].size; }
+function txtChip() { const el = $('#txtDirtyChip'); if (el) el.textContent = toFa(txtDirtyCount()) + ' تغییر ذخیره‌نشده (زبان ' + (LG_NAME[TXT_LANG] || '') + ')'; }
+function txtRender() {
+  const box = $('#txtList'), jb = $('#txtJsonBox');
+  if (!box) return;
+  const isJson = TXT_SECTION === '__json';
+  jb.hidden = !isJson;
+  $('#txtSearchWrap').style.display = TXT_SECTION === 'ui' ? '' : 'none';
+  $('#btnTxtSave').style.display = isJson ? 'none' : '';
+  if (isJson) { txtJsonRender(); box.innerHTML = ''; return; }
+  if (TXT_SECTION === 'faq') { txtFaqRender(); return; }
+  if (TXT_SECTION === 'testimonials') { txtTstRender(); return; }
+  const q = ($('#txtSearch').value || '').trim().toLowerCase();
+  const eff = txtEffUI(TXT_LANG);
+  const keys = Object.keys(eff).filter(k => !q || k.toLowerCase().includes(q) || String(eff[k]).toLowerCase().includes(q)).slice(0, 250);
+  box.innerHTML = keys.map(k => {
+    const dirty = TXT_DIRTY[TXT_LANG].has(k);
+    const val = dirty && TXT_VALS[TXT_LANG][k] != null ? TXT_VALS[TXT_LANG][k] : eff[k];
+    return '<div class="row" style="align-items:flex-start;flex-wrap:wrap">' +
+      '<div class="row-main" style="min-width:220px"><b style="font-weight:400;font-size:13.5px">' + esc(val) + '</b><small dir="ltr">' + esc(k) + '</small></div>' +
+      '<input data-txtkey="' + esc(k) + '" value="' + esc(val) + '" style="flex:1.1;min-width:220px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);padding:8px 10px;font-family:var(--font);font-size:13px"' + (dirty ? ' class="dirty"' : '') + '>' +
+    '</div>';
+  }).join('') || '<div class="empty">موردی یافت نشد</div>';
+}
+$('#txtList').addEventListener('input', e => {
+  const k = e.target.dataset && e.target.dataset.txtkey;
+  if (!k) return;
+  TXT_VALS[TXT_LANG][k] = e.target.value;
+  const orig = txtOvUI(TXT_LANG)[k] != null ? txtOvUI(TXT_LANG)[k] : txtBaseUI(TXT_LANG)[k];
+  if (e.target.value === String(orig == null ? '' : orig)) TXT_DIRTY[TXT_LANG].delete(k); else TXT_DIRTY[TXT_LANG].add(k);
+  e.target.classList.toggle('dirty', TXT_DIRTY[TXT_LANG].has(k));
+  txtChip();
+});
+$('#txtLang').addEventListener('change', e => {
+  if ((TXT_DIRTY[TXT_LANG].size || TXT_SECTION !== 'ui') && !confirm('تغییر زبان — تغییرات ذخیره‌نشده‌ی متنِ زبان جاری در همین صفحه می‌ماند و بعداً می‌توانید برگردید. ادامه؟')) { e.target.value = TXT_LANG; return; }
+  TXT_LANG = e.target.value;
+  TXT_WORK = { faq: null, tst: null };
+  txtRender();
+});
+$('#txtSection').addEventListener('change', e => { TXT_SECTION = e.target.value; txtRender(); });
+$('#txtSearch').addEventListener('input', () => { if (TXT_SECTION === 'ui') txtRender(); });
+$('#btnTxtSave').addEventListener('click', async () => {
+  if (!TOK.get()) { tokenGate(true); return; }
+  try {
+    OV.data = OV.data || {}; OV.data[TXT_LANG] = OV.data[TXT_LANG] || {};
+    if (TXT_SECTION === 'ui') {
+      const d = TXT_DIRTY[TXT_LANG];
+      if (!d.size) { toast('تغییری برای ذخیره نیست'); return; }
+      OV.data[TXT_LANG].ui = Object.assign({}, OV.data[TXT_LANG].ui || {});
+      d.forEach(k => { OV.data[TXT_LANG].ui[k] = TXT_VALS[TXT_LANG][k] != null ? TXT_VALS[TXT_LANG][k] : ($('#txtList [data-txtkey="' + k + '"]') || {}).value || ''; });
+    } else if (TXT_SECTION === 'faq') {
+      txtFaqCollect();
+      OV.data[TXT_LANG].faq = TXT_WORK.faq;
+    } else if (TXT_SECTION === 'testimonials') {
+      txtTstCollect();
+      OV.data[TXT_LANG].testimonials = TXT_WORK.tst;
+    } else return;
+    $('#btnTxtSave').disabled = true;
+    await saveOv('متن‌های سایت (' + (LG_NAME[TXT_LANG] || TXT_LANG) + ' — ' + TXT_SECTION + ') به‌روزرسانی شد');
+    if (TXT_SECTION === 'ui') { TXT_DIRTY[TXT_LANG] = new Set(); TXT_VALS[TXT_LANG] = {}; }
+    txtRender();
+  } catch (e) { toast('✗ ' + e.message); }
+  finally { $('#btnTxtSave').disabled = false; }
+});
+/* ── سوالات متداول ── */
+function txtFaqRender() {
+  if (!TXT_WORK.faq) TXT_WORK.faq = clone(txtEffArr(TXT_LANG, 'faq'));
+  $('#txtList').innerHTML = TXT_WORK.faq.map((f, i) =>
+    '<div class="card-block"><div class="f2">' +
+      '<label class="fld"><span>سوال ' + toFa(i + 1) + '</span><input data-fq="' + i + '" value="' + esc(f.q) + '"></label>' +
+      '<label class="fld"><span>پاسخ ' + toFa(i + 1) + '</span><textarea data-fans="' + i + '" rows="3" class="ed-ta">' + esc(f.a) + '</textarea></label>' +
+    '</div><button class="btn btn-r btn-sm" data-fdel="' + i + '">حذف این سوال</button></div>'
+  ).join('') + '<button class="btn btn-o" id="btnFaqAdd" type="button">➕ سوال جدید</button>';
+}
+function txtFaqCollect() {
+  const arr = TXT_WORK.faq || [];
+  $$('#txtList [data-fq]').forEach(inp => { const i = +inp.dataset.fq; if (arr[i]) arr[i].q = inp.value; });
+  $$('#txtList [data-fans]').forEach(inp => { const i = +inp.dataset.fans; if (arr[i]) arr[i].a = inp.value; });
+  TXT_WORK.faq = arr;
+}
+$('#txtList').addEventListener('click', async e => {
+  const fa = e.target.closest('#btnFaqAdd'), fdel = e.target.closest('[data-fdel]');
+  const ta = e.target.closest('#btnTstAdd'), tdel = e.target.closest('[data-tdel]');
+  if (fa) { txtFaqCollect(); TXT_WORK.faq.push({ q: 'سوال جدید', a: 'پاسخ' }); txtFaqRender(); }
+  if (fdel) { txtFaqCollect(); TXT_WORK.faq.splice(+fdel.dataset.fdel, 1); txtFaqRender(); }
+  if (ta) { txtTstCollect(); TXT_WORK.tst.push({ t: 'موضوع جدید', q: 'متن نظر' }); txtTstRender(); }
+  if (tdel) { txtTstCollect(); TXT_WORK.tst.splice(+tdel.dataset.tdel, 1); txtTstRender(); }
+});
+/* ── نظرات مشتریان ── */
+function txtTstRender() {
+  if (!TXT_WORK.tst) TXT_WORK.tst = clone(txtEffArr(TXT_LANG, 'testimonials'));
+  $('#txtList').innerHTML = TXT_WORK.tst.map((f, i) =>
+    '<div class="card-block"><div class="f2">' +
+      '<label class="fld"><span>موضوع ' + toFa(i + 1) + '</span><input data-tt="' + i + '" value="' + esc(f.t) + '"></label>' +
+      '<label class="fld"><span>متن نظر ' + toFa(i + 1) + '</span><textarea data-tq="' + i + '" rows="3" class="ed-ta">' + esc(f.q) + '</textarea></label>' +
+    '</div><button class="btn btn-r btn-sm" data-tdel="' + i + '">حذف این نظر</button></div>'
+  ).join('') + '<button class="btn btn-o" id="btnTstAdd" type="button">➕ نظر جدید</button>';
+}
+function txtTstCollect() {
+  const arr = TXT_WORK.tst || [];
+  $$('#txtList [data-tt]').forEach(inp => { const i = +inp.dataset.tt; if (arr[i]) arr[i].t = inp.value; });
+  $$('#txtList [data-tq]').forEach(inp => { const i = +inp.dataset.tq; if (arr[i]) arr[i].q = inp.value; });
+  TXT_WORK.tst = arr;
+}
+/* ── بخش‌های JSON ── */
+const TXT_JSON_SKIP = { ui: 1, faq: 1, testimonials: 1, gifts: 1, services: 1, meta: 1 };
+function txtJsonRender() {
+  const sel = $('#txtJsonSec');
+  const keys = Object.keys(window.SS_DATA[TXT_LANG] || {}).filter(k => !TXT_JSON_SKIP[k]);
+  const cur = sel.value;
+  sel.innerHTML = keys.map(k => '<option value="' + esc(k) + '">' + esc(k) + '</option>').join('');
+  if (cur && keys.includes(cur)) sel.value = cur;
+  txtJsonFill();
+}
+function txtJsonFill() {
+  const k = $('#txtJsonSec').value;
+  const ov = OV.data && OV.data[TXT_LANG] && OV.data[TXT_LANG][k];
+  const eff = ov != null ? ov : (window.SS_DATA[TXT_LANG] || {})[k];
+  $('#txtJsonArea').value = JSON.stringify(eff, null, 2);
+}
+$('#txtJsonSec').addEventListener('change', txtJsonFill);
+$('#txtJsonReload').addEventListener('click', () => { txtJsonFill(); toast('بازخوانی شد'); });
+$('#btnTxtJsonSave').addEventListener('click', async () => {
+  if (!TOK.get()) { tokenGate(true); return; }
+  let val;
+  try { val = JSON.parse($('#txtJsonArea').value || 'null'); }
+  catch (e) { toast('✗ JSON نامعتبر: ' + e.message); return; }
+  try {
+    const k = $('#txtJsonSec').value;
+    OV.data = OV.data || {}; OV.data[TXT_LANG] = OV.data[TXT_LANG] || {};
+    OV.data[TXT_LANG][k] = val;
+    $('#btnTxtJsonSave').disabled = true;
+    await saveOv('بخش «' + k + '» (' + (LG_NAME[TXT_LANG] || TXT_LANG) + ') به‌روزرسانی شد');
+  } catch (e) { toast('✗ ' + e.message); }
+  finally { $('#btnTxtJsonSave').disabled = false; }
+});
+
+/* ══════════ ۱۷) تب‌ها و شروع ══════════ */
 $$('.tab[data-pane]').forEach(t => t.addEventListener('click', () => {
   $$('.tab[data-pane]').forEach(x => x.classList.toggle('on', x === t));
   $$('.pane').forEach(p => { p.hidden = p.id !== 'pane-' + t.dataset.pane; });
   if (t.dataset.pane === 'dash') dashLoad();
   if (t.dataset.pane === 'products') { gamesRender(); cardsRender(); }
+  if (t.dataset.pane === 'services') { svcLoad(); svcRender(); }
+  if (t.dataset.pane === 'ai') { aiLoad(); aiRender(); }
+  if (t.dataset.pane === 'gifts') { giftLoad(); giftRender(); }
+  if (t.dataset.pane === 'texts') txtRender();
   if (t.dataset.pane === 'images') { imgDirFill(); imgGrid(); }
   if (t.dataset.pane === 'plugins') plugRender();
   if (t.dataset.pane === 'settings') setRender();

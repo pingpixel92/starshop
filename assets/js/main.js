@@ -81,7 +81,7 @@ const renderHeroCard = () => {
 const renderQuick = () => {
   const grid = $('#quickGrid'); if (!grid) return;
   grid.innerHTML = ['pay-web','pp-person','gift-cards','card-visa','ai-chatgpt','shop-link','income-freelance','exam-reg'].map(id => {
-    const s = getService(id); if (!s) return '';
+    const s = getService(id); if (!s || s.off === true) return '';
     return `<button class="qs" role="listitem" data-service="${s.id}" aria-label="${escapeHtml(s.title)}">
       <span class="card-ic"><svg class="ic" viewBox="0 0 24 24"><use href="#i-${s.icon}"/></svg></span>
       <h3>${escapeHtml(s.title)}</h3><p>${escapeHtml(s.desc.split('؛')[0].split('.')[0])}.</p>
@@ -98,7 +98,7 @@ const renderExplorer = () => {
     `<button class="tab" role="tab" id="tab-${c.id}" aria-selected="${c.id === activeCat}" aria-controls="panel-${c.id}" data-cat="${c.id}">${escapeHtml(c.label)}</button>`
   ).join('');
   panels.innerHTML = D().cats.map(c => {
-    const items = D().services.filter(s => s.cat === c.id);
+    const items = D().services.filter(s => s.cat === c.id && s.off !== true);
     return `<div class="panel${c.id === activeCat ? ' active' : ''}" role="tabpanel" id="panel-${c.id}" aria-labelledby="tab-${c.id}" data-cat="${c.id}">
       ${items.map(s => `<article class="card" data-service="${s.id}" role="button" tabindex="0" aria-label="${escapeHtml(s.title)}">
         <span class="card-ic"><svg class="ic" viewBox="0 0 24 24"><use href="#i-${s.icon}"/></svg></span>
@@ -143,7 +143,7 @@ const renderSelect = () => {
   const cur = sel.value;
   sel.innerHTML = `<option value="" selected disabled>${t('cm.select')}</option>` +
     D().cats.map(c => `<optgroup label="${escapeHtml(c.label)}">` +
-      D().services.filter(s => s.cat === c.id).map(s => `<option value="${s.id}">${escapeHtml(s.title)}</option>`).join('') +
+      D().services.filter(s => s.cat === c.id && s.off !== true).map(s => `<option value="${s.id}">${escapeHtml(s.title)}</option>`).join('') +
     '</optgroup>').join('');
   if (cur) sel.value = cur;
 };
@@ -232,7 +232,7 @@ document.addEventListener('ss:lang', () => { aiPriceRate = 0; });
 
 const renderGifts = () => {
   const g = $('#giftTrack'); if (!g) return;
-  g.innerHTML = D().gifts.map((x, i) => {
+  g.innerHTML = D().gifts.filter(x => x.off !== true).map((x, i) => {
     const cls = ({'Apple':'gc-apple','Steam':'gc-steam','PlayStation':'gc-ps','Xbox':'gc-xbox','Amazon':'gc-amazon','PUBG':'gc-pubg','Free Fire':'gc-ff','Netflix':'gc-netflix','Google Play':'gc-gplay','Spotify':'gc-spotify','Telegram Premium':'gc-tg','YouTube Premium':'gc-yt','Discord Nitro':'gc-discord','ChatGPT Plus':'gc-gpt','Canva Pro':'gc-canva','Razer Gold':'gc-razer','Roblox':'gc-roblox','Nintendo eShop':'gc-nintendo','Epic Games':'gc-epic','Visa Card':'gc-visa','MasterCard':'gc-mc','Hulu':'gc-hulu','Tidal':'gc-tidal','PayPal':'gc-paypal','Walmart':'gc-walmart','Target':'gc-target','Nike':'gc-nike','Uber':'gc-uber','eBay':'gc-ebay','Huawei':'gc-huawei','Skrill':'gc-skrill','Battle.net':'gc-bnet','Xbox Game Pass':'gc-xbox'}[x.t]) || 'gc-steam';
     return `<li class="gift ${cls}" data-gift-open="${x.id}" role="button" tabindex="0" aria-label="${t('gift.add')} — ${escapeHtml(x.t)}" style="animation-delay:${i * 40}ms">
       <span class="gift-logo" aria-hidden="true"><img src="assets/logos/${x.logo}.svg" alt="" width="52" height="52" loading="lazy"></span>
@@ -903,9 +903,9 @@ const closeSearch = () => {
 const renderResults = q => {
   const box = $('#searchResults'); if (!box) return;
   const nq = normTxt(q);
-  let svc = D().services, arts = D().articles;
+  let svc = D().services.filter(s => s.off !== true), arts = D().articles;
   if (nq) {
-    svc = D().services.filter(s => normTxt(s.title + ' ' + s.desc + ' ' + catLabel(s.cat)).includes(nq));
+    svc = D().services.filter(s => s.off !== true && normTxt(s.title + ' ' + s.desc + ' ' + catLabel(s.cat)).includes(nq));
     arts = D().articles.filter(a => normTxt(a.title + ' ' + a.excerpt + ' ' + a.tag).includes(nq));
   }
   if (!svc.length && !arts.length) {

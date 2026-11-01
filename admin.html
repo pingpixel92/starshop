@@ -114,6 +114,13 @@ textarea#jsonArea{width:100%;min-height:340px;border:1.5px solid var(--line);bor
 #admToast.show{transform:translateX(-50%) translateY(0);opacity:1}
 .hint{background:rgba(224,161,47,.08);border:1px solid rgba(224,161,47,.35);border-radius:12px;padding:10px 14px;font-size:12.5px;margin-bottom:14px;color:var(--muted)}
 .hint b{color:var(--warn)}
+/* v52 — ویرایشگرهای چندخطی و ردیف ریجن */
+.ed-ta{width:100%;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);padding:8px 10px;font-family:var(--font);font-size:13px;resize:vertical}
+.ed-ta:focus{outline:none;border-color:var(--brand)}
+.ed-ta[readonly]{opacity:.7}
+.grp-h{font-size:14px;margin:18px 0 8px;display:flex;align-items:center;gap:8px}
+.grp-h small{color:var(--muted);font-weight:400}
+.dirty{border-color:var(--warn)!important}
 </style>
 </head>
 <body>
@@ -137,6 +144,10 @@ textarea#jsonArea{width:100%;min-height:340px;border:1.5px solid var(--line);bor
     <button class="tab on" data-pane="dash">📊 داشبورد</button>
     <button class="tab" data-pane="orders">🧾 سفارش‌ها</button>
     <button class="tab" data-pane="products">🎮 محصولات و قیمت‌ها</button>
+    <button class="tab" data-pane="services">🛍️ خدمات</button>
+    <button class="tab" data-pane="ai">🤖 هوش مصنوعی</button>
+    <button class="tab" data-pane="gifts">🎁 گیفت کارت</button>
+    <button class="tab" data-pane="texts">📝 متن‌ها</button>
     <button class="tab" data-pane="images">🖼️ تصاویر</button>
     <button class="tab" data-pane="plugins">🧩 افزونه‌ها</button>
     <button class="tab" data-pane="settings">⚙️ تنظیمات</button>
@@ -199,6 +210,148 @@ textarea#jsonArea{width:100%;min-height:340px;border:1.5px solid var(--line);bor
     </div>
     <h2>💳 کارت‌ها و پی‌پال</h2>
     <div id="cardsList"></div>
+  </section>
+
+  <!-- خدمات فروشگاه (v52) -->
+  <section class="pane" id="pane-services" hidden>
+    <div class="hint">🛍️ مدیریت کامل «خدمات فروشگاه» (گرید اصلی سایت): عنوان و توضیح هر خدمت به <b>سه زبان</b>، مخفی‌کردن، جابه‌جایی، افزودن و حذف. «زبان ویرایش» فقط متن‌ها را عوض می‌کند؛ مخفی/حذف/جابه‌جایی روی هر سه زبان اعمال می‌شود.</div>
+    <div class="img-tools">
+      <label class="fld"><span>زبان ویرایش متن‌ها</span>
+        <select id="svcLang"><option value="fa">فارسی</option><option value="en">English</option><option value="ar">العربية</option></select>
+      </label>
+      <button class="btn btn-g" id="btnSvcAdd">➕ افزودن خدمت</button>
+      <button class="btn btn-b" id="btnSvcSave">🚀 انتشار تغییرات</button>
+    </div>
+    <div id="svcList"></div>
+    <div id="svcEditor" hidden>
+      <h3 style="margin-top:0">ویرایش خدمت — زبان: <span id="seLangLbl">فارسی</span></h3>
+      <div class="f2">
+        <label class="fld"><span>شناسه (ثابت)</span><input id="seId" dir="ltr" disabled></label>
+        <label class="fld"><span>دسته</span><select id="seCat"></select></label>
+        <label class="fld"><span>آیکون (نام آیکون — مثل globe / card / gift)</span><input id="seIcon" dir="ltr"></label>
+        <label class="fld"><span>عنوان</span><input id="seTitle"></label>
+      </div>
+      <label class="fld"><span>توضیح کوتاه (زیر عنوان)</span><textarea id="seDesc" rows="2" class="ed-ta"></textarea></label>
+      <label class="fld"><span>«مناسب برای» (who)</span><textarea id="seWho" rows="2" class="ed-ta"></textarea></label>
+      <div class="f2">
+        <label class="fld"><span>مراحل سفارش (هر خط یک مرحله)</span><textarea id="seSteps" rows="4" class="ed-ta"></textarea></label>
+        <label class="fld"><span>مدارک / نیازمندی‌ها (هر خط یک مورد)</span><textarea id="seReq" rows="4" class="ed-ta"></textarea></label>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-b btn-sm" id="seSave">✓ ذخیره این خدمت</button>
+        <button class="btn btn-o btn-sm" id="seCancel">انصراف</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- هوش مصنوعی (v52) -->
+  <section class="pane" id="pane-ai" hidden>
+    <div class="hint">🤖 مدیریت کامل فروشگاه هوش مصنوعی: همه‌ی سرویس‌ها با پلن‌ها و قیمت پایه دلاری، نام‌ها، دسته‌بندی، «ناموجود»، افزودن و حذف. قیمت نهایی = (دلار + ۱$) × نرخ لحظه‌ای دلار + حق خدمات. لوگوی هر سرویس از <b dir="ltr">assets/logos/ai/<span id="aiLogoHint">id</span>.webp</b> می‌آید (تب تصاویر).</div>
+    <div class="img-tools">
+      <label class="fld"><span>حق خدمات هوش مصنوعی (تومان)</span><input id="aiPremium" inputmode="numeric" dir="ltr" placeholder="500000"></label>
+      <label class="fld"><span>نرخ فالبک دلار (ریال — فقط وقتی نرخ زنده قطع است)</span><input id="aiUnit" inputmode="numeric" dir="ltr" placeholder="2334000"></label>
+      <button class="btn btn-g" id="btnAIAdd">➕ افزودن سرویس</button>
+      <button class="btn btn-b" id="btnAISave">🚀 انتشار تغییرات</button>
+    </div>
+    <div id="aiList"></div>
+    <div id="aiEditor" hidden>
+      <h3 style="margin-top:0">ویرایش سرویس هوش مصنوعی</h3>
+      <div class="f2">
+        <label class="fld"><span>شناسه (فقط برای سرویس تازه قابل تغییر — نام فایل لوگو هم هست)</span><input id="aeId" dir="ltr"></label>
+        <label class="fld"><span>نام انگلیسی (t)</span><input id="aeT" dir="ltr"></label>
+        <label class="fld"><span>نام فارسی</span><input id="aeNfa"></label>
+        <label class="fld"><span>نام عربی</span><input id="aeNar"></label>
+        <label class="fld"><span>دسته</span><select id="aeCat"><option value="text">متن‌سازی</option><option value="av">صوتی و تصویری</option><option value="code">برنامه‌نویسی و API</option></select></label>
+        <label class="fld"><span>نام انگلیسی دوم (n.en — خالی = t)</span><input id="aeNen" dir="ltr"></label>
+      </div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px">
+        <label class="plug-row" style="margin:0"><input type="checkbox" id="aeCustom"> سفارشی (مبلغ دلخواه — بدون پلن)</label>
+        <label class="plug-row" style="margin:0"><input type="checkbox" id="aeTopup"> شارژ/تست (topup)</label>
+        <label class="plug-row" style="margin:0"><input type="checkbox" id="aeUser"> نیازمند نام کاربری اکانت</label>
+        <label class="plug-row" style="margin:0"><input type="checkbox" id="aePw"> نیازمند رمز اکانت</label>
+        <label class="plug-row" style="margin:0"><input type="checkbox" id="aeOff"> ناموجود (نمایش «در دسترس نیست»)</label>
+      </div>
+      <h3>پلن‌ها و قیمت پایه دلاری</h3>
+      <div id="aePlans"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-o btn-sm" id="aeAddPlan">➕ پلن جدید</button>
+        <button class="btn btn-b btn-sm" id="aeSave">✓ ذخیره این سرویس</button>
+        <button class="btn btn-o btn-sm" id="aeCancel">انصراف</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- گیفت کارت (v52) -->
+  <section class="pane" id="pane-gifts" hidden>
+    <div class="hint">🎁 مدیریت کامل گیفت کارت‌ها: نام‌ها، بازه مبلغ یا مدت اشتراک، مبالغ پیشنهادی، ریجن‌ها (شناسه/پرچم/ارز و نام کشور به سه زبان)، مخفی‌کردن، افزودن و حذف. ساختار روی هر سه زبان اعمال می‌شود؛ «زبان ویرایش» فقط متن‌ها. شناسه ریجن یکتا باشد (مثل us / eu / ae).</div>
+    <div class="img-tools">
+      <label class="fld"><span>زبان ویرایش متن‌ها</span>
+        <select id="giftLang"><option value="fa">فارسی</option><option value="en">English</option><option value="ar">العربية</option></select>
+      </label>
+      <button class="btn btn-g" id="btnGiftAdd">➕ افزودن گیفت کارت</button>
+      <button class="btn btn-b" id="btnGiftSave">🚀 انتشار تغییرات</button>
+    </div>
+    <div id="giftsList"></div>
+    <div id="giftEditor" hidden>
+      <h3 style="margin-top:0">ویرایش گیفت کارت — زبان: <span id="gfeLangLbl">فارسی</span></h3>
+      <div class="f2">
+        <label class="fld"><span>شناسه (ثابت)</span><input id="gfeId" dir="ltr" disabled></label>
+        <label class="fld"><span>نام برند (t)</span><input id="gfeT"></label>
+        <label class="fld"><span>فایل لوگو (بدون پسوند — assets/logos/)</span><input id="gfeLogo" dir="ltr"></label>
+        <label class="fld"><span>توضیح (زیر برند — زبان جاری)</span><input id="gfeD"></label>
+        <label class="fld"><span>نوع</span><select id="gfeType"><option value="amount">مبلغ دلاری (amount)</option><option value="months">مدت اشتراک (months)</option></select></label>
+      </div>
+      <div class="f2" id="gfeAmountBox">
+        <label class="fld"><span>کمترین مبلغ (دلار)</span><input id="gfeMin" dir="ltr" inputmode="decimal"></label>
+        <label class="fld"><span>بیشترین مبلغ (دلار)</span><input id="gfeMax" dir="ltr" inputmode="decimal"></label>
+        <label class="fld"><span>گام (step)</span><input id="gfeStep" dir="ltr" inputmode="decimal"></label>
+        <label class="fld"><span>مبالغ پیشنهادی (با ویرگول)</span><input id="gfePresets" dir="ltr"></label>
+      </div>
+      <div class="f2" id="gfeMonthsBox" hidden>
+        <label class="fld"><span>کمترین ماه (اختیاری)</span><input id="gfeMinM" dir="ltr" inputmode="numeric"></label>
+        <label class="fld"><span>بیشترین ماه (اختیاری)</span><input id="gfeMaxM" dir="ltr" inputmode="numeric"></label>
+        <label class="fld"><span>گزینه‌های ماه (با ویرگول — مثل 3,6,12)</span><input id="gfeMonthOpts" dir="ltr"></label>
+      </div>
+      <h3>ریجن‌ها (کشورها)</h3>
+      <div id="gfeRegions"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-o btn-sm" id="gfeAddReg">➕ ریجن جدید</button>
+        <button class="btn btn-b btn-sm" id="gfeSave">✓ ذخیره این کارت</button>
+        <button class="btn btn-o btn-sm" id="gfeCancel">انصراف</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- متن‌های سایت (v52) -->
+  <section class="pane" id="pane-texts" hidden>
+    <div class="hint">📝 دسترسی کامل به <b>همه‌ی متن‌های سایت</b> در سه زبان: جستجو کنید، مقدار را عوض کنید و «انتشار» بزنید — فقط فیلدهای تغییرکرده (حاشیه نارنجی) ذخیره می‌شوند. بخش «سایر بخش‌ها» هر داده‌ی ساختاری سایت را JSON ویرایش می‌کند (برای کاربر حرفه‌ای).</div>
+    <div class="img-tools">
+      <label class="fld"><span>زبان</span>
+        <select id="txtLang"><option value="fa">فارسی</option><option value="en">English</option><option value="ar">العربية</option></select>
+      </label>
+      <label class="fld"><span>بخش</span>
+        <select id="txtSection">
+          <option value="ui">متن‌های رابط کاربری</option>
+          <option value="faq">سوالات متداول</option>
+          <option value="testimonials">نظرات مشتریان</option>
+          <option value="__json">سایر بخش‌ها (JSON)</option>
+        </select>
+      </label>
+      <label class="fld" id="txtSearchWrap"><span>جستجو (کلید یا متن)</span><input id="txtSearch"></label>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center;flex-wrap:wrap" id="txtSaveRow">
+      <button class="btn btn-b" id="btnTxtSave">🚀 انتشار تغییرات متن (زبان جاری)</button>
+      <span class="chip" id="txtDirtyChip">۰ تغییر ذخیره‌نشده</span>
+    </div>
+    <div id="txtList"></div>
+    <div id="txtJsonBox" hidden>
+      <div class="img-tools">
+        <label class="fld"><span>بخش داده (فارسی/English/العربية جداگانه)</span><select id="txtJsonSec"></select></label>
+        <button class="btn btn-o" id="txtJsonReload">↻ بازخوانی</button>
+        <button class="btn btn-b" id="btnTxtJsonSave">🚀 انتشار این بخش</button>
+      </div>
+      <textarea id="txtJsonArea" class="ed-ta" rows="16" spellcheck="false" dir="ltr" style="font-family:monospace;text-align:left"></textarea>
+    </div>
   </section>
 
   <!-- تصاویر -->
@@ -306,8 +459,12 @@ textarea#jsonArea{width:100%;min-height:340px;border:1.5px solid var(--line);bor
 <div id="admToast" role="status"></div>
 
 <script src="assets/js/config.js" defer></script>
-<script src="assets/js/site-overrides.js?v=20260969" defer></script>
+<script src="assets/js/data-fa.js?v=20260977" defer></script>
+<script src="assets/js/data-en.js?v=20260977" defer></script>
+<script src="assets/js/data-ar.js?v=20260977" defer></script>
+<script src="assets/js/ai-catalog.js?v=20260977" defer></script>
+<script src="assets/js/site-overrides.js?v=20260977" defer></script>
 <script src="assets/js/admin.js?v=20260951" defer></script>
-<script src="assets/js/admin-cms.js?v=20260973" defer></script>
+<script src="assets/js/admin-cms.js?v=20260977" defer></script>
 </body>
 </html>

@@ -795,6 +795,8 @@ if (O.data && window.SS_DATA) {
     else window.SS_DATA[lang] = O.data[lang];
   }
 }
+if (O.aiCfg && window.SS_AI_IC) deep(window.SS_AI_IC, O.aiCfg);
+if (Array.isArray(O.aiTools) && O.aiTools.length) window.SS_AI_TOOLS = O.aiTools;
 window.SS_FLAGS = O.flags || {};
 const hide = (O.flags && O.flags.hideSections) || [];
 const kill = id => {
