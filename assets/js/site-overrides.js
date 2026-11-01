@@ -695,8 +695,14 @@ window.SS_OVERRIDES = /* SS_OVERRIDES_JSON_START */{
               "n": "GTA VI (PlayStation)",
               "nf": "نسخه کامل — اکانت پلی‌استیشن",
               "usd": 88
+            },
+            {
+              "n": "GTA VI (PlayStation)",
+              "nf": "نسخه آلتمیت ادیشن-اکانت پلی استیشن",
+              "usd": 99
             }
-          ]
+          ],
+          "img": ""
         }
       ]
     },
@@ -765,7 +771,8 @@ window.SS_OVERRIDES = /* SS_OVERRIDES_JSON_START */{
         }
       ]
     }
-  }
+  },
+  "flags": {}
 }/* SS_OVERRIDES_JSON_END */;
 
 ;(() => {
