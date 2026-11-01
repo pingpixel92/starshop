@@ -755,7 +755,7 @@ window.SS_OVERRIDES = /* SS_OVERRIDES_JSON_START */{
           "id": "virt",
           "n": "Virtual number (1 year)",
           "nf": "با شماره مجازی یک‌ساله",
-          "toman": 285000
+          "toman": 20567000
         },
         {
           "id": "sim",
