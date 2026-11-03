@@ -528,6 +528,12 @@ body[data-theme="dark"] .exam-abbr{color:var(--brand-light)}
 .foot-bottom p{font-size:12px;color:var(--muted-dark)}
 .foot-latin{font-family:var(--font-num);letter-spacing:.14em;font-size:10.5px}
 
+/* ═══ نماد اعتماد الکترونیکی (اینماد) ═══ */
+.foot-enamad{display:flex;justify-content:center;padding-block:26px 2px}
+.enamad-badge{display:block;width:clamp(108px,13vw,136px);height:auto;background:#fff;border-radius:16px;padding:12px 14px;box-shadow:0 8px 24px rgba(0,0,0,.18),0 0 0 1px rgba(255,255,255,.08);transition:transform .25s ease,box-shadow .25s ease}
+.enamad-badge:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(0,0,0,.24),0 0 0 1px rgba(255,255,255,.1)}
+body[data-theme="light"] .enamad-badge{box-shadow:0 8px 22px rgba(30,50,90,.12),0 0 0 1px var(--line)}
+
 /* ═══ MODALS ═══ */
 /* موبایل: کانتینر مودال خودش اسکرول‌پذیر است و پنل با margin:auto وسط‌چین می‌شود
    تا پایین پنل (دکمه‌های ثبت خرید) هرگز بریده نشود؛ max-height با dvh از
