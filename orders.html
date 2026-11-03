@@ -9,6 +9,7 @@
 <meta name="theme-color" content="#05070b">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vazirmatn@33.0.3/Vazirmatn-font-face.css">
+<link rel="stylesheet" href="assets/css/toc.css?v=20260979">
 <link rel="stylesheet" href="assets/css/style.css?v=20260968">
 <style>
 /* ═══ صفحه وضعیت سفارش‌ها — همه کلاس‌ها ord- (بدون تداخل) ═══ */
@@ -139,14 +140,14 @@ p.ord-sub{margin:0;max-width:600px;color:rgba(255,255,255,.68);font-size:15px}
   <!-- ── گیت ورود ── -->
   <section class="ord-panel ord-gate" id="gate" hidden>
     <div class="g-ic">🔐</div>
-    <h2>برای پیگیری سفارش‌ها وارد شوید</h2>
+    <h2 id="sec-1">برای پیگیری سفارش‌ها وارد شوید</h2>
     <p>وضعیت سفارش‌ها به حساب کاربری شما متصل است. با شماره موبایل یا گوگل وارد شوید تا سفارش‌هایتان را ببینید.</p>
     <button class="ord-btn ord-btn-brand" id="btnGateLogin">ورود / ثبت‌نام</button>
   </section>
 
   <!-- ── جستجوی کد (همیشه قابل استفاده) ── -->
     <section class="ord-panel">
-      <h2><span class="ord-stepnum">۱</span> پیگیری سریع با کد سفارش</h2>
+      <h2 id="sec-2"><span class="ord-stepnum">۱</span> پیگیری سریع با کد سفارش</h2>
       <div class="ord-lookup">
         <input id="lookupInput" placeholder="مثلاً SS-A1B2C3" dir="ltr" maxlength="20" autocomplete="off">
         <button class="ord-btn ord-btn-brand" id="btnLookup">جستجو</button>
@@ -158,7 +159,7 @@ p.ord-sub{margin:0;max-width:600px;color:rgba(255,255,255,.68);font-size:15px}
   <!-- ── اپ ── -->
   <div id="app" hidden>
     <section class="ord-panel">
-      <h2>
+      <h2 id="sec-3">
         <span class="ord-stepnum">۲</span> سفارش‌های من
         <span class="grow"></span>
         <button class="ord-btn ord-btn-ghost" id="btnRefresh">🔄 به‌روزرسانی</button>
@@ -300,5 +301,6 @@ window.SSUI = {
 <script src="assets/js/data-fa.js" defer></script>
 <script src="assets/js/auth.js?v=20260945" defer></script>
 <script src="assets/js/orders.js?v=20260951" defer></script>
+<script src="assets/js/toc.js?v=20260979" defer></script>
 </body>
 </html>

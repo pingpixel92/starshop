@@ -9,6 +9,7 @@
 <meta name="theme-color" content="#05070b">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vazirmatn@33.0.3/Vazirmatn-font-face.css">
+<link rel="stylesheet" href="assets/css/toc.css?v=20260979">
 <link rel="stylesheet" href="assets/css/style.css?v=20260968">
 <style>
 /* ═══ صفحه کارت به کارت — همه کلاس‌ها c2c- (بدون تداخل با style.css) ═══ */
@@ -164,13 +165,13 @@ p.c2c-sub{margin:0;max-width:560px;color:rgba(255,255,255,.68);font-size:15px}
 
   <!-- ── ۱: سفارش ── -->
   <section class="c2c-panel" id="orderBox">
-    <h2><span class="c2c-step">۱</span> مشخصات سفارش</h2>
+    <h2 id="sec-1"><span class="c2c-step">۱</span> مشخصات سفارش</h2>
     <div id="orderBody"></div>
   </section>
 
   <!-- ── فرم دستی (وقتی سفارش سبد پیدا نشد) ── -->
   <section class="c2c-panel" id="manualBox" hidden>
-    <h2><span class="c2c-step">۱</span> مشخصات سفارش (ورود دستی)</h2>
+    <h2 id="sec-2"><span class="c2c-step">۱</span> مشخصات سفارش (ورود دستی)</h2>
     <div class="c2c-fgrid">
       <div><label>نام و نام خانوادگی</label><input id="mName" placeholder="مثلاً علی رضایی"></div>
       <div><label>شماره موبایل</label><input id="mPhone" placeholder="۰۹۱۲۳۴۵۶۷۸۹" dir="ltr"></div>
@@ -181,7 +182,7 @@ p.c2c-sub{margin:0;max-width:560px;color:rgba(255,255,255,.68);font-size:15px}
 
   <!-- ── ۲: آپلود فیش + هوش مصنوعی ── -->
   <section class="c2c-panel">
-    <h2><span class="c2c-step">۲</span> آپلود فیش واریز</h2>
+    <h2 id="sec-3"><span class="c2c-step">۲</span> آپلود فیش واریز</h2>
     <div class="c2c-drop" id="drop" role="button" tabindex="0" aria-label="انتخاب تصویر فیش">
       <div class="d-ic">🧾</div>
       <b>فیش واریز را اینجا بگذارید</b>
@@ -213,7 +214,7 @@ p.c2c-sub{margin:0;max-width:560px;color:rgba(255,255,255,.68);font-size:15px}
 
   <!-- ── ۳: وضعیت تأیید ── -->
   <section class="c2c-panel" id="statusPanel" hidden>
-    <h2><span class="c2c-step">۳</span> وضعیت تأیید</h2>
+    <h2 id="sec-4"><span class="c2c-step">۳</span> وضعیت تأیید</h2>
     <div class="c2c-status" id="stPending">
       <div class="s-ic">⏳</div>
       <h3><span class="c2c-pulse"></span>در انتظار تأیید پشتیبانی</h3>
@@ -247,5 +248,6 @@ p.c2c-sub{margin:0;max-width:560px;color:rgba(255,255,255,.68);font-size:15px}
 <div id="toast" role="status"></div>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js" integrity="sha384-GJqSu7vueQ9qN0E9yLPb3Wtpd7OrgK8KmYzC8T1IysG1bcvxvIO4qtYR/D3A991F" crossorigin="anonymous" defer></script>
 <script src="assets/js/card2card.js?v=20260959" defer></script>
+<script src="assets/js/toc.js?v=20260979" defer></script>
 </body>
 </html>
